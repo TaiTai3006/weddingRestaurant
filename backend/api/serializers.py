@@ -11,7 +11,7 @@ class LobbyTypeSerializer(serializers.ModelSerializer):
         model = Loaisanh
         fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer_Signup(serializers.ModelSerializer):
     class Meta:
         model = Taikhoan
-        fields = '__all__'
+        fields = ['username','password','machucvu']

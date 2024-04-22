@@ -4,7 +4,8 @@ from api.models import *
 from api.serializers import *
 
 urlpatterns = [
-#   path('lobby/', LobbyListView.as_view()),
+  path('test/', LobbyListView),
+  path('test1/', LobbyListView1),
   path('login/', login),
   path('logout/', logout),
   path('signup/', signup),
