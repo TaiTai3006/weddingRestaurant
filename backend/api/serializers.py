@@ -15,3 +15,24 @@ class UserSerializer_Signup(serializers.ModelSerializer):
     class Meta:
         model = Taikhoan
         fields = ['username','password','machucvu']
+
+
+
+class FoodDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chitietmonan
+        fields = '__all__'
+
+
+class ServiceDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chitietdichvu
+        fields = '__all__'
+class PartyBookingFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Phieudattieccuoi
+        fields = '__all__'
+
+
+
+

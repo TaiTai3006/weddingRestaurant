@@ -19,6 +19,7 @@ from django.core.cache import cache
 model_serializer_map = {
         'lobby': (Sanh, LobbySerializer, 'masanh'),
         'lobbyType': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
+
     }
 # Create your views here.
 # class LobbyListView(ListAPIView):
@@ -145,3 +146,23 @@ def logout(request):
     Token.objects.filter(user=user).delete()
     return Response({"message": "Logged out successfully"},status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def searchPartyBookingFormAPI(request):
+    model_cache = cache.get('searchPartyBooking')
+    if model_cache :
+        return Response(model_cache, status=status.HTTP_200_OK)
+    
+    query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi not in (SELECT maTiecCuoi FROM HoaDon) ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC')
+    serializer = PartyBookingFormSerializer(query, many = True)
+ 
+    for item in serializer.data:
+        query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
+        query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
+        query3 = Sanh.objects.filter(masanh = item['masanh'])
+        item['danhsachdichvu'] = ServiceDetailsSerializer(query1, many=True).data
+        item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
+        item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
+
+    cache.set('searchPartyBooking', serializer.data, timeout=60*30)
+
+    return Response(serializer.data)
