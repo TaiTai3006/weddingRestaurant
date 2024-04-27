@@ -17,8 +17,10 @@ from django.core.cache import cache
 
 
 model_serializer_map = {
-        'lobby': (Sanh, LobbySerializer, 'masanh'),
-        'lobbyType': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
+        'lobbies': (Sanh, LobbySerializer, 'masanh'),
+        'lobbyTypies': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
+        'foods': (Monan, FoodSerializer, 'mamonan'),
+        'services': (Dichvu, ServiceSerializer, 'mamonan'),
 
     }
 # Create your views here.
@@ -147,6 +149,8 @@ def logout(request):
     return Response({"message": "Logged out successfully"},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def searchPartyBookingFormAPI(request):
     model_cache = cache.get('searchPartyBooking')
     if model_cache :
@@ -166,3 +170,85 @@ def searchPartyBookingFormAPI(request):
     cache.set('searchPartyBooking', serializer.data, timeout=60*30)
 
     return Response(serializer.data)
+
+# Lấy danh sách các sảnh chưa có khách hàng đặt theo ngày đãi tiệc và ca tương ứng.
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def availablelobbiesListAPI(request):
+    maca = request.data.get('maca')
+    ngaydaitiec = request.data.get('ngaydaitiec')
+
+    if not maca or not ngaydaitiec :
+        return Response({"error": "maca and ngaydaitiec query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    query = Sanh.objects.raw(f"SELECT * FROM Sanh WHERE Sanh.maSanh not in (SELECT maSanh FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maCa = '{maca}' AND PhieuDatTiecCuoi.ngayDaiTiec = {ngaydaitiec})")
+    serializer = LobbySerializer(query, many = True)
+
+    for item in serializer.data:
+         query1 = Loaisanh.objects.filter(maloaisanh=item['maloaisanh'])
+         item['thongtinloaisanh'] = LobbyTypeSerializer(query1, many = True).data[0]
+    
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#Lưu trữ thông tin đặt tiệc cưới của khách hàng
+@api_view(['POST'])
+def bookingPartyWeddingAPI(request):
+    # Tạo mã phiếu đặt tiệc theo định dạng 'TC****' Ví dụ: 'TC0001'
+    query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi ORDER BY maTiecCuoi DESC LIMIT 1')
+    matieccuoi = query[0].matieccuoi if query else 'TC0000'
+    matieccuoi = int(matieccuoi[2:]) + 1
+    matieccuoi = f'TC{matieccuoi:04}'
+    
+    # Lưu trữ thông tin đặt tiệc của khách hàng.
+    party_booking_info = {
+        'matieccuoi': matieccuoi,
+        'ngaydat': request.data.get('ngaydat'),
+        'ngaydaitiec': request.data.get('ngaydaitiec'),
+        'soluongban': request.data.get('soluongban'),
+        'soluongbandutru': 0,
+        'dongiaban': request.data.get('dongiaban'),
+        'tongtienban': request.data.get('tongtienban'),
+        'tongtiendichvu': request.data.get('tongtiendichvu'),
+        'tongtiendattiec': request.data.get('tongtiendattiec'),
+        'conlai': request.data.get('conlai'),
+        'tencodau': request.data.get('tencodau'),
+        'sdt': request.data.get('sdt'),
+        'tinhtrangphancong': None,
+        'maca': request.data.get('maca'),
+        'masanh': request.data.get('masanh'),
+        'username': request.data.get('username')
+    }
+
+    partyBookingForm = PartyBookingFormSerializer(data=party_booking_info)
+    if partyBookingForm.is_valid():
+        partyBookingForm.save() #Lưu trữ thông tin khách hàng và thông tin đặt tiệc vào bảng Phieuchitietdattiec trong database
+        # Lưu trữ thông tin món ăn đã đặt vào bảng Chitietmonan trong database
+        foodList = request.data.get('danhsachmonan')
+        for food in foodList:
+            food['matieccuoi'] = matieccuoi
+            foodDetail = FoodDetailsSerializer(data = food)
+            print(foodDetail.is_valid())
+            if not foodDetail.is_valid():
+                Phieudattieccuoi.objects.get(matieccuoi = matieccuoi).delete()
+                return Response(foodDetail.errors, status=status.HTTP_400_BAD_REQUEST)
+            else: foodDetail.save()
+        
+        # Lưu trữ thông tin dịch vụ đã đặt vào bảng Chitietmonan trong database
+        serviceList = request.data.get('danhsachdichvu')
+        for service in serviceList:
+            service['matieccuoi'] = matieccuoi
+            serviceDetail = ServiceDetailsSerializer(data = service)
+            if not serviceDetail.is_valid():
+                Chitietmonan.objects.get(matieccuoi = matieccuoi).delete()
+                Phieudattieccuoi.objects.get(matieccuoi = matieccuoi).delete()
+                return Response(serviceDetail.errors, status=status.HTTP_400_BAD_REQUEST)
+            else: serviceDetail.save()
+
+        cache.delete('searchPartyBooking')
+        return Response(status = status.HTTP_201_CREATED)
+        
+    return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+    

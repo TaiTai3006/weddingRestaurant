@@ -10,6 +10,8 @@ urlpatterns = [
   path('logout/', logout),
   path('signup/', signup),
   path('searchParty/', searchPartyBookingFormAPI),
+  path('bookingParty/bollies/available/', availablelobbiesListAPI),
+  path('bookingParty/', bookingPartyWeddingAPI),
   path('<str:model_name>/', LobbyView),
   path('<str:model_name>/<str:id>/', LobbyView),
   

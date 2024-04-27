@@ -83,8 +83,8 @@ class Dichvu(models.Model):
         db_table = 'DichVu'
 
 class Chitietdichvu(models.Model):
-    matieccuoi = models.OneToOneField('Phieudattieccuoi', models.DO_NOTHING, db_column='maTiecCuoi', primary_key=True)  # Field name made lowercase. The composite primary key (maTiecCuoi, maDichVu) found, that is not supported. The first column is selected.
-    madichvu = models.ForeignKey('Dichvu', models.DO_NOTHING, db_column='maDichVu')  # Field name made lowercase.
+    matieccuoi = models.CharField(db_column='maTiecCuoi', max_length=6)  # Field name made lowercase.
+    madichvu = models.CharField(db_column='maDichVu', max_length=6)  # Field name made lowercase.
     soluong = models.IntegerField(db_column='soLuong', blank=True, null=True)  # Field name made lowercase.
     dongiadichvu = models.DecimalField(db_column='donGiaDichVu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
     thanhtien = models.DecimalField(db_column='thanhTien', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
@@ -92,7 +92,6 @@ class Chitietdichvu(models.Model):
     class Meta:
         managed = False
         db_table = 'ChiTietDichVu'
-        unique_together = (('matieccuoi', 'madichvu'),)
 
 class Loaimonan(models.Model):
     maloaimonan = models.CharField(db_column='maLoaiMonAn', primary_key=True, max_length=6)  # Field name made lowercase.
@@ -113,7 +112,7 @@ class Monan(models.Model):
         db_table = 'MonAn'
 
 class Chitietmonan(models.Model):
-    mamonan = models.OneToOneField('Monan', models.DO_NOTHING, db_column='maMonAn', primary_key=True)  # Field name made lowercase. The composite primary key (maMonAn, maTiecCuoi) found, that is not supported. The first column is selected.
+    mamonan = models.CharField(db_column='maMonAn', max_length=6)  # Field name made lowercase.
     matieccuoi = models.ForeignKey('Phieudattieccuoi', models.DO_NOTHING, db_column='maTiecCuoi')  # Field name made lowercase.
     dongiamonan = models.DecimalField(db_column='donGiaMonAn', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
     soluong = models.IntegerField(db_column='soLuong', blank=True, null=True)  # Field name made lowercase.
@@ -122,4 +121,3 @@ class Chitietmonan(models.Model):
     class Meta:
         managed = False
         db_table = 'ChiTietMonAn'
-        unique_together = (('mamonan', 'matieccuoi'),)

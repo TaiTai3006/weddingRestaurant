@@ -16,13 +16,10 @@ class UserSerializer_Signup(serializers.ModelSerializer):
         model = Taikhoan
         fields = ['username','password','machucvu']
 
-
-
 class FoodDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chitietmonan
         fields = '__all__'
-
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,6 +30,13 @@ class PartyBookingFormSerializer(serializers.ModelSerializer):
         model = Phieudattieccuoi
         fields = '__all__'
 
+class FoodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Monan
+        fields = '__all__'
 
-
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dichvu
+        fields = '__all__'
 
