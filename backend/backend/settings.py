@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
+    "vnpay_python.apps.VnpayPythonConfig",
     "api.apps.ApiConfig",
     'cloudinary_storage',
     'cloudinary',
@@ -167,3 +168,9 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 #   api_key = "471251317634541", 
 #   api_secret = "H9vMluxlYsIbMpRLKaJH3nyrdZo" 
 # )
+# VNPAY CONFIG
+VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
+VNPAY_TMN_CODE = 'L0AW87KM'  # Website ID in VNPAY System, get from config
+VNPAY_HASH_SECRET_KEY = 'RKLBBMIRMYNNVBUTDIGRHQPAAOCPXMGZ' 

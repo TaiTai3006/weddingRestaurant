@@ -1,4 +1,3 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
 from api.models import *
 from api.serializers import *
 from rest_framework.decorators import api_view
