@@ -121,3 +121,25 @@ class Chitietmonan(models.Model):
     class Meta:
         managed = False
         db_table = 'ChiTietMonAn'
+
+class Baocaodoanhthu(models.Model):
+    mabaocao = models.CharField(db_column='maBaoCao', primary_key=True, max_length=6)  # Field name made lowercase.
+    thang = models.IntegerField(blank=True, null=True)
+    nam = models.IntegerField(blank=True, null=True)
+    tongdoanhthu = models.DecimalField(db_column='tongDoanhThu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'BaoCaoDoanhThu'
+class Chitietbaocao(models.Model):
+    mabaocao = models.OneToOneField(Baocaodoanhthu, models.DO_NOTHING, db_column='maBaoCao', primary_key=True)  # Field name made lowercase. The composite primary key (maBaoCao, ngay) found, that is not supported. The first column is selected.
+    ngay = models.DateField()
+    soluongtiec = models.IntegerField(db_column='soLuongTiec', blank=True, null=True)  # Field name made lowercase.
+    doanhthu = models.DecimalField(db_column='doanhThu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    tile = models.FloatField(db_column='tiLe', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'ChiTietBaoCao'
+        unique_together = (('mabaocao', 'ngay'),)
+

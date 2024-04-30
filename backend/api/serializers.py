@@ -40,3 +40,12 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Dichvu
         fields = '__all__'
 
+class RevenueReportDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chitietbaocao
+        fields = '__all__'
+
+class RevenueReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Baocaodoanhthu
+        fields = '__all__'

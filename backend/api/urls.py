@@ -4,11 +4,17 @@ from api.models import *
 from api.serializers import *
 
 urlpatterns = [
-  path('test/', LobbyListView),
-  path('test1/', LobbyListView1),
   path('login/', login),
   path('logout/', logout),
   path('signup/', signup),
+  path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
+  path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
+  path('statistic/revenueReportPerDay/', revenueReportPerDayAPI),
+  path('statistic/revenueReportPerMonth/', revenueReportPerMonthAPI),
+  path('statistic/revenueReportPerYear/', revenueReportPerYearAPI),
+  path('statistic/countLobbyBooking/', countLobbyBookingAPI),
+  path('statistic/countFoodBooking/', countFoodBookingAPI),
+  path('statistic/countServiceBooking/', countServiceBookingAPI),
   path('searchParty/', searchPartyBookingFormAPI),
   path('bookingParty/bollies/available/', availablelobbiesListAPI),
   path('bookingParty/', bookingPartyWeddingAPI),

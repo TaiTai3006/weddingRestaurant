@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-
+from django.db import connection
 
 model_serializer_map = {
         'lobbies': (Sanh, LobbySerializer, 'masanh'),
@@ -22,56 +22,6 @@ model_serializer_map = {
         'services': (Dichvu, ServiceSerializer, 'mamonan'),
 
     }
-# Create your views here.
-# class LobbyListView(ListAPIView):
-#     queryset = Sanh.objects.all()
-#     serializer_class = LobbySerializer
-
-# Test 
-@api_view(['GET'])
-@cache_page(timeout=60 * 30)
-def LobbyListView(request):
-    query = Sanh.objects.all()
-    serializer = LobbySerializer(query, many=True)
-    return Response(serializer.data)
-#test 2
-@api_view(['GET'])
-def LobbyListView1(request):
-    cache.set("foo", [
-    {
-        "maloaisanh": "LS0001",
-        "tenloaisanh": "Hiện đại",
-        "dongiabantoithieu": "2500000.00"
-    },
-    {
-        "maloaisanh": "LS0002",
-        "tenloaisanh": "Hoang sơ",
-        "dongiabantoithieu": "1100000.00"
-    },
-    {
-        "maloaisanh": "LS0003",
-        "tenloaisanh": "Cổ điển",
-        "dongiabantoithieu": "1200000.00"
-    },
-    {
-        "maloaisanh": "LS0004",
-        "tenloaisanh": "Công nghệ",
-        "dongiabantoithieu": "1400000.00"
-    },
-    {
-        "maloaisanh": "LS0005",
-        "tenloaisanh": "Bóng tối",
-        "dongiabantoithieu": "1600000.00"
-    },
-    {
-        "maloaisanh": "LS0006",
-        "tenloaisanh": "Cổ điển",
-        "dongiabantoithieu": "1200000.00"
-    }
-], timeout=60 * 30)
-    cache.delete("foo")
-    return Response(cache.get("foo"))
-
 
 @api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -247,7 +197,167 @@ def bookingPartyWeddingAPI(request):
         return Response(status = status.HTTP_201_CREATED)
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
+# Thống kê số lượng tiệc trong tháng theo từng ngày
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def countWeddingEventsPerDayInMonthAPI(request):
+    model_cache = cache.get('countWeddingEventsPerDayInMonth')
 
+    if model_cache:
+        return Response(model_cache, status=status.HTTP_200_OK) 
     
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if not month or not year:
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
+        data = cursor.fetchall()
+    
+    cache.set('countWeddingEventsPerDayInMonth', data, timeout=60*30)
+
+    return Response(data, status=status.HTTP_200_OK)
+
+#Thống kê số lượng tiệc cưới trong ngày theo từng ca
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def countWeddingEventsPerDayAPI(request):
+    date = request.data.get('date')
+
+    if not date:
+        return Response({"error": "date query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT Ca.tenCa, COUNT(*) FROM `PhieuDatTiecCuoi`, Ca WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' GROUP BY Ca.tenCa")
+        data = cursor.fetchall()
+    
+    return Response(data, status=status.HTTP_200_OK)
+
+# Thống kê doanh thu theo từng ngày
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def revenueReportPerDayAPI(request):
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if not month or not year:
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    query = Chitietbaocao.objects.raw(f"SELECT * FROM `ChiTietBaoCao` WHERE MONTH(`ngay`) = {month} AND YEAR(`ngay`) = {year}")
+    serializer = RevenueReportDetailSerializer(query, many = True)
+
+    return Response(serializer.data, status = status.HTTP_200_OK)
+
+# Thống kê doanh thu theo từng thang
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def revenueReportPerMonthAPI(request):
+    year = request.data.get('year')
+
+    if  not year:
+        return Response({"error": "year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    query = Baocaodoanhthu.objects.raw(f"SELECT * FROM `BaoCaoDoanhThu` WHERE `nam` = {year}")
+    serializer = RevenueReportSerializer(query, many = True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Thống kê doanh thu theo từng năm
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def revenueReportPerYearAPI(request):
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT nam, SUM(`tongDoanhThu`) FROM `BaoCaoDoanhThu` ORDER BY nam ")
+        temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'nam': item[0], 'tongDoanhThu': item[1]})
+
+    return Response(data, status=status.HTTP_200_OK)
+
+# Thống kê số lượng sảnh được đặt theo tháng, năm
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def countLobbyBookingAPI(request):
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if (not month and not year ) or (month and not year):
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if month and year:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
+            temp = cursor.fetchall()
+    else: 
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
+            temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'tenSanh': item[0], 'soluongSanh': item[1]})
+
+    return Response(data, status=status.HTTP_200_OK)
+
+# Thống kê số lượng mon an được đặt theo tháng, năm
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def countFoodBookingAPI(request):
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if (not month and not year ) or (month and not year):
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if month and year:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT MonAn.tenMonAn, COUNT(*) FROM `ChiTietMonAn`, MonAn, PhieuDatTiecCuoi WHERE ChiTietMonAn.maMonAn = MonAn.maMonAn AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietMonAn.maTiecCuoi AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY MonAn.maMonAn, MonAn.tenMonAn")
+            temp = cursor.fetchall()
+    else: 
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT MonAn.tenMonAn, COUNT(*) FROM `ChiTietMonAn`, MonAn, PhieuDatTiecCuoi WHERE ChiTietMonAn.maMonAn = MonAn.maMonAn AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietMonAn.maTiecCuoi AND YEAR(`ngayDaiTiec`) = {year} GROUP BY MonAn.maMonAn, MonAn.tenMonAn")
+            temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'tenMonAn': item[0], 'soluongMonAn': item[1]})
+
+    return Response(data, status=status.HTTP_200_OK)
+
+# Thống kê số lượng dich vu được đặt theo tháng, năm
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def countServiceBookingAPI(request):
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if (not month and not year ) or (month and not year):
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if month and year:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT DichVu.tenDichVu, COUNT(*) FROM ChiTietDichVu, DichVu, PhieuDatTiecCuoi WHERE ChiTietDichVu.maDichVu = DichVu.maDichVu AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietDichVu.maTiecCuoi AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY DichVu.maDichVu, DichVu.tenDichVu")
+            temp = cursor.fetchall()
+    else: 
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT DichVu.tenDichVu, COUNT(*) FROM ChiTietDichVu, DichVu, PhieuDatTiecCuoi WHERE ChiTietDichVu.maDichVu = DichVu.maDichVu AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietDichVu.maTiecCuoi AND YEAR(`ngayDaiTiec`) = {year} GROUP BY DichVu.maDichVu, DichVu.tenDichVu")
+            temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'tenDichVu': item[0], 'soluongDV': item[1]})
+
+    return Response(data, status=status.HTTP_200_OK)
