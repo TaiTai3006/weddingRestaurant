@@ -35,6 +35,12 @@ class FoodSerializer(serializers.ModelSerializer):
         model = Monan
         fields = '__all__'
 
+
+class FoodTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Monan
+        fields = '__all__'
+
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dichvu

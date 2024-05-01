@@ -17,11 +17,20 @@ from django.db import connection
 
 model_serializer_map = {
         'lobbies': (Sanh, LobbySerializer, 'masanh'),
-        'lobbyTypies': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
+        'lobbyTypes': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
         'foods': (Monan, FoodSerializer, 'mamonan'),
-        'services': (Dichvu, ServiceSerializer, 'mamonan'),
+        'foodTypes': (Loaimonan, FoodTypeSerializer, 'maloaimonan'),
+        'services': (Dichvu, ServiceSerializer, 'mamonan')
 
     }
+# Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
+def getNextID(model, id_field):
+    latest_query = model.objects.raw(f'SELECT * FROM {model._meta.db_table} ORDER BY {id_field} DESC LIMIT 1')
+    latest_id = getattr(latest_query[0], id_field) if latest_query else ''
+    header = latest_id[:2] #Lấy 2 ký tự đầu
+    next_id = int(latest_id[2:]) + 1 #Lấy 4 ký tự cuối chuyển thành int cộng thêm 1
+    next_id = f'{next_id:04}' 
+    return header + next_id
 
 @api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
@@ -54,6 +63,7 @@ def LobbyView(request, model_name=None, id=None):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'POST':
+        request.data[key] = getNextID(model, key)
         serializer = serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -143,10 +153,7 @@ def availablelobbiesListAPI(request):
 @api_view(['POST'])
 def bookingPartyWeddingAPI(request):
     # Tạo mã phiếu đặt tiệc theo định dạng 'TC****' Ví dụ: 'TC0001'
-    query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi ORDER BY maTiecCuoi DESC LIMIT 1')
-    matieccuoi = query[0].matieccuoi if query else 'TC0000'
-    matieccuoi = int(matieccuoi[2:]) + 1
-    matieccuoi = f'TC{matieccuoi:04}'
+    matieccuoi = getNextID(Phieudattieccuoi, 'matieccuoi')
     
     # Lưu trữ thông tin đặt tiệc của khách hàng.
     party_booking_info = {
@@ -176,7 +183,6 @@ def bookingPartyWeddingAPI(request):
         for food in foodList:
             food['matieccuoi'] = matieccuoi
             foodDetail = FoodDetailsSerializer(data = food)
-            print(foodDetail.is_valid())
             if not foodDetail.is_valid():
                 Phieudattieccuoi.objects.get(matieccuoi = matieccuoi).delete()
                 return Response(foodDetail.errors, status=status.HTTP_400_BAD_REQUEST)
