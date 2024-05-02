@@ -143,3 +143,30 @@ class Chitietbaocao(models.Model):
         db_table = 'ChiTietBaoCao'
         unique_together = (('mabaocao', 'ngay'),)
 
+class Congviec(models.Model):
+    macongviec = models.CharField(db_column='maCongViec', primary_key=True, max_length=6)  # Field name made lowercase.
+    tencongviec = models.CharField(db_column='tenCongViec', max_length=40, blank=True, null=True)  # Field name made lowercase.
+    madichvu = models.ForeignKey('Dichvu', models.DO_NOTHING, db_column='maDichVu', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'CongViec'
+class Nhanvien(models.Model):
+    manhanvien = models.CharField(db_column='maNhanVien', primary_key=True, max_length=6)  # Field name made lowercase.
+    macongviec = models.ForeignKey(Congviec, models.DO_NOTHING, db_column='maCongViec')  # Field name made lowercase.
+    tennhanvien = models.CharField(db_column='tenNhanVien', max_length=40, blank=True, null=True)  # Field name made lowercase.
+    gioitinh = models.CharField(db_column='gioiTinh', max_length=15, blank=True, null=True)  # Field name made lowercase.
+    sdt = models.CharField(max_length=11, blank=True, null=True)
+    loainhanvien = models.CharField(db_column='loaiNhanVien', max_length=20, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'NhanVien'
+
+class Phancong(models.Model):
+    manhanvien = models.CharField(db_column='maNhanVien', max_length=6)  # Field name made lowercase.
+    matieccuoi = models.CharField(db_column='maTiecCuoi', max_length=6)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'PhanCong'

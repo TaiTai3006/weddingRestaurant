@@ -20,8 +20,9 @@ model_serializer_map = {
         'lobbyTypes': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
         'foods': (Monan, FoodSerializer, 'mamonan'),
         'foodTypes': (Loaimonan, FoodTypeSerializer, 'maloaimonan'),
-        'services': (Dichvu, ServiceSerializer, 'mamonan')
-
+        'services': (Dichvu, ServiceSerializer, 'mamonan'),
+        'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
+        'job': (Congviec, JobSerializer, 'macongviec'),
     }
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
 def getNextID(model, id_field):
@@ -367,3 +368,37 @@ def countServiceBookingAPI(request):
         data.append({'tenDichVu': item[0], 'soluongDV': item[1]})
 
     return Response(data, status=status.HTTP_200_OK)
+
+# Phan cong viec cho nhan vien cho từng tiệc cưới
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def assignTaskAPI(request):
+    """
+    API để phân công công việc cho nhân viên.
+
+    Parameters:
+    - task_assignment_list (list): Danh sách các công việc cần phân công cho nhân viên. 
+                                  Mỗi công việc được đại diện bởi một dictionary có hai keys: "manhanvien" và "matieccuoi".
+
+    Returns:
+    - Response: status code.
+    """
+    task_assignment_list = request.data
+
+    if not task_assignment_list:
+        return Response({"error": "task assignment list query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Lưu trữ phân công cho từng nhân viên vào bảng Phân công trong database
+    for task_assignment in task_assignment_list:
+        serializer = AssignmentSerializer(data=task_assignment)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+    # Cập nhật trường tình trạng phân công công việc thành 1 trong bảng Phiếu đặt tiệc 
+    with connection.cursor() as cursor:
+        cursor.execute("UPDATE PhieuDatTiecCuoi SET tinhtrangphancong = 1 WHERE maTiecCuoi = %s", [task_assignment_list[0].get('matieccuoi')])
+
+    return Response(status=status.HTTP_201_CREATED)
+

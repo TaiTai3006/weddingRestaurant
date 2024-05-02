@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from api.views import *
 from api.models import *
 from api.serializers import *
@@ -7,6 +7,7 @@ urlpatterns = [
   path('login/', login),
   path('logout/', logout),
   path('signup/', signup),
+  path('assignTask/', assignTaskAPI),
   path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
   path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
   path('statistic/revenueReportPerDay/', revenueReportPerDayAPI),
