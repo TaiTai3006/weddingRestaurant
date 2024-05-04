@@ -170,3 +170,29 @@ class Phancong(models.Model):
     class Meta:
         managed = False
         db_table = 'PhanCong'
+
+class Hoadon(models.Model):
+    mahoadon = models.CharField(db_column='maHoaDon', primary_key=True, max_length=6)  # Field name made lowercase.
+    matieccuoi = models.ForeignKey('Phieudattieccuoi', models.DO_NOTHING, db_column='maTiecCuoi')  # Field name made lowercase.
+    ngaythanhtoan = models.DateField(db_column='ngayThanhToan')  # Field name made lowercase.
+    tongtiendichvu = models.DecimalField(db_column='tongTienDichVu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    tienphat = models.DecimalField(db_column='tienPhat', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    tongtienhoadon = models.DecimalField(db_column='tongTienHoaDon', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    conlai = models.DecimalField(db_column='conLai', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    username = models.ForeignKey('Taikhoan', models.DO_NOTHING, db_column='userName')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'HoaDon'
+
+class ChitietDvThanhtoan(models.Model):
+    mahoadon = models.CharField(db_column='maHoaDon', max_length=6)  # Field name made lowercase.
+    madichvu = models.CharField(db_column='maDichVu', max_length=6)  # Field name made lowercase.
+    soluong = models.IntegerField(db_column='soLuong', blank=True, null=True)  # Field name made lowercase.
+    dongiadichvu = models.DecimalField(db_column='donGiaDichVu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    thanhtien = models.DecimalField(db_column='thanhTien', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    ghichu = models.TextField(db_column='ghiChu', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'ChiTiet_DV_ThanhToan'

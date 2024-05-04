@@ -75,3 +75,13 @@ class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Phancong
         fields = '__all__'
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hoadon
+        fields = '__all__'
+
+class DetailServicePaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChitietDvThanhtoan
+        fields = '__all__'

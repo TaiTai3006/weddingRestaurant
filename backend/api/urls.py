@@ -8,6 +8,7 @@ urlpatterns = [
   path('logout/', logout),
   path('signup/', signup),
   path('assignTask/', assignTaskAPI),
+  path('paymentInvoice/',paymentInvoiceAPI),
   path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
   path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
   path('statistic/revenueReportPerDay/', revenueReportPerDayAPI),
