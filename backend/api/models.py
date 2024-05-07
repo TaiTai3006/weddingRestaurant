@@ -196,3 +196,14 @@ class ChitietDvThanhtoan(models.Model):
     class Meta:
         managed = False
         db_table = 'ChiTiet_DV_ThanhToan'
+
+class Thamso(models.Model):
+    kiemtraphat = models.IntegerField(db_column='KiemTraPhat', blank=True, null=True)  # Field name made lowercase.
+    tilephat = models.DecimalField(db_column='TiLePhat', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    tiledatcoc = models.DecimalField(db_column='TiLeDatCoc', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
+    tgphathuytiec = models.IntegerField(db_column='TGPhatHuyTiec', blank=True, null=True)  # Field name made lowercase.
+    thoigiandattiec = models.IntegerField(db_column='thoiGianDatTiec', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'ThamSo'

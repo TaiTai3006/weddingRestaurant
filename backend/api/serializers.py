@@ -85,3 +85,8 @@ class DetailServicePaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChitietDvThanhtoan
         fields = '__all__'
+
+class ParameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Thamso
+        fields = '__all__'
