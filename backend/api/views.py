@@ -23,9 +23,20 @@ model_serializer_map = {
         'services': (Dichvu, ServiceSerializer, 'madichvu'),
         'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
         'job': (Congviec, JobSerializer, 'macongviec'),
+        'parameter': (Thamso, ParameterSerializer, 'id')
     }
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
 def getNextID(model, id_field):
+    """
+    Hàm này trả về mã khoá chính tiếp theo cho một model cụ thể.
+
+    Tham số:
+        - model (Model): Model của bảng cần tạo mã khoá chính tự động.
+        - id_field (str): Tên trường chứa mã khoá chính.
+
+    Trả về:
+        - str: Mã khoá chính tiếp theo.
+    """
     latest_query = model.objects.raw(f'SELECT * FROM {model._meta.db_table} ORDER BY {id_field} DESC LIMIT 1')
     latest_id = getattr(latest_query[0], id_field) if latest_query else ''
     header = latest_id[:2] #Lấy 2 ký tự đầu
@@ -451,3 +462,5 @@ def paymentInvoiceAPI(request):
         detail_service_payment.save()
     
     return Response(status=status.HTTP_201_CREATED)
+
+
