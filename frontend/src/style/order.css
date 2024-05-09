@@ -107,8 +107,50 @@ button:hover {
   background-color: var(--button-color-search);
 }
 .btn-add{
-  background-color: var(--button-color-add);
+  background-color: var(--link-color-active-bg);
+  color: #fff;
+  
 }
 .btn-reset{
-  background-color: var(--button-color-reset);
+  background-color: var(--button-update);
+}
+.total_price{
+  position: relative;
+  text-align: right;
+  padding: 10px;
+}
+.total_price::after {
+  content: '';
+  position: absolute; 
+  top: 100%;
+  right:  0; 
+  width: 15%; 
+  border-top: 1px dotted var(--link-color-active-bg);
+   
+}
+.orders{
+  margin: 10px;
+  padding-top: 20px;
+  position: relative;
+}
+.orders button {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  margin: 5px;
+  font-size: 30px;
+ background-color: #fff;
+  color: #4a4a4a;
+  width: 30px;
+  height: 30px;
+}
+.orders table {
+ margin: 15px 0;
+}
+.table-add{
+
+}
+.price-group{
+  padding-top: 20px;
 }

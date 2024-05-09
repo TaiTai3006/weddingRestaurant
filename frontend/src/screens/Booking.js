@@ -28,6 +28,7 @@ function Booking() {
   const weddingShifts = useSelector((state) => state.weddingShifts);
   const invoices = useSelector((state) => state.invoices);
   const [formData, setFormData] = useState([]);
+  console.log(formData);
   const [checkedFoods, setCheckedFoods] = useState([]);
   const [checkedServices, setCheckedServices] = useState([]);
   const [checkedHalls, setCheckedHalls] = useState();

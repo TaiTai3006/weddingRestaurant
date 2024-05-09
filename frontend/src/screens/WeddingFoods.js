@@ -13,7 +13,9 @@ import { IoIosCheckboxOutline } from "react-icons/io";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { VscLockSmall } from "react-icons/vsc";
 import { formatCurrency } from "../utils";
-import { MdAdd } from "react-icons/md";
+import { RiDeleteBinLine } from "react-icons/ri";
+import { FaRegEdit } from "react-icons/fa";
+
 
 function WeddingFoods() {
   const dispatch = useDispatch();
@@ -50,6 +52,17 @@ function WeddingFoods() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+  const [hoveredRow, setHoveredRow] = useState(null);
+
+ 
+  const handleMouseEnter = (index) => {
+    setHoveredRow(index);
+  };
+
+  
+  const handleMouseLeave = () => {
+    setHoveredRow(null);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -70,22 +83,23 @@ function WeddingFoods() {
   return (
     <div className="category-container">
       <div className="category-header">
-      <h2>Wedding Foods</h2>
-      <div className="category-header__right">
-      <div className="search-bar">
-        <input
-          className="search-input"
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <h2>Wedding Foods</h2>
+        <div className="category-header__right">
+          <div className="search-bar">
+            <input
+              className="search-input"
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button className="new-btn" onClick={handleAdd}>
+            Thêm{" "}
+          </button>
+        </div>
       </div>
-      <button className="new-btn"onClick={handleAdd}>Thêm </button>
-      </div>
-      
-      </div>
-      
+
       {filteredFoods.length > 0 && (
         <div className="food-table">
           <table>
@@ -97,6 +111,7 @@ function WeddingFoods() {
                 <th>Loại Món Ăn</th>
                 <th>Đơn Giá</th>
                 <th>Mô Tả</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -104,18 +119,36 @@ function WeddingFoods() {
                 <React.Fragment key={food.matieccuoi}>
                   <tr
                     key={food.mamonan}
-                    onClick={() => toggleAccordion(food.mamonan)}
+                    className="button-icon" onClick={() => toggleAccordion(food.mamonan)}
+                    onMouseEnter={() => handleMouseEnter(index)} 
+                    onMouseLeave={handleMouseLeave} 
                   >
                     <td>{index + 1}</td>
                     <td>{food.mamonan}</td>
                     <td>{food.tenmonan}</td>
                     <td>{findFoodType(food.maloaimonan)?.tenloaimonan}</td>
-                    <td>{food.dongia}</td>
+                    <td>{formatCurrency(parseFloat(food.dongia))}</td>
                     <td>{food.ghichu}</td>
+
+                    <td className="hovered-buttons">
+                      {hoveredRow === index && (
+                        <>
+                          <button className="button-icon" onClick={() => handleEdit(food)}><FaRegEdit /></button>
+                          <button className="button-icon" onClick={() => handleDelete(food.mamonan)}>
+                          <RiDeleteBinLine />
+                          </button>
+                        </>
+                      )}
+                    </td>
                   </tr>
                   {openOrder === food.mamonan && (
                     <tr className="accordion-tr">
-                      <td colSpan="12" className={openOrder === food.mamonan ? "accordion-border" : ""}>
+                      <td
+                        colSpan="12"
+                        className={
+                          openOrder === food.mamonan ? "accordion-border" : ""
+                        }
+                      >
                         <div className="accordion-container">
                           <p className="food-name">{food.tenmonan}</p>
                           <div className="accordion-content">
@@ -145,7 +178,8 @@ function WeddingFoods() {
                                 </p>
                                 <p className="desc-text">
                                   {" "}
-                                  Loại món ăn : {findFoodType(food.maloaimonan)?.tenloaimonan}
+                                  Loại món ăn :{" "}
+                                  {findFoodType(food.maloaimonan)?.tenloaimonan}
                                 </p>
                                 <p className="desc-text">
                                   {" "}
@@ -162,7 +196,7 @@ function WeddingFoods() {
                           </div>
                           <div className="btn-group">
                             <button
-                              onClick={() => handleEdit(food)}
+                               onClick={() => handleEdit(food)}
                               className="update-btn"
                             >
                               <span className="icon-btn">

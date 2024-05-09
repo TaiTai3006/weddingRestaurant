@@ -120,7 +120,7 @@ font-weight: 700;
 }
 
 .accordion-tr{
-  background-color: var(--container);
+  background-color:#f9fafb;
  
 }
 .food-table{
@@ -139,8 +139,8 @@ font-weight: 700;
   margin: 0 32px;
 }
 .food-img img {
-  width: 218px;
-  height: 218px;
+  width: 300px;
+  height: 300px;
   object-fit: cover;
   border-radius: 15px;
 }
@@ -148,7 +148,7 @@ font-weight: 700;
   display: flex;
   /* justify-content: space-between; */
   align-items: flex-start;
-  width: 75%;
+  width: 60%;
 }
 .desc-text {
   width: 300px;
@@ -164,7 +164,7 @@ font-weight: 700;
   justify-content: flex-end;
 }
 .update-btn {
-  background-color: #56d4a0;
+  background-color: var(--button-update);
   color: #fff;
   display: flex;
   align-items: center;
@@ -196,7 +196,7 @@ font-weight: 700;
   border: 1px solid var(--button-update);
 } */
 .add-modal-container{
-  padding: 32px 32px 0 32px;
+  padding: 32px 40px 0 40px;
   margin: 0 15px;
 }
 .add-form{
@@ -246,9 +246,14 @@ font-weight: 700;
   
 }
 .add-modal{
-  width: 70%;
+  width: 60%;
+  height: auto;
   background-color: #fff; background-color: var(--projects-section);
-  border-radius: 32px;
+  border-radius: 16px;
+}
+.hovered-buttons{
+  width: 100px;
+  padding: 0 20px;
 }
 .text-header{
 
@@ -263,4 +268,10 @@ font-weight: 700;
 }
 .search-bar{
   margin: 0 10px;
+}
+.button-icon{
+  background-color: #fff;
+  color: #4a4a4a;
+  padding: 0 5px;
+  font-size: 15px;
 }
