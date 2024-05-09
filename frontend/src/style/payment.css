@@ -1,0 +1,93 @@
+.QRpayment {
+  overflow: hidden;
+}
+.QRpayment::-webkit-scrollbar {
+  display: none;
+}
+.bank-payment-modal {
+  width: 80%;
+  height: 75%;
+}
+.quick-amount {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.payment-container {
+  margin: auto;
+  background-color: var(--projects-section);
+  border-radius: 32px;
+  padding: 32px 32px 0 32px;
+  height: 100%;
+}
+.quick-amount {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.quick-amount button {
+  width: calc(33.33% - 10px);
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.quick-amount button:hover {
+  background-color: #e0e0e0;
+}
+.amountReceived {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.amountReceived input {
+  width: 70%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.amountReceived input:focus {
+  outline: none;
+  border-color: #007bff; /* Change border color on focus */
+}
+.payment-modal {
+  width: 500px;
+  height: 30%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.payment-modal h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.button-group {
+    margin-top: 10%;
+  /* margin: auto; */
+  display: flex;
+  justify-content: space-around;
+}
+.payment-modal button {
+  width: 150px;
+  margin: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.payment-modal button:hover {
+  background-color: #0056b3;
+}

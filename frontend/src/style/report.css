@@ -1,0 +1,50 @@
+.pdf-container {
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 2cm;
+    margin: 1cm auto;
+    border: 1px solid #d3d3d3;
+    border-radius: 5px;
+    background: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .report-content {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
+  
+  /* Define other styles as needed */
+  .report-modal{
+    width: 90%;
+    height: 90%;
+    overflow: scroll;
+  }
+  .report-content{
+    overflow: hidden;
+   
+  }
+  .report-content::-webkit-scrollbar{
+    display: none;
+  }
+  .close__btn {
+    cursor: pointer;
+    position: relative;
+  }
+  .view-row{
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+  }
+  .view-column{
+    display: flex;
+    flex-direction: column;
+  }  
+
+
+
+ .report-content tbody tr:hover {
+   background-color:#fff;
+   cursor: auto;
+ }
+ 

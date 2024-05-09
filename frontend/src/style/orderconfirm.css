@@ -1,0 +1,63 @@
+/* CSS cho modal */
+.ReactModal__Overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin: auto;
+  /* right: 0;
+    bottom: 0; */
+  background-color: rgba(0, 0, 0, 0.5); /* Màu nền và độ mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); */
+}
+
+.ReactModal__Content {
+  position: relative;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  /* width: 80%;
+  height: 70%; */
+}
+
+/* CSS cho tiêu đề modal */
+.ReactModal__Content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+
+
+/* CSS cho nút cuối cùng */
+.ReactModal__Content button:last-child {
+  margin-right: 0;
+}
+.ReactModal__Content::-webkit-scrollbar {
+  display: none;
+}
+
+.payment-modal {
+  max-width: 500px !important;
+}
+.order-container{
+  margin: auto;
+  background-color: var(--projects-section);
+  border-radius: 32px;
+  padding: 32px 32px 0 32px;
+  width: 60%;
+  height: 100%;
+  overflow: scroll;
+}
+.order-container::-webkit-scrollbar{
+  display: none;
+}
+.order-container tbody tr:hover {
+  background-color: #fff;
+  cursor:auto;
+}

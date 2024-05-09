@@ -1,0 +1,114 @@
+.order-table {
+  width: 100%;
+  margin-top: 10px;
+  overflow-x: scroll;
+}
+.order-table::-webkit-scrollbar {
+    display: none;
+  }
+
+
+
+.order-table .accordion-content {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+.order-table .accordion-content p {
+  margin: 5px 0;
+}
+
+.order-table .accordion-content p:first-child {
+  margin-top: 0;
+}
+
+.order-table .accordion-content p:last-child {
+  margin-bottom: 0;
+}
+
+.order-table .accordion-content p span {
+  font-weight: bold;
+}
+.accordion-content form {
+  margin-top: 10px;
+}
+
+.form-columns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-column {
+  flex: 1;
+}
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-column div {
+  margin: 10px;
+}
+
+.form-column label {
+  display: block;
+  text-wrap: nowrap;
+  margin-right: 10px;
+}
+.form-column__last {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.order-table input[type="text"],
+input[type="date"] {
+  /* width: 70%; */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+input[type="date"] {
+    -moz-appearance: textfield;
+  }
+  
+  /* Optional: Add focus styles */
+  input[type="text"]:focus,
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #007bff; /* Adjust color as needed */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Adjust shadow as needed */
+  }
+/* CSS cho button */
+button {
+   
+  color: #000; 
+  border: none;
+  padding: 8px 16px; 
+  border-radius: 4px;
+  cursor: pointer; 
+  transition: background-color 0.3s ease; 
+}
+
+/* CSS khi di chuột vào */
+button:hover {
+  
+}
+.form-buttons{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px
+}
+.btn-search{
+  background-color: var(--button-color-search);
+}
+.btn-add{
+  background-color: var(--button-color-add);
+}
+.btn-reset{
+  background-color: var(--button-color-reset);
+}

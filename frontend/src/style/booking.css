@@ -1,0 +1,379 @@
+.booking-container {
+  display: flex;
+  /* justify-content: space-around; */
+  width: 100%;
+}
+.booking-tabs {
+  flex-grow: 10;
+  width: 100%;
+  background-color: var(--projects-section);
+  border-radius: 32px;
+  padding: 32px 32px 0 32px;
+  margin: 0 15px;
+  box-shadow: 0 2px 6px 0 rgba(136, 148, 171, 0.2),
+    0 24px 20px -24px rgba(71, 82, 107, 0.1);
+}
+
+.summary-container {
+  width: 40%;
+  flex-grow: 2;
+  background-color: var(--projects-section);
+  border-radius: 32px;
+  padding: 16px 16px 0 16px;
+  box-shadow: 0 2px 6px 0 rgba(136, 148, 171, 0.2),
+    0 24px 20px -24px rgba(71, 82, 107, 0.1);
+}
+form .form-row label {
+  display: block;
+  min-width: 100px;
+  text-wrap: nowrap;
+  margin:0 10px;
+}
+form .input-form div {
+  /* margin: 10px;
+  padding: 10px; */
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+
+}
+.form-row div {
+  /* margin: 10px;
+  padding: 10px; */
+}
+
+.form-row label {
+  display: block;
+  min-width:80px;
+  text-wrap: nowrap;
+  margin-right:10px;
+}
+.input-form div {
+  /* margin: 10px; */
+  padding: 0 10px;
+}
+
+.input-form label {
+  display: block;
+  /* width: 90px; */
+  text-wrap: nowrap;
+  
+}
+.input-form select {
+  /* min-width: 180px; */
+}
+.input-form input {
+  /* min-width: 180px; */
+  /* width: 100%; */
+}
+.summary-container input[type="text"],
+input[type="email"] input [type ="number"] {
+  /* width: 100%; */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.name-input  {
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+}
+
+.services-container label,
+.foods-container label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.services-container input[type="checkbox"],
+.foods-container input[type="checkbox"] {
+  margin-right: 5px;
+}
+.services-container{
+  position: relative;
+  margin-top: 30px;
+}
+.services-container button {
+  position: absolute;
+  top: -70px;
+
+  right: 0;
+  
+}
+
+.summary-container {
+  font-size: 13px;
+  flex-grow: 4;
+  overflow-x: scroll;
+}
+.summary-container::-webkit-scrollbar {
+  display: none;
+}
+
+.summary-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.summary-container ul li {
+  margin-bottom: 10px;
+}
+
+.summary-container ul li strong {
+  margin-right: 5px;
+}
+.summary-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.summary-container td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.summary-container th {
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.summary-container tbody tr:hover {
+  background-color: #fff;
+  cursor:auto;
+}
+.table_foods{
+  position: relative;
+}
+.error-message {
+  color: red;
+  position: absolute;
+  top: 40px;
+  /* bottom: -30%; */
+  /* left: 20%; */
+  right: 0;
+  /* margin: 0 10px; */
+  font-style: italic;
+  font-size: 12px;
+  /* padding:  0 10px ; */
+}
+.error-message::before {
+  content: "*"; 
+  color: #ff0000; 
+  margin-right: 1px; 
+}
+
+.input-form {
+  position: relative;
+  justify-content: space-between;
+  align-items: center;
+ 
+  display: flex;
+  width: 100%;
+}
+.tab-header{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 0;
+}
+.tab-header select{
+  width: 30%;
+}
+
+.foods-container {
+ 
+  position: relative;
+  
+}
+.foods-container .btn-group {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  
+}
+.navigate-btn{
+  background-color: rgba(0, 0, 0, 0);
+  font-size: 35px;
+  color: #1976d2;
+  padding: 4px ;
+  margin-left: 10px;
+}
+.wedding-container{
+  position: relative;
+}
+.wedding-container button {
+  position: absolute;
+  top: -50px;
+  right: 0;
+}
+
+.card-container::-webkit-scrollbar{
+  display: none;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(225px, 1fr));
+  gap: 40px;
+  overflow: scroll;
+  max-height: 550px;
+}
+
+.card {
+ 
+  border-radius: 10px;
+  box-shadow: 0 2px 6px 0 rgba(136, 148, 171, 0.2),
+    0 24px 20px -24px rgba(29, 33, 41, 0.1);
+  transition: transform 0.3s ease;
+  border: 1px solid #ddd;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-image {
+  /* height: 200px; */
+  padding: 10px;
+  width: 100%;
+  background-size:contain;
+  background-position: center;
+  border-radius: 20px;
+  /* border-top-left-radius: 10px;
+  border-top-right-radius: 10px; */
+}
+.card-image img {
+  /* object-fit: contain; */
+  
+  width: 100%; 
+  height: auto; 
+}
+.card-info {
+  padding: 0 10px;
+}
+.card-body{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #413636;;
+}
+
+.card-header {
+  padding: 0 ;
+  font-size: 20px;
+  font-weight:bold
+
+}
+.card-container .card {
+  border: 1px solid #ccc; /* Màu viền mặc định */
+}
+
+.card-container .card.checked {
+  
+  border-color: var(--boder-color); /* Màu viền khi checkbox được chọn */
+}
+.card-hall.checked {
+  border: 1px solid var(--boder-color);
+ 
+}
+.hall-container{
+  display: flex;
+  overflow: scroll;
+  max-height: 550px;
+  flex-direction: column;
+}
+.hall-container::-webkit-scrollbar{
+  display: none;
+}
+.card-hall {
+  display: flex;
+  border-radius: 15px;
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+.card-hall-image {
+  /* height: 200px; */
+  padding: 10px;
+  width: 30%;
+  background-size:contain;
+  background-position: center;
+  border-radius: 20px;
+  /* border-top-left-radius: 10px;
+  border-top-right-radius: 10px; */
+}
+.card-hall-image img {
+  /* object-fit: contain; */
+  
+  width: 100%; /* Hình ảnh sẽ điều chỉnh kích thước để khớp với độ rộng của div */
+  height: auto; /* Đảm bảo tỷ lệ khung hình bảo tồn */
+}
+.card-hall-info {
+  padding: 0 10px;
+}
+.card-hall-body{
+  
+  font-size: 15px;
+  color: #413636;;
+}
+
+.card-hall-header {
+  padding: 0 ;
+  font-size: 20px;
+  font-weight:bold
+
+}
+/* .card-hall-container .card-hall {
+  border: 1px solid #ccc; 
+} */
+
+.card-hall-container .card-hall.checked {
+  border-color: var(--boder-color); /* Màu viền khi checkbox được chọn */
+}
+.hall-container .card-hall.checked {
+  border-color: var(--boder-color); /* Màu viền khi checkbox được chọn */
+}
+
+
+.MuiTabs-indicator {
+  display: none;
+}
+.MuiButtonBase-root.MuiTab-root {
+ 
+  border: none;
+  border-radius: 25px;
+  padding: 0 20px;
+  margin-right:25px;
+  cursor:auto;
+  display: none;
+}
+
+
+.MuiButtonBase-root.MuiTab-root.Mui-selected {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  color: #282727;
+  box-shadow: 0 2px 6px 0 rgba(136, 148, 171, 0.2),
+    0 24px 20px -24px rgba(71, 82, 107, 0.1);
+}
+.foodtype-select{
+ 
+  max-width: 180px;
+  /* border-radius: 25px; */
+}
+.payment-btn{
+background-color: #1976d2;
+float: left;
+margin: 10px;
+
+}

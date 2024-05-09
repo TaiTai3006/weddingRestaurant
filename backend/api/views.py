@@ -20,7 +20,7 @@ model_serializer_map = {
         'lobbyTypes': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
         'foods': (Monan, FoodSerializer, 'mamonan'),
         'foodTypes': (Loaimonan, FoodTypeSerializer, 'maloaimonan'),
-        'services': (Dichvu, ServiceSerializer, 'mamonan'),
+        'services': (Dichvu, ServiceSerializer, 'madichvu'),
         'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
         'job': (Congviec, JobSerializer, 'macongviec'),
     }
