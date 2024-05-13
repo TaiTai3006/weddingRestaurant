@@ -6,7 +6,7 @@ const initialState = [];
 const foodReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_WEDDING_FOOD:
-      return [...state, action.payload];
+      return action.payload
     case UPDATE_WEDDING_FOOD:
       return state.map(food =>
         food.mamonan === action.payload.mamonan ? action.payload : food

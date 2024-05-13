@@ -90,3 +90,8 @@ class ParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Thamso
         fields = '__all__'
+
+class ShiftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ca
+        fields = '__all__'

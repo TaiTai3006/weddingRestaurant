@@ -1,78 +1,63 @@
 import React, { useState, useEffect } from "react";
-// import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import { useSelector, useDispatch } from "react-redux";
-import { updateFormData } from "../redux/actions/action";
 import { updateFormErrors } from "../redux/actions/action";
 import "../style/booking.css";
 import OrderInfo from "../components/OrderInfo";
 import WeddingInfoTab from "../components/WeddingInfoTab";
 import FoodInfoTab from "../components/FoodInfoTab";
 import ServiceInfoTab from "../components/ServiceInfoTab";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Tab, Tabs } from "@mui/material";
-
+import { useLocation } from "react-router-dom";
 
 function Booking() {
   const dispatch = useDispatch();
-  // const formData = useSelector((state) => state.formData);
   const formErrors = useSelector((state) => state.formErrors);
   const navigate = useNavigate();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-
-  const foodTypes = useSelector((state) => state.foodTypes);
-  const hallTypes = useSelector((state) => state.hallTypes);
-  const weddingFoods = useSelector((state) => state.weddingFoods);
-  const weddingHalls = useSelector((state) => state.weddingHalls);
-  const weddingServices = useSelector((state) => state.weddingServices);
-  const weddingShifts = useSelector((state) => state.weddingShifts);
-  const invoices = useSelector((state) => state.invoices);
-  const [formData, setFormData] = useState([]);
-  console.log(formData);
-  const [checkedFoods, setCheckedFoods] = useState([]);
-  const [checkedServices, setCheckedServices] = useState([]);
-  const [checkedHalls, setCheckedHalls] = useState();
-  const [selectedFoodType, setSelectedFoodType] = useState("");
-  const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [warningMessage, setWarningMessage] = useState("");
- console.log(formErrors)
+  const location = useLocation();
 
   const handleTabChange = (event, newValue) => {
     setSelectedTabIndex(newValue);
   };
- 
 
+  const dataLocalStorage = localStorage.getItem("formWedding");
 
-  const minTotalAmount = 1000;
-  const handleChange = (e) => {
-    validateForm();
-    const { name, value } = e.target;
-   
-      setFormData({ [name]: value });
-      
-  
+  const initialWeddingState = {
+    matieccuoi: null,
+    ngaydat: null,
+    ngaydaitiec: null,
+    soluongban: 20,
+    soluongbandutru: null,
+    dongiaban: null,
+    tongtienban: null,
+    tongtiendichvu: null,
+    tongtiendattiec: null,
+    tiendatcoc: null,
+    conlai: null,
+    tencodau: null,
+    tenchure: null,
+    sdt: null,
+    tinhtrangphancong: null,
+    maca: null,
+    masanh: null,
+    username: null,
+    danhsachdichvu: [],
+    danhsachmonan: [],
   };
 
-  
+  const [wedding, setWedding] = useState(
+    dataLocalStorage ? JSON.parse(dataLocalStorage) : initialWeddingState
+  );
+  console.log(wedding, "ahdghsgf");
+  // localStorage.clear();
 
-  const calculateTotalAmount = () => {
-    
-    // if (totalWeddingAmount < minTotalAmount) {
-    //   setWarningMessage(`Tổng tiền phải lớn hơn ${minTotalAmount} USD`);
-    // } else {
-    //   setWarningMessage("");
-    // }
-  };
-
-  const handleFoodCheckboxChange = (e) => {
-    handleChange(e, "danhsachmonan");
-  };
-
-  const handleServiceCheckboxChange = (e) => {
-    handleChange(e, "danhsachdichvu");
-  };
-
-
+  useEffect(() => {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().slice(0, 10);
+    setWedding((prevWedding) => ({ ...prevWedding, ngaydat: formattedDate }));
+  }, [location]);
 
   const validateForm = () => {
     const errors = {};
@@ -99,7 +84,7 @@ function Booking() {
     // if (!formData.ngaydat) {
     //   errors.ngaydat = "Ngày đặt không được để trống";
     // }
-   
+
     // if (!formData.maca) {
     //   errors.maca = "Vui lòng chọn ca";
     // }
@@ -112,7 +97,6 @@ function Booking() {
   };
 
   const handleSubmit = (e) => {
-    
     if (validateForm()) {
       navigate("/orderconfirm");
     }
@@ -127,67 +111,40 @@ function Booking() {
         </Tabs>
         {selectedTabIndex === 0 && (
           <WeddingInfoTab
-            formData={formData}
-            setFormData = {setFormData}
-            weddingHalls={weddingHalls}
-            weddingShifts={weddingShifts}
-            hallTypes={hallTypes}
-            checkedHalls={checkedHalls}
-            setCheckedHalls={setCheckedHalls}
-            // filteredSanhs={filteredSanhs}
-            handleChange={handleChange}
-            handleSubmit={handleSubmit}
-            formErrorsWedding={formErrors}
             selectedTabIndex={selectedTabIndex}
             handleTabChange={handleTabChange}
+            wedding={wedding}
+            setWedding={setWedding}
+            location={location}
           />
         )}
         {selectedTabIndex === 1 && (
           <FoodInfoTab
-            selectedFoodType={selectedFoodType}
-            foodTypes={foodTypes}
-            weddingFoods={weddingFoods}
-            checkedFoods={checkedFoods}
-            setCheckedFoods={setCheckedFoods}
-            handleFoodCheckboxChange={handleFoodCheckboxChange}
-            warningMessage={warningMessage}
-            setSelectedFoodType={setSelectedFoodType}
-            handleSubmit={handleSubmit}
             formErrorsWedding={formErrors}
             selectedTabIndex={selectedTabIndex}
             handleTabChange={handleTabChange}
+            wedding={wedding}
+            setWedding={setWedding}
+            location={location}
           />
         )}
         {selectedTabIndex === 2 && (
           <ServiceInfoTab
-            formData={formData}
-            selectedServiceType={selectedServiceType}
-            weddingServices={weddingServices}
-            checkedServices={checkedServices}
-            setCheckedServices={setCheckedServices}
-            // handleQuantityChange={handleQuantityChange}
-            handleChange={handleChange}
             selectedTabIndex={selectedTabIndex}
-            handleServiceCheckboxChange={handleServiceCheckboxChange}
-            handleSubmit={handleSubmit}
             formErrors={formErrors}
             handleTabChange={handleTabChange}
+            wedding={wedding}
+            setWedding={setWedding}
+            location={location}
           />
         )}
       </div>
       <OrderInfo
-        formData={formData}
-        checkedFoods={checkedFoods}
-        checkedServices={checkedServices}
-        weddingFoods={weddingFoods}
-        weddingServices={weddingServices}
-        weddingHalls={weddingHalls}
-        weddingShifts={weddingShifts}
-        checkedHalls={checkedHalls}
-        handleChange={handleChange}
         handleSubmit={handleSubmit}
-        
         formErrors={formErrors}
+        wedding={wedding}
+        setWedding={setWedding}
+        location={location}
       />
     </div>
   );

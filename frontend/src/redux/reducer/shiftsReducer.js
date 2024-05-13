@@ -5,7 +5,7 @@ const initialState = JSON.parse(localStorage.getItem('weddingShifts')) || [];
 const weddingShiftReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_WEDDING_SHIFT:
-      return [...state, action.payload];
+      return action.payload;
     case UPDATE_WEDDING_SHIFT:
       return state.map(shift =>
         shift.maCa === action.payload.maCa ? action.payload : shift

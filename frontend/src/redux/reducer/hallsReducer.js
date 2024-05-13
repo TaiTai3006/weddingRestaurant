@@ -4,7 +4,7 @@ const initialState = []
 const weddingHallReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_WEDDING_HALL:
-      return [...state, action.payload];
+      return action.payload;
     case UPDATE_WEDDING_HALL:
       return state.map(hall =>
         hall.maSanh === action.payload.maSanh ? action.payload : hall
@@ -15,5 +15,7 @@ const weddingHallReducer = (state = initialState, action) => {
       return state;
   }
 };
+
+
 
 export default weddingHallReducer;

@@ -1,7 +1,7 @@
 // Trong store.js
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import {thunk} from 'redux-thunk'; // Import named export "thunk"
-import bookingReducer from './reducer/bookingReducer'; 
+import bookingReducer, { weddingHallAvailable } from './reducer/bookingReducer'; 
 import formDataReducer from './reducer/formDataReducer';
 import invoiceReducer from './reducer/invoiceReducer';
 import weddingHallReducer from './reducer/hallsReducer';
@@ -12,10 +12,11 @@ import formReducer from './reducer/formReducer';
 import { fetchWeddingFoods ,fetchFoodTypes,fetchHalls,fetchWeddingServices,fetchHallTypes} from './actions/actionCreators';
 import foodTypesReducer from './reducer/foodTypesReducer';
 import hallTypesReducer from './reducer/hallTypesReducer';
+import { getHallAvaibale } from './actions/action';
 
 
 const rootReducer = combineReducers({
-  booking: bookingReducer,
+  // booking: bookingReducer,
   formData: formDataReducer,
   invoices: invoiceReducer,
   weddingHalls: weddingHallReducer,
@@ -24,19 +25,19 @@ const rootReducer = combineReducers({
   weddingShifts: weddingShiftReducer,
   formErrors: formReducer,
   foodTypes: foodTypesReducer,
-  hallTypes : hallTypesReducer
-
+  hallTypes : hallTypesReducer,
+  hallAvailable : weddingHallAvailable,
 });
 
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 // Dispatch hàm action creator fetchWeddingFoods để lấy dữ liệu từ API khi Redux store được tạo
-store.dispatch(fetchWeddingFoods());
-store.dispatch(fetchFoodTypes());
-store.dispatch(fetchHalls());
-store.dispatch(fetchWeddingServices());
-store.dispatch(fetchHallTypes());
+// store.dispatch(fetchWeddingFoods());
+// store.dispatch(fetchFoodTypes());
+// store.dispatch(fetchHalls());
+// store.dispatch(fetchWeddingServices());
+// store.dispatch(fetchHallTypes());
 
 // console.log(store)
 

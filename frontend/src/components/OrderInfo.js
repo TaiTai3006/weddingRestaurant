@@ -1,132 +1,122 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
 import { formatCurrency } from "../utils";
-
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchHalls,
+  fetchWeddingFoods,
+  fetchWeddingServices,
+} from "../redux/actions/actionCreators";
 const OrderInfo = ({
-  formData,
-  handleChange,
-  weddingHalls,
-  weddingShifts,
-  weddingFoods,
-  weddingServices,
   formErrors,
-  checkedFoods,
-  checkedServices,
   handleSubmit,
-  checkedHalls,
+  wedding,
+  setWedding,
+  location,
 }) => {
-  const selectedHall = weddingHalls.find(
-    (hall) => hall.masanh === checkedHalls
-  );
+  const dispatch = useDispatch();
+  const weddingShifts = useSelector((state) => state.weddingShifts);
+  const weddingFoods = useSelector((state) => state.weddingFoods);
+  const weddingServices = useSelector((state) => state.weddingServices);
+  const halllist = useSelector((state) => state.weddingHalls);
+  const foodList = wedding.danhsachmonan;
+  const serviceList = wedding.danhsachdichvu;
 
-  const selectedShift = weddingShifts.find(
-    (hall) => hall.maCa === formData.maca
-  );
-
-  const selectedFoods = weddingFoods.filter((food) =>
-    checkedFoods.includes(food.mamonan)
-  );
-  const selectedServices = weddingServices.filter((dichvu) =>
-    checkedServices.includes(dichvu.madichvu)
-  );
-
-  const [foodDetails, setFoodDetails] = useState([]);
-  const [serviceDetails, setServiceDetails] = useState([]);
+  useSelector((state) => console.log(state));
 
   useEffect(() => {
-    // Lấy dữ liệu từ local storage nếu có
-    const foodDetailsFromStorage = JSON.parse(localStorage.getItem("foodDetails"));
-    const serviceDetailsFromStorage = JSON.parse(localStorage.getItem("serviceDetails"));
-    
-    // Khởi tạo giá trị ban đầu từ local storage hoặc từ dữ liệu mới nếu không có dữ liệu trong local storage
-    if (foodDetailsFromStorage) {
-      setFoodDetails(foodDetailsFromStorage);
-    } else {
-      setFoodDetails(selectedFoods.map((food) => ({
-        mamonan: food.mamonan,
-        soluong: 1,
-        ghichu: "",
-      })));
+    dispatch(fetchHalls());
+    dispatch(fetchWeddingFoods());
+    dispatch(fetchWeddingServices());
+  }, [location]);
+
+  useEffect(() => {
+    if (
+      wedding.soluong > 0 &&
+      foodList.length() > 0 &&
+      serviceList.length() > 0
+    ) {
+      const totalTableRevenue =
+        foodList.reduce(
+          (total, food) => food.dongiamonan * food.soluong + total,
+          0
+        ) * wedding.soluongban;
+      const totalServiceRevenue = serviceList.reduce(
+        (total, service) => service.soluong * service.dongiadichvu + total,
+        0
+      );
+      const totalWeddingCost = totalTableRevenue + totalServiceRevenue;
+
+      wedding = {
+        ...wedding,
+        tongtienban: totalTableRevenue,
+        tongtiendichvu: totalServiceRevenue,
+        tongtiendattiec: totalWeddingCost,
+        
+      };
     }
-    
-    if (serviceDetailsFromStorage) {
-      setServiceDetails(serviceDetailsFromStorage);
-    } else {
-      setServiceDetails(selectedServices.map((service) => ({
-        madichvu: service.madichvu,
-        soluong: 1,
-        ghichu: "",
-      })));
-    }
-  }, []);
-  console.log(foodDetails);
-  console.log(serviceDetails)
+  }, [wedding.soluongban, foodList, halllist]);
 
-  // Lưu trữ dữ liệu vào local storage mỗi khi foodDetails hoặc serviceDetails thay đổi
-  useEffect(() => {
-    localStorage.setItem("foodDetails", JSON.stringify(foodDetails));
-  }, [foodDetails]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    wedding = { ...wedding, [name]: value };
 
-  useEffect(() => {
-    localStorage.setItem("serviceDetails", JSON.stringify(serviceDetails));
-  }, [serviceDetails]);
-
-  const handleQuantityChangeFood = (mamonan, quantity) => {
-    const updatedFoodDetails = foodDetails.map((food) => {
-      if (food.mamonan === mamonan) {
-        return {
-          ...food,
-          soluong: parseInt(quantity),
-        };
-      }
-      return food;
-    });
-    setFoodDetails(updatedFoodDetails);
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
   };
 
-  const handleNoteChangeFood = (mamonan, note) => {
-    const updatedFoodDetails = foodDetails.map((food) => {
-      if (food.mamonan === mamonan) {
-        return {
-          ...food,
-          ghichu: note,
-        };
-      }
-      return food;
-    });
-    setFoodDetails(updatedFoodDetails);
+  const formatDate = (dateString) => {
+    const parts = dateString?.split("-");
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
   };
 
-  const handleQuantityChangeService = (madichvu, quantity) => {
-    const updatedServiceDetails = serviceDetails.map((service) => {
-      if (service.madichvu === madichvu) {
-        return {
-          ...service,
-          soluong: parseInt(quantity),
-        };
-      }
-      return service;
-    });
-    setServiceDetails(updatedServiceDetails);
+  const getShiftInfo = (maca) => {
+    return weddingShifts.filter((shift) => shift.maca === maca)[0];
   };
 
-  const handleNoteChangeService = (madichvu, note) => {
-    const updatedServiceDetails = serviceDetails.map((service) => {
-      if (service.madichvu === madichvu) {
-        return {
-          ...service,
-          ghichu: note,
-        };
-      }
-      return service;
-    });
-    setServiceDetails(updatedServiceDetails);
+  const getNameHall = (masanh) => {
+    return halllist.filter((hall) => hall.masanh === masanh)[0]?.tensanh;
+  };
+
+  const getNameFood = (mamonan) => {
+    return weddingFoods.filter((food) => food.mamonan === mamonan)[0]?.tenmonan;
+  };
+
+  const getNameService = (madichvu) => {
+    return weddingServices.filter((service) => service.madichvu === madichvu)[0]
+      ?.tendichvu;
+  };
+
+  const updateFoodInfo = (e, mamonan, quantityType) => {
+    const { name, value } = e.target;
+    const foodList = wedding.danhsachmonan;
+    const newFoodList = foodList.map((food) =>
+      food.mamonan === mamonan
+        ? { ...food, [name]: quantityType ? parseInt(value) : value }
+        : food
+    );
+    wedding = { ...wedding, danhsachmonan: newFoodList };
+
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
+  };
+
+  const updateServiceInfo = (e, madichvu) => {
+    const { name, value } = e.target;
+    const sevriceList = wedding.danhsachdichvu;
+    const newsevriceList = sevriceList.map((service) =>
+      service.madichvu === madichvu
+        ? { ...service, [name]: parseInt(value) }
+        : service
+    );
+    wedding = { ...wedding, danhsachdichvu: newsevriceList };
+
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
   };
 
   const handlePayment = () => {
     // chi tiết món ăn && chi tiết dịch vụ
-    console.log(selectedFoods);
-    console.log(selectedServices);
+
     handleSubmit();
     localStorage.clear();
   };
@@ -141,7 +131,7 @@ const OrderInfo = ({
               type="text"
               id="tenchure"
               name="tenchure"
-              value={formData.tenchure}
+              value={wedding.tenchure}
               onChange={handleChange}
             />
             {formErrors.formErrors.tenchure && (
@@ -158,7 +148,7 @@ const OrderInfo = ({
               type="text"
               id="tencodau"
               name="tencodau"
-              value={formData.tencodau}
+              value={wedding.tencodau}
               onChange={handleChange}
             />
             {formErrors.formErrors.tencodau && (
@@ -175,7 +165,7 @@ const OrderInfo = ({
               type="text"
               id="sdt"
               name="sdt"
-              value={formData.sdt}
+              value={wedding.sdt}
               onChange={handleChange}
             />
             {formErrors.formErrors.sdt && (
@@ -185,30 +175,35 @@ const OrderInfo = ({
         </div>
         <div className="form-row">
           <label>Ngày đặt:</label>
-          <span>{formData.ngaydat}</span>
+          <span>{wedding.ngaydat ? formatDate(wedding.ngaydat) : ""}</span>
           <label>Ngày tổ chức:</label>
-          <span>{formData.ngaydaitiec}</span>
+          <span>
+            {wedding.ngaydaitiec ? formatDate(wedding.ngaydaitiec) : ""}
+          </span>
         </div>
-        {selectedShift && (
+        {wedding.maca && (
           <div className="form-row">
             <label>Ca:</label>
-            <span>{selectedShift.tenCa}</span>
+            <span>{getShiftInfo(wedding.maca)?.tenca}</span>
             <label htmlFor=""> Thời gian : </label>
-            <span>{`${selectedShift.gioBatDau} - ${selectedShift.gioKetThuc}`}</span>
+            <span>{`${getShiftInfo(wedding.maca)?.giobatdau.slice(
+              0,
+              -3
+            )} - ${getShiftInfo(wedding.maca)?.gioketthuc.slice(0, -3)}`}</span>
           </div>
         )}
 
-        {selectedHall && (
+        {wedding.masanh && (
           <div className="form-row">
             <label>Tên sảnh:</label>
-            <span>{selectedHall.tensanh}</span>
-            <label>Số bàn tối đa:</label>
-            <span>{selectedHall.soluongbantoida}</span>
+            <span>{getNameHall(wedding.masanh)}</span>
+            <label>Số bàn:</label>
+            <span>{wedding.soluongban}</span>
           </div>
         )}
       </form>
 
-      {selectedFoods.length > 0 && (
+      {foodList.length > 0 && (
         <div>
           <strong>Món ăn đã chọn:</strong>
           <table>
@@ -223,50 +218,33 @@ const OrderInfo = ({
               </tr>
             </thead>
             <tbody>
-              {selectedFoods.map((monan, index) => {
-                const foodDetail = foodDetails.find(
-                  (food) => food.mamonan === monan.mamonan
-                );
-
-                if (!foodDetail) {
-                  const newFoodDetail = {
-                    mamonan: monan.mamonan,
-                    soluong: 1, // Giá trị mặc định của số lượng
-                    ghichu: "", // Giá trị mặc định của ghi chú
-                  };
-                  foodDetails.push(newFoodDetail);
-                }
-
-                const soluong = foodDetail ? foodDetail.soluong : 1;
-                const subtotal = parseFloat(monan.dongia) * soluong;
-
+              {foodList.map((monan, index) => {
                 return (
                   <tr key={index}>
                     <td className="stt">{index + 1}</td>
-                    <td>{monan.tenmonan}</td>
+                    <td>{getNameFood(monan.mamonan)}</td>
                     <td className="quantity">
                       <input
                         type="number"
-                        value={foodDetail ? foodDetail.soluong : 1 }
-                        onChange={(e) =>
-                          handleQuantityChangeFood(
-                            monan.mamonan,
-                            e.target.value
-                          )
-                        }
+                        name="soluong"
+                        value={monan.soluong}
+                        onChange={(e) => {
+                          updateFoodInfo(e, monan.mamonan, true);
+                        }}
                       />
                     </td>
                     <td>
                       <input
                         type="text"
-                        value={foodDetail ? foodDetail.ghichu : ""}
-                        onChange={(e) =>
-                          handleNoteChangeFood(monan.mamonan, e.target.value)
-                        }
+                        name="ghichu"
+                        value={monan.ghichu}
+                        onChange={(e) => {
+                          updateFoodInfo(e, monan.mamonan);
+                        }}
                       />
                     </td>
-                    <td>{formatCurrency(parseFloat(monan.dongia))}</td>
-                    <td>{formatCurrency(subtotal)}</td>
+                    <td>{formatCurrency(parseFloat(monan.dongiamonan))}</td>
+                    <td>{formatCurrency(monan.soluong * monan.dongiamonan)}</td>
                   </tr>
                 );
               })}
@@ -278,11 +256,10 @@ const OrderInfo = ({
                 </td>
                 <td>
                   {formatCurrency(
-                    selectedFoods.reduce((total, monan) => {
-                      const soluong = monan.soluong || 1;
-                      const subtotal = parseFloat(monan.dongia) * soluong;
-                      return total + subtotal;
-                    }, 0)
+                    foodList.reduce(
+                      (total, food) => food.dongiamonan * food.soluong + total,
+                      0
+                    )
                   )}
                 </td>
               </tr>
@@ -291,94 +268,63 @@ const OrderInfo = ({
         </div>
       )}
 
-{selectedServices.length > 0 && (
-  <div>
-    <strong>Dịch vụ đã chọn:</strong>
-    <table>
-      <thead>
-        <tr>
-          <th>STT</th>
-          <th>Tên dịch vụ</th>
-          <th>Số lượng</th>
-          <th>Ghi chú</th>
-          <th>Đơn giá</th>
-          <th>Thành tiền</th>
-        </tr>
-      </thead>
-      <tbody>
-        {selectedServices.map((dichvu, index) => {
-          const serviceDetail = serviceDetails.find(
-            (detail) => detail.madichvu === dichvu.madichvu
-          );
-
-          if (!serviceDetail) {
-            const newServiceDetail = {
-              madichvu: dichvu.madichvu,
-              soluong: 1, // Giá trị mặc định của số lượng
-              ghichu: "", // Giá trị mặc định của ghi chú
-            };
-            serviceDetails.push(newServiceDetail);
-          }
-
-          const soluong = serviceDetail ? serviceDetail.soluong : 1;
-          const subtotal = parseFloat(dichvu.dongia) * soluong;
-
-          return (
-            <tr key={index}>
-              <td className="stt">{index + 1}</td>
-              <td>{dichvu.tendichvu}</td>
-              <td className="quantity">
-                <input
-                  type="number"
-                  value={soluong}
-                  onChange={(e) =>
-                    handleQuantityChangeService(
-                      dichvu.madichvu,
-                      e.target.value
-                    )
-                  }
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={serviceDetail ? serviceDetail.ghichu : ""}
-                  onChange={(e) =>
-                    handleNoteChangeService(dichvu.madichvu, e.target.value)
-                  }
-                />
-              </td>
-              <td>{formatCurrency(parseFloat(dichvu.dongia))}</td>
-              <td>{formatCurrency(subtotal)}</td>
-            </tr>
-          );
-        })}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colSpan="5" style={{ textAlign: "right" }}>
-            Tổng tiền dịch vụ:
-          </td>
-          <td>
-            {formatCurrency(
-              selectedServices.reduce((total, dichvu) => {
-                const serviceDetail = serviceDetails.find(
-                  (detail) => detail.madichvu === dichvu.madichvu
+      {serviceList.length > 0 && (
+        <div>
+          <strong>Dịch vụ đã chọn:</strong>
+          <table>
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Tên dịch vụ</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              {serviceList.map((dichvu, index) => {
+                return (
+                  <tr key={index}>
+                    <td className="stt">{index + 1}</td>
+                    <td>{getNameService(dichvu.madichvu)}</td>
+                    <td className="quantity">
+                      <input
+                        type="number"
+                        name="soluong"
+                        value={dichvu.soluong}
+                        onChange={(e) => updateServiceInfo(e, dichvu.madichvu)}
+                      />
+                    </td>
+                    <td>{formatCurrency(parseFloat(dichvu.dongiadichvu))}</td>
+                    <td>{formatCurrency(parseFloat(dichvu.thanhtien))}</td>
+                  </tr>
                 );
-                const soluong = serviceDetail ? serviceDetail.soluong : 1;
-                const subtotal = parseFloat(dichvu.dongia) * soluong;
-                return total + subtotal;
-              }, 0)
-            )}
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-)}
-
+              })}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan="4" style={{ textAlign: "right" }}>
+                  Tổng tiền dịch vụ:
+                </td>
+                <td>
+                  {formatCurrency(
+                    parseInt(
+                      serviceList.reduce(
+                        (total, service) =>
+                          service.soluong * service.dongiadichvu + total,
+                        0
+                      )
+                    )
+                  )}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
 
       <button onClick={handlePayment}>Thanh toán</button>
+      <p>Tổng tiền bàn: {wedding.tongtienban ? wedding.tongtienban : 0} </p>
     </div>
   );
 };

@@ -4,48 +4,91 @@ import { updateFormErrors, updateFormData } from "../redux/actions/action";
 import dayjs from "dayjs";
 import img from "../images/sanhhoa.jpeg";
 import { MdNavigateNext } from "react-icons/md";
+
+import {
+  fetchAvailablelobbiesList,
+  fetchShifts,
+} from "../redux/actions/actionCreators";
+
 const WeddingInfoTab = ({
-  formData,
-  setFormData,
-  weddingHalls,
-  weddingShifts,
-  handleChange,
-  hallTypes,
-  checkedHalls,
-  setCheckedHalls,
-  filteredSanhs,
   handleTabChange,
-  formErrorsWedding,
   selectedTabIndex,
+  location,
+  wedding,
+  setWedding,
 }) => {
+  //
+  const dispatch = useDispatch();
+
+  const weddingShifts = useSelector((state) => state.weddingShifts);
+  const weddingHalls = useSelector((state) => state.hallAvailable);
+
+  const formatCurrency = (amount) => {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  };
+
+  useEffect(() => {
+    dispatch(fetchShifts());
+  }, [location]);
+
+  useEffect(() => {
+    if (wedding.maca && wedding.ngaydaitiec) {
+      dispatch(fetchAvailablelobbiesList(wedding.maca, wedding.ngaydaitiec));
+    }
+  }, [wedding]);
+
+  const handleChoicePartyDay = (e) => {
+    wedding = { ...wedding, ngaydaitiec: e.target.value };
+
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
+  };
+
+  const handleSelectShiftKey = (e) => {
+    wedding = { ...wedding, maca: e.target.value };
+
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
+  };
+
+  const handleSelectHall = (masanh) => {
+    wedding = { ...wedding, masanh: masanh };
+    
+    setWedding(wedding);
+    localStorage.setItem("formWedding", JSON.stringify(wedding));
+  };
+  //
+
   const goToNextTab = () => {
     if (validateForm()) {
       handleTabChange(null, selectedTabIndex + 1);
     }
   };
 
-  const dispatch = useDispatch();
   const [selectedHallType, setSelectedHallType] = useState("");
 
   const formErrors = useSelector((state) => state.formErrors);
-  console.log(formErrors);
+
   useEffect(() => {
     const currentDate = dayjs();
     const formattedCurrentDate = currentDate.format("YYYY-MM-DD");
     dispatch(updateFormData({ ngaydat: formattedCurrentDate }));
   }, [dispatch]);
 
-  useEffect(() => {
-    // Lưu thông tin formData vào local storage
-    localStorage.setItem("formData", JSON.stringify(formData));
-  }, [formData]);
-  useEffect(() => {
-    // Lấy dữ liệu từ local storage nếu có
-    const storedFormData = JSON.parse(localStorage.getItem("formData"));
-    if (storedFormData) {
-      setFormData(storedFormData);
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Lưu thông tin formData vào local storage
+  //   localStorage.setItem("formData", JSON.stringify(formData));
+  // }, [formData]);
+  // useEffect(() => {
+  //   // Lấy dữ liệu từ local storage nếu có
+  //   const storedFormData = JSON.parse(localStorage.getItem("formData"));
+  //   if (storedFormData) {
+  //     setFormData(storedFormData);
+  //   }
+  // }, []);
 
   const validateForm = () => {
     const errors = {};
@@ -71,12 +114,6 @@ const WeddingInfoTab = ({
     }
   };
 
-  const handleCardClick = (masanh) => {
-    const isChecked = checkedHalls === masanh;
-    const updatedCheckedHalls = isChecked ? "" : masanh;
-    setCheckedHalls(updatedCheckedHalls);
-  };
-
   return (
     <div className="wedding-container">
       <button type="submit" className="navigate-btn" onClick={goToNextTab}>
@@ -91,8 +128,8 @@ const WeddingInfoTab = ({
                 type="date"
                 id="ngaydaitiec"
                 name="ngaydaitiec"
-                value={formData.ngaydaitiec}
-                onChange={handleChange}
+                value={wedding.ngaydaitiec}
+                onChange={handleChoicePartyDay}
               />
               {formErrors.formErrors.ngaydaitiec && (
                 <span className="error-message">
@@ -105,40 +142,20 @@ const WeddingInfoTab = ({
               <select
                 id="ca"
                 name="maca"
-                value={formData.maca}
-                onChange={handleChange}
+                value={wedding.maca}
+                onChange={handleSelectShiftKey}
               >
                 <option value="">Chọn ca</option>
                 {weddingShifts.map((ca) => (
-                  <option key={ca.maCa} value={ca.maCa}>
-                    {ca.tenCa}
+                  <option key={ca.maca} value={ca.maca}>
+                    {ca.tenca} ({ca.giobatdau?.slice(0, -3)} -{" "}
+                    {ca.gioketthuc?.slice(0, -3)})
                   </option>
                 ))}
               </select>
               {formErrors.formErrors.maca && (
                 <span className="error-message">
                   {formErrors.formErrors.maca}
-                </span>
-              )}
-            </div>
-            <div className="input-form">
-              <label htmlFor="sanh">Sảnh:</label>
-              <select
-                id="sanh"
-                name="sanh"
-                value={formData.sanh}
-                onChange={(e) => setSelectedHallType(e.target.value)}
-              >
-                <option value="">Chọn sảnh</option>
-                {hallTypes.map((sanh) => (
-                  <option key={sanh.maloaisanh} value={sanh.maloaisanh}>
-                    {sanh.tenloaisanh}
-                  </option>
-                ))}
-              </select>
-              {formErrors.formErrors.halls && (
-                <span className="error-message">
-                  {formErrors.formErrors.halls}
                 </span>
               )}
             </div>
@@ -155,16 +172,26 @@ const WeddingInfoTab = ({
             <div
               key={hall.masanh}
               className={`card-hall ${
-                checkedHalls == hall.masanh ? "checked" : ""
+                wedding.masanh === hall.masanh ? "checked" : ""
               }`}
-              onClick={() => handleCardClick(hall.masanh)}
+              onClick={() => handleSelectHall(hall.masanh)}
             >
-              <img src={img} alt="" className="card-hall-image" />
+              <img
+                src={hall.img ? hall.img : img}
+                alt=""
+                className="card-hall-image"
+              />
               <div className="card-hall-info">
                 <div className="card-hall-header">{hall.tensanh}</div>
                 <div className="card-hall-body">
+                  <p>{hall.thongtinloaisanh.tenloaisanh}</p>
                   <p>Số lượng bàn tối đa : {hall.soluongbantoida}</p>
-                  <p>Ghi chú : {hall.ghichu}</p>
+                  <p>
+                    Đơn bàn tối thiểu :{" "}
+                    {formatCurrency(
+                      parseFloat(hall.thongtinloaisanh.dongiabantoithieu)
+                    )}
+                  </p>
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { UPDATE_FORM_DATA } from "./actionType";
+import { GET_HALL_AVAILABLE, UPDATE_FORM_DATA } from "./actionType";
 import { ADD_INVOICE } from "./actionType";
 import {
   ADD_WEDDING_HALL,
@@ -136,3 +136,10 @@ export const addHallType = (hallType) => {
     payload: hallType
   };
 };
+
+export const getHallAvaibale = (data) =>{
+  return{
+    type: GET_HALL_AVAILABLE,
+    payload: data
+  }
+}

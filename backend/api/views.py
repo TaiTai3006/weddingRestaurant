@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.db import connection
+from django.shortcuts import render, redirect
 
 model_serializer_map = {
         'lobbies': (Sanh, LobbySerializer, 'masanh'),
@@ -23,8 +24,14 @@ model_serializer_map = {
         'services': (Dichvu, ServiceSerializer, 'madichvu'),
         'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
         'job': (Congviec, JobSerializer, 'macongviec'),
-        'parameter': (Thamso, ParameterSerializer, 'id')
+        'parameter': (Thamso, ParameterSerializer, 'id'),
+        'shifts': (Ca, ShiftSerializer, 'maca')
     }
+
+def getindex(request):
+    return render(request, 'base.html')
+
+
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
 def getNextID(model, id_field):
     """
@@ -147,12 +154,12 @@ def searchPartyBookingFormAPI(request):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def availablelobbiesListAPI(request):
-    maca = request.data.get('maca')
-    ngaydaitiec = request.data.get('ngaydaitiec')
-
+    maca = request.query_params.get('maca')
+    ngaydaitiec = request.query_params.get('ngaydaitiec')
+    print(request.query_params)
     if not maca or not ngaydaitiec :
         return Response({"error": "maca and ngaydaitiec query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    query = Sanh.objects.raw(f"SELECT * FROM Sanh WHERE Sanh.maSanh not in (SELECT maSanh FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maCa = '{maca}' AND PhieuDatTiecCuoi.ngayDaiTiec = {ngaydaitiec})")
+    query = Sanh.objects.raw(f"SELECT * FROM Sanh WHERE Sanh.maSanh not in (SELECT maSanh FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maCa = '{maca}' AND PhieuDatTiecCuoi.ngayDaiTiec = '{ngaydaitiec}')")
     serializer = LobbySerializer(query, many = True)
 
     for item in serializer.data:
@@ -422,7 +429,7 @@ def paymentInvoiceAPI(request):
     API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
 
     Parameters: request.data là một dictionary gồm:
-        - maHoadon (str): ID của hoá đơn.
+        - mahoadon (str): ID của hoá đơn.
         - ngayThanhtoan (str): Ngày thanh toán.
         - tongtiendichvu (float): Tổng chi phí dịch vụ.
         - tienphat (float): Số tiền phạt.
