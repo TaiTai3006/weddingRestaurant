@@ -4,7 +4,8 @@ from api.models import *
 from api.serializers import *
 
 urlpatterns = [
-  path('index/', getindex),
+  path('', getindex),
+   path('create/', create),
   path('login/', login),
   path('logout/', logout),
   path('signup/', signup),

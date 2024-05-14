@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Wedding restaurant{% endblock %}</title>
+
+    </title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/script.js' %}" defer></script>
+    <link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+  />
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"
+  ></script>
+    
+</head>
+
+<body>
+    <div class="header">
+        <div class="d-flex align-items-center">
+            
+            <img src="../static/image/logo.png" alt="profile" class="img-fluid logo-img me-2" style="max-width: 50px;">
+            <div class="primary-text">
+                <h4 class="text-primary pb-0">UIT</h4>
+                <p class="text-primary">Wedding restaurant</p>
+            </div>
+            
+            
+        </div>
+        <div class="header-right">
+            <button class="profile-btn">
+                <img src="https://assets.codepen.io/3306515/IMG_2025.jpg" alt="profile" style="max-width: 50px;"/>
+                <span>Admin</span>
+            </button>
+        </div>
+    </div>
+   
+    <div class="d-flex justify-content-between">
+        <nav >
+           
+               
+             
+                <a href="/" className="nav-link text-truncate" >
+                    <i class="bi alarm-fille"></i>
+                        Trang chủ
+
+                </a>
+                <a href="/create" className="nav-link text-truncate" >
+                    <i class="fa-solid fa-house "></i>
+                    Đặt tiệc cưới
+
+                </a>
+                <a href="/management" className="nav-link text-truncate sidebar-link">
+                    
+                        Quản lý
+                    
+                </a>
+                <a href="/" className="sidebar-link">
+                    
+                       Tra cứu tiệc 
+                    
+                </a>
+                <a href="/" className="sidebar-link">
+                    
+                       Danh mục
+                    
+                </a>
+                <a href="/" className="sidebar-link">
+                   
+                   Thống kê
+               
+            </a>
+           
+           
+            
+        </nav>
+        <main >
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+   
+</body>
+</html>

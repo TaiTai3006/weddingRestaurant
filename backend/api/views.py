@@ -29,7 +29,34 @@ model_serializer_map = {
     }
 
 def getindex(request):
-    return render(request, 'base.html')
+    return render(request, 'home.html')
+def create(request):
+    
+    lobbies = Sanh.objects.all()
+    lobby_types = Loaisanh.objects.all()
+    foods = Monan.objects.all()
+    food_types = Loaimonan.objects.all()
+    services = Dichvu.objects.all()
+    
+    
+    lobby_serializer = LobbySerializer(lobbies, many=True)
+    lobby_type_serializer = LobbyTypeSerializer(lobby_types, many=True)
+    food_serializer = FoodSerializer(foods, many=True)
+    food_type_serializer = FoodTypeSerializer(food_types, many=True)
+    service_serializer = ServiceSerializer(services, many=True)
+    
+    
+    serialized_data = {
+        'lobbies': lobby_serializer.data,
+        'lobbyTypes': lobby_type_serializer.data,
+        'foods': food_serializer.data,
+        'foodTypes': food_type_serializer.data, 
+        'services': service_serializer.data,
+    }
+    
+    return render(request, 'base.html',serialized_data)
+   
+
 
 
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1

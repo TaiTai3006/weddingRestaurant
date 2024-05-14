@@ -1,39 +1,261 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    {% load static %}
-    <meta
-      charset="UTF-8"
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-    />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>
-          Python Django Mysql CRUD (Create, Read, Update and Delete) with Jquery
-          Ajax
-        </h1>
-      </header>
-      <hr />
-      {% comment %} <main>{% block body %} {% endblock %}</main> {% endcomment %}
-      <hr />
+{% extends 'layout.html' %} {% block title %} Home {% endblock %} {% block content %}
+
+<div class="row ">
+  <form class="col-9 " method="POST" action="" id="weddingForm">
+    {% csrf_token %}
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="home-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#home-tab-pane"
+          type="button"
+          role="tab"
+          aria-controls="home-tab-pane"
+          aria-selected="true"
+        >
+          Thông tin tiệc cưới
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="profile-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#profile-tab-pane"
+          type="button"
+          role="tab"
+          aria-controls="profile-tab-pane"
+          aria-selected="false"
+        >
+          Thông tin món ăn
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="contact-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#contact-tab-pane"
+          type="button"
+          role="tab"
+          aria-controls="contact-tab-pane"
+          aria-selected="false"
+        >
+          Thông tin dịch vụ
+        </button>
+      </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+      <div
+        class="tab-pane fade show active"
+        id="home-tab-pane"
+        role="tabpanel"
+        aria-labelledby="home-tab"  
+        tabindex="0"
+      >
+        <div id="khachhang"></div>
+        
+
+        <h4>Thông tin tiệc cưới</h4>
+        <div class="row">
+          <div class="col mb-3" id="weddingInfo">
+            <label for="ngaydattiec" class="form-label">Ngày đặt tiệc</label>
+            <input
+              type="date"
+              class="form-control"
+              id="ngaydattiec"
+              name="ngaydattiec"
+              placeholder="Ngày đặt tiệc"
+            />
+          </div>
+          <div class="col mb-3" id="weddingInfo">
+            <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc </label>
+            <input
+              type="date"
+              class="form-control"
+              id="ngaydaitiec"
+              name ="ngaydaitiec"
+              placeholder="Ngày đãi tiệc "
+            />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col mb-3" id="weddingInfo">
+            <label for="maca" class="form-label">Ca</label>
+            <select class="form-select" name="maca" aria-label="Default select example">
+             
+              <option value="1">One</option>
+              <option value="2">Two</option>
+              <option value="3">Three</option>
+            </select>
+          </div>
+          <div class="col mb-3" id="weddingInfo">
+            <label for="masanh" class="form-label">Sảnh</label>
+            <select class="form-select" name="masanh" aria-label="Default select example">
+              
+              <option value="1">One</option>
+              <option value="2">Two</option>
+              <option value="3">Three</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col mb-3" id="weddingInfo">
+            <label for="soluongban" class="form-label">Số lượng bàn</label>
+            <input
+              type="number"
+              class="form-control"
+              id="soluongban"
+              name = "soluongban"
+              placeholder="Số lượng bàn"
+            />
+          </div>
+          <div class="col mb-3" id="weddingInfo">
+            <label for="soluongbandutru" class="form-label"
+              >Số lượng bàn dự trữ</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="soluongbandutru"
+              name="soluongbandutru"
+              placeholder="Số lượng bàn dự trữ"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="profile-tab-pane"
+        role="tabpanel"
+        aria-labelledby="profile-tab"
+        tabindex="0"
+      >
+        <select
+        id="foodTypeSelect"
+          class="form-select form-select-sm outline-none"
+          aria-label="Small select example"
+        >
+        {% for foodType in foodTypes %}
+         
+          <option value={{foodType.maloaimonan}}>{{foodType.tenloaimonan}}</option>
+         
+          {% endfor %}
+        </select>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Tên món ăn</th>
+              <th scope="col">Loại món ăn</th>
+              <th scope="col">Đơn giá</th>
+              <th scope="col">Ghi chú</th>
+              <th scope="col">Select</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for food in foods %}
+            <tr class="foodRow" data-loaimonan="{{ food.maloaimonan }}">
+              <th scope="row" >{{ forloop.counter }}</th>
+              <td>{{ food.tenmonan }}</td>
+              <td>{{ food.maloaimonan}}</td>
+              <td>{{ food.dongia }}</td>
+              <td>{{ food.ghichu }}</td>
+              <td id="weddingInfo">
+                <input type="checkbox" name="selected_foods" value="{{ food.mamonan }}" />
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="contact-tab-pane"
+        role="tabpanel"
+        aria-labelledby="contact-tab"
+        tabindex="0"
+      >
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Tên dịch vụ</th>
+              <th scope="col">Loại dịch vụ</th>
+              <th scope="col">Đơn giá</th>
+              <th scope="col">Ghi chú</th>
+              <th scope="col">Select</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for service in services %}
+            <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ service.tendichvu }}</td>
+              <td>{{ service.loaidichvu.tenloaidichvu }}</td>
+              
+              <td>{{ service.dongia }}</td>
+              <td>{{ service.ghichu }}</td>
+              <td id="weddingInfo">
+                <input
+                  type="checkbox"
+                  name="selected_services"
+                  value="{{ service.id }}"
+                />
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    {% comment %} <script src="{% static 'js/script.js' %}"></script> {% endcomment %}
-    {% comment %} <script>
-      document.getElementById("result").innerHTML = "My First JavaScript";
-    </script> {% endcomment %}
-  </body>
-</html>
+    <button type="submit" class="btn btn-primary">Submit</button>
+ 
+  </form>
+  <div class="col-3 wedding-info p-2" >
+    <h4>Thông tin khách hàng</h4>
+        <div class="row">
+          <div class="col mb-3" id="weddingInfo">
+            <label for="tenchure" class="form-label">Tên chú rể</label>
+            <input
+              type="text"
+              class="form-control"
+              id="tenchure"
+              name="tenchure"
+              placeholder="Tên chú rể"
+            />
+          </div>
+          <div class="col mb-3" id="weddingInfo">
+            <label for="tencodau" class="form-label">Tên cô dâu</label>
+            <input
+              type="text"
+              class="form-control"
+              id="tencodau"
+              name="tencodau"
+              placeholder="Tên cô dâu"
+            />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="sdt" class="form-label">Số điện thoại</label>
+          <input
+            type="text"
+            class="form-control"
+            id="sdt"
+            name="sdt"
+            placeholder="Số điện thoại"
+          />
+        </div>
+        
+        <div id="weddingInfoDisplay">
+          <p id="ngaydaitiec"></p>
+        </div>
+  </div>
+  
+  
+
+</div>
+
+{% endblock %}
