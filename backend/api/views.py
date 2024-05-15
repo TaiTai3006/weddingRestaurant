@@ -15,6 +15,7 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import render, redirect
+import json
 
 model_serializer_map = {
         'lobbies': (Sanh, LobbySerializer, 'masanh'),
@@ -30,6 +31,7 @@ model_serializer_map = {
 
 def getindex(request):
     return render(request, 'home.html')
+
 def create(request):
     
     lobbies = Sanh.objects.all()
@@ -37,6 +39,7 @@ def create(request):
     foods = Monan.objects.all()
     food_types = Loaimonan.objects.all()
     services = Dichvu.objects.all()
+    shifts = Ca.objects.all()
     
     
     lobby_serializer = LobbySerializer(lobbies, many=True)
@@ -44,6 +47,7 @@ def create(request):
     food_serializer = FoodSerializer(foods, many=True)
     food_type_serializer = FoodTypeSerializer(food_types, many=True)
     service_serializer = ServiceSerializer(services, many=True)
+    shift_serializer = ShiftSerializer(shifts, many = True)
     
     
     serialized_data = {
@@ -52,6 +56,7 @@ def create(request):
         'foods': food_serializer.data,
         'foodTypes': food_type_serializer.data, 
         'services': service_serializer.data,
+        'shifts' : shift_serializer.data,
     }
     
     return render(request, 'base.html',serialized_data)
@@ -79,8 +84,8 @@ def getNextID(model, id_field):
     return header + next_id
 
 @api_view(['GET', 'PUT', 'POST', 'DELETE'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def LobbyView(request, model_name=None, id=None):
     if not model_serializer_map.get(model_name):
         return Response({'error': 'Invalid model name'}, status=status.HTTP_400_BAD_REQUEST)
@@ -177,23 +182,26 @@ def searchPartyBookingFormAPI(request):
     return Response(serializer.data)
 
 # Lấy danh sách các sảnh chưa có khách hàng đặt theo ngày đãi tiệc và ca tương ứng.
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @api_view(['GET'])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def availablelobbiesListAPI(request):
-    maca = request.query_params.get('maca')
-    ngaydaitiec = request.query_params.get('ngaydaitiec')
-    print(request.query_params)
+    data = json.loads(request.body)
+    maca = data.get('maca')
+    ngaydaitiec = data.get('ngaydaitiec')
+    # print(request.query_params)
     if not maca or not ngaydaitiec :
-        return Response({"error": "maca and ngaydaitiec query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return render(request, 'selectLobbies.html')
+    
     query = Sanh.objects.raw(f"SELECT * FROM Sanh WHERE Sanh.maSanh not in (SELECT maSanh FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maCa = '{maca}' AND PhieuDatTiecCuoi.ngayDaiTiec = '{ngaydaitiec}')")
     serializer = LobbySerializer(query, many = True)
 
     for item in serializer.data:
          query1 = Loaisanh.objects.filter(maloaisanh=item['maloaisanh'])
          item['thongtinloaisanh'] = LobbyTypeSerializer(query1, many = True).data[0]
-    
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    print(serializer.data)
+    return render(request, 'selectLobbies.html', {"availablelobbies" : serializer.data})
+
 
 #Lưu trữ thông tin đặt tiệc cưới của khách hàng
 @api_view(['POST'])

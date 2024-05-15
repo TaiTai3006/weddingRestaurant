@@ -20,7 +20,7 @@ urlpatterns = [
   path('statistic/countFoodBooking/', countFoodBookingAPI),
   path('statistic/countServiceBooking/', countServiceBookingAPI),
   path('searchParty/', searchPartyBookingFormAPI),
-  path('bookingParty/bollies/available/', availablelobbiesListAPI),
+  path('create/bookingParty/bollies/available/', availablelobbiesListAPI),
   path('bookingParty/', bookingPartyWeddingAPI),
   path('<str:model_name>/', LobbyView),
   path('<str:model_name>/<str:id>/', LobbyView),

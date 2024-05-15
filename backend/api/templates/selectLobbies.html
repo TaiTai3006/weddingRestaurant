@@ -1,0 +1,10 @@
+<div class="col mb-3" id="weddingInfo">
+  <label for="masanh"  class="form-label">Sảnh</label>
+  {% load humanize %}
+  <select  class="form-select masanh_selected" name="masanh" id='masanh_selected' aria-label="Default select example">
+    <option  value="">Chọn sảnh</option>
+    {% for lobby in availablelobbies %}
+    <option value="{{lobby.masanh}}">{{lobby.tensanh}}: Số lượng bàn tối đa ({{lobby.soluongbantoida}}) - Đơn bàn tối thiểu ({{lobby.thongtinloaisanh.dongiabantoithieu|floatformat|intcomma}})</option>
+    {%endfor%}
+  </select>
+</div>
