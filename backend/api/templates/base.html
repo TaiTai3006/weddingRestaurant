@@ -162,12 +162,13 @@
             </tr>
           </thead>
           <tbody>
+            {% load humanize %}
             {% for food in foods %}
             <tr class="foodRow" data-loaimonan="{{ food.maloaimonan }}">
               <th scope="row">{{ forloop.counter }}</th>
               <td>{{ food.tenmonan }}</td>
               <td>{{ food.maloaimonan}}</td>
-              <td>{{ food.dongia }}</td>
+              <td>{{ food.dongia |floatformat|intcomma}}</td>
               <td>{{ food.ghichu }}</td>
               <td id="weddingInfo">
                 <input
@@ -200,13 +201,14 @@
             </tr>
           </thead>
           <tbody>
+            {% load humanize %}
             {% for service in services %}
             <tr>
               <th scope="row">{{ forloop.counter }}</th>
               <td>{{ service.tendichvu }}</td>
               <td>{{ service.loaidichvu.tenloaidichvu }}</td>
 
-              <td>{{ service.dongia }}</td>
+              <td>{{ service.dongia|floatformat|intcomma }}</td>
               <td>{{ service.ghichu }}</td>
               <td id="weddingInfo">
                 <input
@@ -265,5 +267,4 @@
     <p id="thoigian_value"></p>
   </div>
 </div>
-
 {% endblock %}

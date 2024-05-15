@@ -60,7 +60,9 @@ def create(request):
     }
     
     return render(request, 'base.html',serialized_data)
-   
+
+def getFoodTable(requet, type):
+    foods = Monan.objects.all()
 
 
 
