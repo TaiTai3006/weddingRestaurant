@@ -1,0 +1,194 @@
+{% extends 'layout.html' %} {% block title %} Home {% endblock %} {% block content %}
+
+<div class="contianer p-5">
+ 
+  <form className="form-columns" id="searchWedding">
+    <div class="row">
+      <div class="col mb-3">
+        <label for="tencodau" class="form-label">Tên cô dâu </label>
+        <input
+          type="text"
+          class="form-control"
+          id="tencodau"
+          name="tencodau"
+          placeholder="Tên cô dâu"
+        />
+      </div>
+      <div class="col mb-3">
+        <label for="tenchure" class="form-label">Tên chú rể </label>
+        <input
+          type="text"
+          class="form-control"
+          id="tenchure"
+          name="tenchure"
+          placeholder="Tên chú rể "
+        />
+      </div>
+
+      <div class="col mb-3" >
+        <label for="maca" class="form-label">Ca</label>
+        <select
+          class="form-select"
+          name="maca"
+          aria-label="Default select example"
+        >
+        <option selected></option>
+         
+         
+        </select>
+      </div>
+      <div class="col mb-3" >
+        <label for="masanh" class="form-label">Sảnh</label>
+        <select
+          class="form-select"
+          name="masanh"
+          aria-label="Default select example"
+        >
+        <option value="">Chọn loại sảnh</option>
+         
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col mb-3" >
+        <label for="ngaydattiec" class="form-label">Ngày đặt tiệc</label>
+        <input
+          type="date"
+          class="form-control"
+          id="ngaydattiec"
+          name="ngaydattiec"
+          placeholder="Ngày đặt tiệc"
+        />
+      </div>
+      <div class="col mb-3" >
+        <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc </label>
+        <input
+          type="date"
+          class="form-control"
+          id="ngaydaitiec"
+          name="ngaydaitiec"
+          placeholder="Ngày đãi tiệc "
+        />
+      </div>
+
+      <div class="col mb-3" >
+        <label for="soluongban" class="form-label">Số lượng bàn</label>
+        <input
+          type="number"
+          class="form-control"
+          id="soluongban"
+          name="soluongban"
+          placeholder="Số lượng bàn"
+        />
+      </div>
+      <div class="col mb-3" >
+        <label for="soluongbandutru" class="form-label"
+          >Số lượng bàn dự trữ</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          id="soluongbandutru"
+          name="soluongbandutru"
+          placeholder="Số lượng bàn dự trữ"
+        />
+      </div>
+    </div>
+    <div class="d-flex justify-content-end  my-3">
+      
+        <button type="button" class="btn btn-outline-primary">Tìm kiếm</button>
+        <button type="button" class="btn btn-outline-primary">Nhập lại</button>
+     
+    </div>
+  </form>
+ 
+ 
+</div>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  
+
+  const apiUrlLobbyTypes = "http://127.0.0.1:8000/lobbyTypes/";
+  const apiUrlShifts = "http://127.0.0.1:8000/shifts/";
+  const apiUrlSearch = "http://127.0.0.1:8000/searchParty/";
+  const fetchHallTypes = async () => {
+    try {
+      const response = await axios.get(apiUrlLobbyTypes);
+      return response.data;
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching wedding hall types:", error);
+      throw error;
+    }
+  };
+  const fetchShifts = async () => {
+    try {
+      const response = await axios.get(apiUrlShifts);
+      return response.data;
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching wedding shifts types:", error);
+      throw error;
+    }
+  };
+  const fetchWedding = async () => {
+    try {
+      const response = await axios.get(apiUrlSearch);
+      return response.data;
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching wedding data:", error);
+      throw error;
+    }
+  };
+  window.onload = async () => {
+    try {
+        const hallTypes = await fetchHallTypes();
+      
+            const hallSelectElement = document.querySelector('#searchWedding select[name="masanh"]');
+            console.log(hallSelectElement);
+            hallTypes.forEach(hall => {
+                const optionElement = document.createElement('option');
+                optionElement.value = hall.maloaisanh; 
+                optionElement.textContent = hall.tenloaisanh; 
+                hallSelectElement.appendChild(optionElement);
+            });
+        const shifts = await fetchShifts()
+        const shiftSelectElement = document.querySelector('#searchWedding select[name="maca"]');
+        shifts.forEach(shift => {
+                const optionElement = document.createElement('option');
+                optionElement.value = shift.maca; 
+                optionElement.textContent = `${shift.tenca} (${shift.giobatdau} - ${shift.gioketthuc})`; 
+                shiftSelectElement.appendChild(optionElement);
+            });
+            const weddingData = await fetchWedding()
+            // console.log(weddingData)
+    } catch (error) {
+      console.error("Error handling hall types:", error);
+    }
+  };
+  
+  const editButton = document.getElementById('editButton');
+            const saveButton = document.getElementById('saveButton');
+            var inputs = document.querySelectorAll(".thong_tin_tiec_cuoi_form input");
+            editButton.addEventListener('click', function() {
+                editButton.style.display = 'none';
+                saveButton.style.display = 'block';
+
+                inputs.forEach(input => {
+                    if (input.id !== 'matieccuoi') {
+                        input.disabled = false;
+                    }
+                });
+            });
+
+            
+
+            
+  document.getElementById("editButton").addEventListener("click", function () {
+   
+  });
+  
+</script>
+
+{% endblock %}
