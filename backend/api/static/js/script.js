@@ -241,7 +241,12 @@ function readFoodTable() {
         foodList = dataCreateWedding.danhsachmonan
           ? dataCreateWedding.danhsachmonan
           : [];
+        let ghichuElement = document.getElementById(`ghichu_${this.value}`);
+        console.log(ghichuElement)
+        console.log(`ghichu_${this.value}`)
         if (this.checked) {
+          console.log(ghichuElement)
+          ghichuElement.style = "display: block;";
           foodList.push({
             mamonan: this.value,
             dongiamonan: parseFloat(
@@ -259,6 +264,8 @@ function readFoodTable() {
             JSON.stringify(dataCreateWedding)
           );
         } else {
+          ghichuElement.style = "display: none;";
+          ghichuElement.value = ""
           dataCreateWedding.danhsachmonan = foodList.filter(
             (food) => food.mamonan !== this.value
           );
@@ -276,12 +283,31 @@ function readFoodTable() {
     //Hien thi cac mon an đã chọn
     document.querySelectorAll("#food_checkbox").forEach((food_checkbox) => {
       if (dataCreateWedding.danhsachmonan) {
+       
         dataCreateWedding.danhsachmonan.map((food) => {
           if (food.mamonan === food_checkbox.value) {
+            let ghichuElement = document.getElementById(`ghichu_${food.mamonan}`);
             food_checkbox.checked = true;
+            ghichuElement.style = "display: block;";
+            ghichuElement.value = food.ghichu;
           }
         });
       }
+    });
+
+    document.querySelectorAll(".ghichuMA_input").forEach((input) => {
+      input.addEventListener("input", function (e) {
+        foodList = dataCreateWedding.danhsachmonan;
+        mamonan = this.id.substring(7);
+        dataCreateWedding.danhsachmonan = foodList.map((food) => {
+          if (food.mamonan === mamonan) {
+            food.ghichu = e.target.value;
+          }
+          return food;
+        });
+        addRowFoodTableConfirm();
+        localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
+      });
     });
   };
   xhttp.open("GET", "getFoodTable/" + type + "/", true);
@@ -516,29 +542,35 @@ document
 
     document.getElementById("totalBill_result").innerHTML =
       `<p>Tổng tiền bàn: ${formatCurrency(dataCreateWedding.tongtienban)}</p>` +
-      `<p>Tổng tiền đặt tiệc: ${formatCurrency(dataCreateWedding.tongtiendattiec)}</p>`+
-      `<p>Tiền đặt cọc (${parameter.tiledatcoc}%): ${formatCurrency(dataCreateWedding.tiendatcoc)}</p>`+
-      `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`
+      `<p>Tổng tiền đặt tiệc: ${formatCurrency(
+        dataCreateWedding.tongtiendattiec
+      )}</p>` +
+      `<p>Tiền đặt cọc (${parameter.tiledatcoc}%): ${formatCurrency(
+        dataCreateWedding.tiendatcoc
+      )}</p>` +
+      `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
   });
 
-document.getElementById("payment_button").addEventListener("click",function(e){
-  e.preventDefault();
-  const xhttp = new XMLHttpRequest();
-  xhttp.onload = function () {
-    localStorage.removeItem("dataWedding");
-    window.location.reload();
-  };
-  xhttp.open("POST", "bookingParty/");
-  xhttp.setRequestHeader("Content-type", "application/json");
+document
+  .getElementById("payment_button")
+  .addEventListener("click", function (e) {
+    e.preventDefault();
+    const xhttp = new XMLHttpRequest();
+    xhttp.onload = function () {
+      localStorage.removeItem("dataWedding");
+      window.location.reload();
+    };
+    xhttp.open("POST", "bookingParty/");
+    xhttp.setRequestHeader("Content-type", "application/json");
 
-  var csrf_token_input = document.querySelector(
-    'input[name="csrfmiddlewaretoken"]'
-  );
-  var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+    var csrf_token_input = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
 
-  if (csrf_token) {
-    xhttp.setRequestHeader("X-CSRFToken", csrf_token);
-  }
+    if (csrf_token) {
+      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+    }
 
-  xhttp.send(JSON.stringify(dataCreateWedding));
-})
+    xhttp.send(JSON.stringify(dataCreateWedding));
+  });

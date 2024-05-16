@@ -17,7 +17,14 @@
         <td>{{ food.tenmonan }}</td>
         <td>{{ food.maloaimonan}}</td>
         <td id="dongia_{{food.mamonan}}" value={{food.dongia}}>{{ food.dongia |floatformat|intcomma}}</td>
-        <td id="ghichu_{{food.mamonan}}" value={{food.ghichu}}>{{ food.ghichu }}</td>
+        <td><input
+          type="text"
+          class="ghichuMA_input"
+          name="ghichudichvu"
+          placeholder="Ghi chú ..."
+          id="ghichu_{{food.mamonan}}"
+          style="display: none;"
+        /></td>
         <td id="weddingInfo">
           <input
             type="checkbox"
