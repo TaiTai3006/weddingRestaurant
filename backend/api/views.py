@@ -15,6 +15,10 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import render, redirect
+from django.db.models import Count
+from django.db.models.functions import ExtractDay
+from django.http import JsonResponse
+
 import json
 
 model_serializer_map = {
@@ -28,10 +32,45 @@ model_serializer_map = {
         'parameter': (Thamso, ParameterSerializer, 'id'),
         'shifts': (Ca, ShiftSerializer, 'maca')
     }
-
+# Trang dashboard
 def getindex(request):
-    return render(request, 'home.html')
+    return render(request, 'dashboard.html')
+def report(request):
+    return render(request, 'report.html')
+def invoice(request):
+    return render(request, 'invoice.html')
+def search(request):
+    lobby_types = Loaisanh.objects.all()
+    shifts = Ca.objects.all()
+    foods = Monan.objects.all()
+    food_types = Loaimonan.objects.all()
+    services = Dichvu.objects.all()
 
+    lobby_type_serializer = LobbyTypeSerializer(lobby_types, many=True)
+    shift_serializer = ShiftSerializer(shifts, many = True)
+
+    food_serializer = FoodSerializer(foods, many=True)
+    food_type_serializer = FoodTypeSerializer(food_types, many=True)
+    service_serializer = ServiceSerializer(services, many=True)
+    
+    
+    serialized_data = {
+        
+        'lobbyTypes': lobby_type_serializer.data,
+        'shifts' : shift_serializer.data,
+        'foods': food_serializer.data,
+        'foodTypes': food_type_serializer.data, 
+        'services': service_serializer.data,
+        
+    }
+    print(serialized_data)
+    
+    return render(request, 'search.html',serialized_data)
+def management(request):
+    data = searchPartyBookingFormAPI(request)
+
+    print(data)
+    return render(request, 'management.html',{'data': data})
 def create(request):
     
     lobbies = Sanh.objects.all()
@@ -169,27 +208,83 @@ def logout(request):
     return Response({"message": "Logged out successfully"},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def searchPartyBookingFormAPI(request):
-    model_cache = cache.get('searchPartyBooking')
-    if model_cache :
-        return Response(model_cache, status=status.HTTP_200_OK)
+    # model_cache = cache.get('searchPartyBooking')
+    # if model_cache :
+        # return Response(model_cache, status=status.HTTP_200_OK)
+    #     return render(request, 'search.html', {"data": model_cache})
+   
+    foods = Monan.objects.all()
+    food_serializer = FoodSerializer(foods, many=True)
+    services = Dichvu.objects.all()
+    service_serializer = ServiceSerializer(services, many=True)
+    tenchure = request.GET.get('tenchure', '')
+    tencodau = request.GET.get('tencodau', '')
+    maca = request.GET.get('maca', '')
+    masanh = request.GET.get('masanh', '')
+    ngaydattiec = request.GET.get('ngaydattiec', '')
+    ngaydaitiec = request.GET.get('ngaydaitiec', '')
+    soluongban = request.GET.get('soluongban', '')
+    soluongbandutru = request.GET.get('soluongbandutru', '')
+
+    query = "SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi NOT IN (SELECT maTiecCuoi FROM HoaDon)"
+
+# Tạo danh sách các điều kiện
+    conditions = []
+
+# Kiểm tra và thêm điều kiện nếu giá trị không rỗng
+    if tenchure:
+        conditions.append(f"PhieuDatTiecCuoi.tenChuRe LIKE '%%{tenchure}%%'")
+    if tencodau:
+        conditions.append(f"PhieuDatTiecCuoi.tenCoDau LIKE '%%{tencodau}%%'")
+    if maca:
+        conditions.append(f"PhieuDatTiecCuoi.maca = '{maca}'")
+    if masanh:
+        conditions.append(f"PhieuDatTiecCuoi.masanh = '{masanh}'")
+    if ngaydattiec:
+        conditions.append(f"PhieuDatTiecCuoi.ngayDatTiec = '{ngaydattiec}'")
+    if ngaydaitiec:
+        conditions.append(f"PhieuDatTiecCuoi.ngayDaiTiec = '{ngaydaitiec}'")
+    if soluongban:
+        conditions.append(f"PhieuDatTiecCuoi.soLuongBan = '{soluongban}'")
+    if soluongbandutru:
+        conditions.append(f"PhieuDatTiecCuoi.soLuongBanDuTru = '{soluongbandutru}'")
+
+    # Ghép các điều kiện vào câu truy vấn nếu có điều kiện nào
+    if conditions:
+        query += " AND " + " AND ".join(conditions)
+
+    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC"
+
+    query_f = Phieudattieccuoi.objects.raw(query)     
     
-    query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi not in (SELECT maTiecCuoi FROM HoaDon) ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC')
-    serializer = PartyBookingFormSerializer(query, many = True)
- 
+    
+    serializer = PartyBookingFormSerializer(query_f, many = True)
+    
     for item in serializer.data:
         query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
         query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
         query3 = Sanh.objects.filter(masanh = item['masanh'])
+        query4 = Ca.objects.filter(maca = item['maca'])
         item['danhsachdichvu'] = ServiceDetailsSerializer(query1, many=True).data
         item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
         item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
-
-    cache.set('searchPartyBooking', serializer.data, timeout=60*30)
-
-    return Response(serializer.data)
+        item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        
+    serialized_data = {
+        
+        'weddings': serializer.data,
+        'foods': food_serializer.data,
+        'services': service_serializer.data,
+        
+    }
+    # cache.set('searchPartyBooking', serializer.data, timeout=60*30)
+    
+    # return serializer.data
+    return render(request, 'searchResult.html',serialized_data)
+    # return Response(serializer.data)
 
 # Lấy danh sách các sảnh chưa có khách hàng đặt theo ngày đãi tiệc và ca tương ứng.
 # @api_view(['GET'])
@@ -271,43 +366,89 @@ def bookingPartyWeddingAPI(request):
 
 # Thống kê số lượng tiệc trong tháng theo từng ngày
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def countWeddingEventsPerDayInMonthAPI(request):
-    model_cache = cache.get('countWeddingEventsPerDayInMonth')
-
-    if model_cache:
-        return Response(model_cache, status=status.HTTP_200_OK) 
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    print(month, year)
+    query = Phieudattieccuoi.objects.raw(f"""
+        SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
+        FROM `PhieuDatTiecCuoi` 
+        WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} 
+        GROUP BY DAY(`ngayDaiTiec`)
+    """)
     
-    month = request.data.get('month')
-    year = request.data.get('year')
-
-    if not month or not year:
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
-        data = cursor.fetchall()
+    result_list = []
+    for item in query:
+        day = item.Day
+        count = item.Count
+        result_list.append({'day': day, 'count': count})
+    print(result_list)
+    return JsonResponse(result_list, safe=False)
+@api_view(['GET'])
+def countWeddingEventsPerMonthAPI(request):
+    year = request.GET.get('year')
+    print( year)
+    query = Phieudattieccuoi.objects.raw(f"""
+        SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
+        FROM `PhieuDatTiecCuoi` 
+        WHERE YEAR(`ngayDaiTiec`) = {year} 
+        GROUP BY MONTH(`ngayDaiTiec`)
+    """)
     
-    cache.set('countWeddingEventsPerDayInMonth', data, timeout=60*30)
+    result_list = []
+    for item in query:
+        month = item.Month
+        count = item.Count
+        result_list.append({'month': month, 'count': count})
+    print(result_list)
+    return JsonResponse(result_list, safe=False)
 
-    return Response(data, status=status.HTTP_200_OK)
+# def countWeddingEventsPerDayInMonthAPI(request):
+#     # model_cache = cache.get('countWeddingEventsPerDayInMonth')
+
+#     # if model_cache:
+#     #     return Response(model_cache, status=status.HTTP_200_OK) 
+    
+#     month = request.GET.get('month')
+#     year = request.GET.get('year')
+#     print(month,year)
+    
+  
+#     # if not month or not year:
+#     #     return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+#     # query = Phieudattieccuoi.objects.raw(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
+#     # with connection.cursor() as cursor:
+#     #     cursor.execute(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
+#     #     data = cursor.fetchall()
+    
+#     # cache.set('countWeddingEventsPerDayInMonth', data, timeout=60*30)
+    
+#     # return Response(data, status=status.HTTP_200_OK)
+#     return render(request, 'workScheduleChart.html', {"result_list" : result_list})
 
 #Thống kê số lượng tiệc cưới trong ngày theo từng ca
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def countWeddingEventsPerDayAPI(request):
-    date = request.data.get('date')
+    date = request.GET.get('date')
+    print(request,date)
 
     if not date:
         return Response({"error": "date query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    query = Phieudattieccuoi.objects.raw(
+        f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
+        f"FROM `PhieuDatTiecCuoi`, Ca "
+        f"WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' "
+        f"GROUP BY Ca.tenCa"
+    )
+    results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
+    print(results)
+    return JsonResponse(results, safe=False)
 
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT Ca.tenCa, COUNT(*) FROM `PhieuDatTiecCuoi`, Ca WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' GROUP BY Ca.tenCa")
-        data = cursor.fetchall()
-    
-    return Response(data, status=status.HTTP_200_OK)
+
 
 # Thống kê doanh thu theo từng ngày
 @api_view(['GET'])

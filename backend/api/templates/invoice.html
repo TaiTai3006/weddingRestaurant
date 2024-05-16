@@ -1,0 +1,168 @@
+{% extends 'layout.html' %} {% block title %} Home {% endblock %} 
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f2f2f2;
+    }
+
+    .invoice {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .header img {
+        max-height: 100px;
+    }
+
+    .header .details {
+        text-align: right;
+    }
+
+    .header .details p {
+        margin: 0;
+    }
+
+    .invoice-title {
+        text-align: center;
+        font-size: 24px;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .section p {
+        margin: 5px 0;
+    }
+
+    .section .info {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .section .info div {
+        flex: 1;
+    }
+
+    .section .info div:not(:last-child) {
+        margin-right: 20px;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .table th {
+        background-color: #f2f2f2;
+    }
+
+    .totals {
+        text-align: right;
+    }
+
+    .totals p {
+        margin: 5px 0;
+    }
+
+    .signature {
+        text-align: center;
+        margin-top: 30px;
+    }
+</style>
+
+<div class="invoice">
+    <div class="header">
+        <div>
+            <img src="logo.png" alt="UIT Wedding Restaurant">
+        </div>
+        <div class="details">
+            <p>HĐ0012</p>
+            <p>12/06/2023</p>
+        </div>
+    </div>
+    <div class="section">
+        <p><strong>UIT WEDDING RESTAURANT</strong></p>
+        <p>Toà A, Đường Hàn Thuyên, khu phố 6, Thủ Đức, Thành phố Hồ Chí Minh</p>
+        <p>Tel: 0868383453</p>
+        <p>Email: uitweddingrestaurant@gmail.com</p>
+    </div>
+    <div class="invoice-title">HOÁ ĐƠN THANH TOÁN</div>
+    <div class="section info">
+        <div>
+            <p><strong>Thông tin khách hàng:</strong></p>
+            <p>Tên chú rể: Le Van NN</p>
+            <p>Tên cô dâu: Nguyen Thi MM</p>
+            <p>Tel: 0912345678</p>
+        </div>
+        <div>
+            <p><strong>Thông tin đặt tiệc:</strong></p>
+            <p>Ngày đãi tiệc: 29/06/2023</p>
+            <p>Mã ca: CA0002</p>
+            <p>Mã sảnh: SN0005</p>
+            <p>Số lượng bàn: 200</p>
+            <p>Số lượng bàn dự trữ: 20</p>
+            <p>Đơn giá bàn: ₫ 1.400.000</p>
+        </div>
+    </div>
+    <div class="section">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tên dịch vụ</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dịch vụ trang trí</td>
+                    <td>1</td>
+                    <td>₫ 1.000.000</td>
+                    <td>₫ 1.000.000</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="section totals">
+        <p><strong>Tổng tiền dịch vụ: </strong>₫ 1.000.000</p>
+        <p><strong>Tiền phạt: </strong>₫ 0</p>
+        <p><strong>Tổng tiền bàn: </strong>₫ 280.000.000</p>
+        <p><strong>Tổng hoá đơn: </strong>₫ 281.000.000</p>
+        <p><strong>Tiền cọc: </strong>₫ 152.000.000</p>
+        <p><strong>Còn lại: </strong>₫ 129.000.000</p>
+    </div>
+    <div class="section totals">
+        <p><strong>Tiền khách trả: </strong>₫ 141.000.000</p>
+        <p><strong>Tiền thừa: </strong>₫ 0</p>
+    </div>
+    <div class="signature">
+        <p>Xin cảm ơn quý khách!</p>
+    </div>
+</div>
+{% endblock %}

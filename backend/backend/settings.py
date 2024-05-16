@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "api.apps.ApiConfig",
     'cloudinary_storage',
     'cloudinary',
+    'mathfilters'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 

@@ -1,0 +1,320 @@
+{% load mathfilters %} {% load humanize %}
+<table class="table border">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Mã tiệc cưới</th>
+      <th>Tên cô dâu</th>
+      <th>Tên chú rể</th>
+      <th>Số điện thoại</th>
+      <th>Sảnh</th>
+      <th>Giờ</th>
+      <th>Ngày đãi tiệc</th>
+      <th>Nhân viên</th>
+    </tr>
+  </thead>
+  <tbody id="accordion">
+    {% for wedding in weddings %}
+    <tr
+      data-toggle="collapse"
+      data-target="#collapse{{ wedding.matieccuoi }}"
+      aria-expanded="true"
+      aria-controls="collapse{{ wedding.matieccuoi }}"
+      class="accordion-toggle"
+    >
+      <td>{{forloop.counter }}</td>
+      <td>{{ wedding.matieccuoi }}</td>
+      <td>{{ wedding.tencodau }}</td>
+      <td>{{ wedding.tenchure }}</td>
+      <td>{{ wedding.sdt }}</td>
+      <td>{{ wedding.thongtinsanh.tensanh }}</td>
+      <td>{{ wedding.thongtinca.giobatdau }}</td>
+      <td>{{ wedding.ngaydaitiec }}</td>
+      <td>{{ wedding.username }}</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="hiddenRow">
+        <div
+          id="collapse{{ wedding.matieccuoi }}"
+          class="collapse p-3 accordion-content"
+          aria-labelledby="heading{{ wedding.matieccuoi }}"
+          data-parent="#accordion"
+        >
+          <form class="wedding_info">
+            <div class="row">
+              <div class="col mb-3">
+                <label for="matieccuoi" class="form-label">Mã tiệc cưới:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="matieccuoi"
+                  name="matieccuoi_disable"
+                  value="{{ wedding.matieccuoi }}"
+                  disabled
+                />
+              </div>
+              <div class="col mb-3">
+                <label for="tencodau" class="form-label">Tên cô dâu:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="tencodau"
+                  name="tencodau"
+                  value="{{ wedding.tencodau }}"
+                  disabled
+                />
+              </div>
+              <div class="col mb-3">
+                <label for="tenchure" class="form-label">Tên chú rể:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="tenchure"
+                  name="tenchure"
+                  value="{{ wedding.tenchure }}"
+                  disabled
+                />
+              </div>
+              <div class="col mb-3">
+                <label for="ngaydaitiec" class="form-label"
+                  >Ngày đãi tiệc:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="ngaydaitiec"
+                  name="ngaydaitiec"
+                  value="{{ wedding.ngaydaitiec }}"
+                  disabled
+                />
+              </div>
+              <div class="d-flex justify-content-end">
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="editButton"
+                  >
+                    Chỉnh sửa
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    id="saveButton"
+                    style="display: none"
+                  >
+                    Lưu
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+          <div>
+            <strong>Món ăn:</strong>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Tên món ăn</th>
+                  <th>Số lượng</th>
+                  <th>Đơn giá</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for food in wedding.danhsachmonan %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td id="chitiet_mamonan">{{ food.mamonan }}</td>
+                  <td>{{ food.soluong }}</td>
+                  <td>{{ food.dongiamonan|floatformat|intcomma }}</td>
+                  <td>
+                    {{ food.dongiamonan|floatformat|mul:food.soluong|intcomma }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <button type="button" id="modal-add-food"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
+              Thêm món ăn
+            </button>
+          </div>
+          <div>
+            <strong>Dịch vụ:</strong>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Tên dịch vụ</th>
+                  <th>Số lượng</th>
+                  <th>Đơn giá</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for service in wedding.danhsachdichvu %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td id="chitiet_madichvu">{{ service.madichvu }}</td>
+                  <td>{{ service.soluong }}</td>
+                  <td>{{ service.dongiadichvu|intcomma }}</td>
+                  <td>
+                    {{
+                    service.dongiadichvu|floatformat|mul:service.soluong|intcomma
+                    }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <button type="button" id="modal-add-service"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModalService">
+              Thêm dịch vụ
+            </button>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="modal" id="myModal">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="min-width: 800px;">
+    <div class="modal-content" >
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Tên món ăn</th>
+              <th scope="col">Loại món ăn</th>
+              <th scope="col">Đơn giá</th>
+              <th scope="col">Ghi chú</th>
+              <th scope="col">Select</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            {% for food in foods %}
+            
+            <tr class="foodRow" data-loaimonan="{{ food.maloaimonan }}">
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ food.tenmonan }}</td>
+              <td>{{ food.maloaimonan}}</td>
+              <td>{{ food.dongia |floatformat|intcomma}}</td>
+              <td>{{ food.ghichu }}</td>
+              <td id="addFood">
+                <input
+                  type="checkbox"
+                  name="selected_foods"
+                  value="{{ food.mamonan }}"
+                />
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal" id="myModalService" >
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="min-width: 800px;">
+    <div class="modal-content" >
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Tên dịch vụ </th>
+              <th scope="col">Loại dịch vụ </th>
+              <th scope="col">Đơn giá</th>
+              <th scope="col">Ghi chú</th>
+              <th scope="col">Select</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            {% for service in services %}
+            
+            <tr class="foodRow" data-loaimonan="{{ service.madichvu }}">
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ service.tendichvu }}</td>
+              <td>{{ service.madichvu}}</td>
+              <td>{{ service.dongia |floatformat|intcomma}}</td>
+              <td>{{ service.ghichu }}</td>
+              <td id="addService">
+                <input
+                  type="checkbox"
+                  name="selected_services"
+                  value="{{ service.madichvu }}"
+                />
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+   console.log("first page loaded");
+window.onload = function() {
+  console.log("first page loaded");
+
+  // Retrieve all edit and save buttons using class selectors
+  const editButtons = document.querySelectorAll(".editButton");
+  const saveButtons = document.querySelectorAll(".saveButton");
+
+  // Function to enable form fields for editing
+  function enableEditing(button) {
+    const formFields = button.closest(".wedding_info").querySelectorAll("input[type='text']");
+    
+    formFields.forEach(function(inputField) {
+      inputField.disabled = false;
+    });
+
+    button.style.display = "none";
+    button.nextElementSibling.style.display = "block";
+  }
+
+  // Function to disable form fields after editing
+  function disableEditing(button) {
+    const formFields = button.closest(".wedding_info").querySelectorAll("input[type='text']");
+    
+    formFields.forEach(function(inputField) {
+      inputField.disabled = true;
+    });
+
+    button.style.display = "none";
+    button.previousElementSibling.style.display = "block";
+  }
+
+  // Add event listeners for edit buttons
+  editButtons.forEach(function(editButton) {
+    editButton.addEventListener("click", function() {
+      enableEditing(this);
+    });
+  });
+
+  // Add event listeners for save buttons
+  saveButtons.forEach(function(saveButton) {
+    saveButton.addEventListener("click", function() {
+      disableEditing(this);
+    });
+  });
+};
+
+</script>

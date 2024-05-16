@@ -1,0 +1,352 @@
+{% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="card-body text-center">
+        <h2>Welcome to UIT Wedding Restaurant</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="row card-body">
+            <h5 class="col card-title">Lịch phân công công việc</h5>
+            <select
+              id="phancongcongviec_select"
+              class="col form-control mb-3"
+              style="max-width: 100px"
+            >
+              <option selected="daily">Ngày</option>
+              <option value="monthly">Tháng</option>
+            </select>
+            <div class="chart-container">
+              <div id="workScheduleChart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Lịch tháng</h5>
+            <div class="calendar">
+              <div class="row calendar-controls">
+                <select id="monthSelect" class="col form-control m-2"></select>
+                <select id="yearSelect" class="col form-control m-2"></select>
+              </div>
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                  </tr>
+                </thead>
+                <tbody id="calendarBody">
+                  <!-- hiển thị calender  -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card mt-3">
+          <div class="card-body">
+            <div class="row d-flex align-items-center mb-3">
+              <h5 class="col card-title nowrap">Số lượng tiệc trong ngày</h5>
+            </div>
+
+            <table id="event_count" class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Ca</th>
+                  <th>Số lượng tiệc cưới</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Chiều</td>
+                  <td>1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var currentMonth = 6;
+  var currentYear = 2023;
+  // var currentYear = new Date().getFullYear();
+  // var currentMonth = new Date().getMonth() + 1; // Tháng trong JavaScript bắt đầu từ 0, nên cần cộng thêm 1
+
+  var phancongcongviec_select = document.getElementById(
+    "phancongcongviec_select"
+  );
+  phancongcongviec_select.addEventListener("change", function () {
+    var selectedOption = this.value;
+    console.log(selectedOption);
+
+    if (selectedOption === "monthly") {
+      readCountWeddingEventsPerMonthAPI(currentYear);
+    } else {
+      readCountWeddingEventsPerDayInMonthAPI(
+        currentMonth,
+        currentYear
+      );
+    }
+  });
+  function readCountWeddingEventsPerMonthAPI(year) {
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var responseData = JSON.parse(this.responseText);
+        console.log(responseData);
+        var options = {
+          series: [
+            {
+              name: "Số lượng tiệc cưới",
+              data: responseData.map((item) => item.count),
+            },
+          ],
+          stroke: {
+            curve: "smooth",
+          },
+          dataLabels: {
+            enabled: false,
+          },
+          chart: {
+            height: 400,
+            type: "area",
+          },
+          xaxis: {
+            categories: responseData.map((item) => item.month),
+          },
+        };
+        console.log(options);
+        document.getElementById("workScheduleChart").innerHTML = "";
+        var chart = new ApexCharts(
+          document.querySelector("#workScheduleChart"),
+          options
+        );
+        chart.render();
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    const url = `statistic/eventsPerMonth/?year=${year}`;
+
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
+
+    // Send the request without data
+    xhttp.send();
+  }
+
+  function readCountWeddingEventsPerDayInMonthAPI(month, year) {
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var responseData = JSON.parse(this.responseText);
+        console.log(responseData);
+        var options = {
+          series: [
+            {
+              name: "Số lượng tiệc cưới",
+              data: responseData.map((item) => item.count),
+            },
+          ],
+          stroke: {
+            curve: "smooth",
+          },
+          dataLabels: {
+            enabled: false,
+          },
+          chart: {
+            height: 400,
+
+            type: "area",
+          },
+          xaxis: {
+            categories: responseData.map((item) => item.day),
+          },
+        };
+        document.getElementById("workScheduleChart").innerHTML = "";
+        var chart = new ApexCharts(
+          document.querySelector("#workScheduleChart"),
+          options
+        );
+        chart.render();
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    const url = `statistic/eventsPerDayInMonth/?month=${month}&year=${year}`;
+
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
+
+    // Send the request without data
+    xhttp.send();
+  }
+  function dateToYMD(date) {
+    var d = date.getDate();
+    var m = date.getMonth() + 1; //Month from 0 to 11
+    var y = date.getFullYear();
+    return "" + y + "-" + (m <= 9 ? "0" + m : m) + "-" + (d <= 9 ? "0" + d : d);
+  }
+  function countWeddingEventsPerDay(date) {
+    console.log(date);
+
+    formattedDate = dateToYMD(date);
+    console.log("Ngày được chọn 2:", formattedDate);
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var responseData = JSON.parse(this.responseText);
+        console.log(responseData);
+        var tableBody = document.querySelector("#event_count tbody");
+
+        // Xóa nội dung cũ trong tbody
+        tableBody.innerHTML = "";
+
+        // Kiểm tra xem responseData có dữ liệu không
+        if (responseData.length > 0) {
+          // Duyệt qua từng phần tử trong responseData và tạo hàng cho mỗi phần tử
+          responseData.forEach(function (item) {
+            // Tạo một hàng mới
+            var row = document.createElement("tr");
+
+            // Tạo ô dữ liệu cho 'Ca' và 'Số lượng tiệc cưới'
+            var caCell = document.createElement("td");
+            var eventCountCell = document.createElement("td");
+
+            // Đặt nội dung cho các ô dữ liệu
+            caCell.textContent = item.ca;
+            eventCountCell.textContent = item.event_count;
+
+            // Thêm các ô dữ liệu vào hàng
+            row.appendChild(caCell);
+            row.appendChild(eventCountCell);
+
+            // Thêm hàng vào tbody
+            tableBody.appendChild(row);
+          });
+        } else {
+          // Nếu không có dữ liệu, hiển thị thông báo
+          var noDataMessage = document.createElement("tr");
+          var messageCell = document.createElement("td");
+          messageCell.setAttribute("colspan", "2"); //  ô thông báo chiếm toàn bộ hàng
+          messageCell.textContent = "Không có dữ liệu để hiển thị";
+          noDataMessage.appendChild(messageCell);
+          tableBody.appendChild(noDataMessage);
+        }
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    const url = `statistic/eventsPerDay/?date=${formattedDate}`;
+
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send();
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    function populateCalendar(month, year) {
+      var calendarBody = document.getElementById("calendarBody");
+      calendarBody.innerHTML = "";
+
+      var firstDay = new Date(year, month - 1).getDay(); // Giảm đi 1 để tính từ 0
+      var daysInMonth = 32 - new Date(year, month - 1, 32).getDate(); // Giảm đi 1 để tính từ 0
+      var date = 1;
+
+      for (var i = 0; i < 6; i++) {
+        var row = document.createElement("tr");
+        for (var j = 0; j < 7; j++) {
+          if (i === 0 && j < firstDay) {
+            var cell = document.createElement("td");
+            row.appendChild(cell);
+          } else if (date > daysInMonth) {
+            break;
+          } else {
+            var cell = document.createElement("td");
+            cell.textContent = date;
+            row.appendChild(cell);
+            date++;
+          }
+        }
+        calendarBody.appendChild(row);
+      }
+
+      calendarBody.addEventListener("click", function (event) {
+        var clickedCell = event.target;
+        var selectedDay = clickedCell.textContent;
+
+        var selectedDate = new Date(year, month - 1, selectedDay);
+
+        countWeddingEventsPerDay(selectedDate);
+      });
+    }
+
+    var monthSelect = document.getElementById("monthSelect");
+    var yearSelect = document.getElementById("yearSelect");
+    monthSelect.addEventListener("change", handleDropdownChange);
+    yearSelect.addEventListener("change", handleDropdownChange);
+
+    function handleDropdownChange() {
+      var selectedMonth = monthSelect.value;
+      var selectedYear = yearSelect.value;
+      populateCalendar(selectedMonth, selectedYear);
+
+      console.log("Tháng được chọn:", selectedMonth);
+      console.log("Năm được chọn:", selectedYear);
+
+      //Gọi hàm xử lý dữ liệu mới
+      // readCountWeddingEventsPerDayInMonthAPI(selectedMonth, selectedYear);
+    }
+
+    if (!monthSelect.value) {
+      monthSelect.value = currentMonth;
+    }
+    if (!yearSelect.value) {
+      yearSelect.value = currentYear;
+    }
+    readCountWeddingEventsPerDayInMonthAPI(currentMonth, currentYear);
+
+    for (var i = 0; i < 12; i++) {
+      var option = document.createElement("option");
+      option.value = i + 1;
+      option.text = new Date(0, i).toLocaleString("en", { month: "long" });
+      monthSelect.appendChild(option);
+    }
+
+    for (var i = currentYear - 10; i <= currentYear + 10; i++) {
+      var option = document.createElement("option");
+      option.value = i;
+      option.text = i;
+      yearSelect.appendChild(option);
+    }
+
+    monthSelect.value = currentMonth;
+    yearSelect.value = currentYear;
+
+    populateCalendar(currentMonth, currentYear);
+  });
+</script>
+
+{% endblock %}
