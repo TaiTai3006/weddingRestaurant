@@ -60,18 +60,6 @@
 
         <h4>Thông tin tiệc cưới</h4>
         <div class="row">
-          {% comment %}
-          <div class="col mb-3" id="weddingInfo">
-            <label for="ngaydattiec" class="form-label">Ngày đặt tiệc</label>
-            <input
-              type="date"
-              class="form-control"
-              id="ngaydattiec"
-              name="ngaydattiec"
-              placeholder="Ngày đặt tiệc"
-            />
-          </div>
-          {% endcomment %}
           <div class="col mb-3" id="weddingInfo">
             <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc </label>
             <input
@@ -116,20 +104,9 @@
               placeholder="Số lượng bàn"
             />
           </div>
-          {% comment %} <div class="col mb-3" id="weddingInfo">
-            <label for="soluongbandutru" class="form-label"
-              >Số lượng bàn dự trữ</label
-            >
-            <input
-              type="number"
-              class="form-control"
-              id="soluongbandutru"
-              name="soluongbandutru"
-              placeholder="Số lượng bàn dự trữ"
-            />
-          </div> {% endcomment %}
         </div>
       </div>
+      
       <div
         class="tab-pane fade"
         id="profile-tab-pane"
@@ -137,11 +114,13 @@
         aria-labelledby="profile-tab"
         tabindex="0"
       >
+      <div id="notification_result"></div>
         <select
           id="foodTypeSelect"
           class="form-select form-select-sm outline-none"
           aria-label="Small select example"
         >
+         <option value="all">Tất cả</option>
           {% for foodType in foodTypes %}
 
           <option value="{{foodType.maloaimonan}}">
@@ -150,37 +129,7 @@
 
           {% endfor %}
         </select>
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Tên món ăn</th>
-              <th scope="col">Loại món ăn</th>
-              <th scope="col">Đơn giá</th>
-              <th scope="col">Ghi chú</th>
-              <th scope="col">Select</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% load humanize %}
-            {% for food in foods %}
-            <tr class="foodRow" data-loaimonan="{{ food.maloaimonan }}">
-              <th scope="row">{{ forloop.counter }}</th>
-              <td>{{ food.tenmonan }}</td>
-              <td>{{ food.maloaimonan}}</td>
-              <td>{{ food.dongia |floatformat|intcomma}}</td>
-              <td>{{ food.ghichu }}</td>
-              <td id="weddingInfo">
-                <input
-                  type="checkbox"
-                  name="selected_foods"
-                  value="{{ food.mamonan }}"
-                />
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div id="foodlist"></div>
       </div>
       <div
         class="tab-pane fade"
@@ -194,7 +143,7 @@
             <tr>
               <th scope="col">#</th>
               <th scope="col">Tên dịch vụ</th>
-              <th scope="col">Loại dịch vụ</th>
+              <th scope="col">Số lượng</th>
               <th scope="col">Đơn giá</th>
               <th scope="col">Ghi chú</th>
               <th scope="col">Select</th>
@@ -206,15 +155,31 @@
             <tr>
               <th scope="row">{{ forloop.counter }}</th>
               <td>{{ service.tendichvu }}</td>
-              <td>{{ service.loaidichvu.tenloaidichvu }}</td>
+              <td> <input
+                type="number"
+                class="soluongDV_input"
+                min=1
+                name="soluongdichvu"
+                placeholder="Số lượng"
+                id="soluong_{{service.madichvu}}"
+                style="display: none;"
+              /></td>
 
-              <td>{{ service.dongia|floatformat|intcomma }}</td>
-              <td>{{ service.ghichu }}</td>
+              <td id="dongia_{{service.madichvu}}">{{ service.dongia|floatformat|intcomma }}</td>
+              <td><input
+                type="text"
+                class="ghichuDV_input"
+                name="ghichudichvu"
+                placeholder="Ghi chú ..."
+                id="ghichu_{{service.madichvu}}"
+                style="display: none;"
+              /></td>
               <td id="weddingInfo">
                 <input
+                  id="service_checkbox"
                   type="checkbox"
                   name="selected_services"
-                  value="{{ service.id }}"
+                  value="{{ service.madichvu }}"
                 />
               </td>
             </tr>
@@ -223,7 +188,8 @@
         </table>
       </div>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" id="payment_button" class="btn btn-primary">Thanh toán</button>
+    <button id='totalBill_button' class="btn btn-primary">Tính hoá đơn</button>
   </form>
   <div class="col-3 wedding-info p-2">
     <h4>Thông tin khách hàng</h4>
@@ -233,7 +199,7 @@
         <input
           type="text"
           class="form-control"
-          id="tenchure"
+          id="tenchure_input"
           name="tenchure"
           placeholder="Tên chú rể"
         />
@@ -243,7 +209,7 @@
         <input
           type="text"
           class="form-control"
-          id="tencodau"
+          id="tencodau_input"
           name="tencodau"
           placeholder="Tên cô dâu"
         />
@@ -254,17 +220,64 @@
       <input
         type="text"
         class="form-control"
-        id="sdt"
+        id="sdt_input"
         name="sdt"
         placeholder="Số điện thoại"
       />
     </div>
 
-    <div id="weddingInfoDisplay"></div>
-    <p id="ngaydattiectext"></p>
-    <p id="ngaydaitiec_value"></p>
-    <p id="tenca_value"></p>
-    <p id="thoigian_value"></p>
+    <div id="weddingInfoDisplay">
+      <table class="table" id="food_table_comfirm">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Tên món ăn</th>
+            <th scope="col">Đơn giá</th>
+            <th scope="col">Ghi chú</th>
+            <th scope="col">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr>
+            <td colSpan="4" style="textAlign: "right"">
+              Tổng tiền đơn giá bàn:
+            </td>
+            <td id="result_tdgb">
+              0
+            </td>
+          </tr>
+        </tfoot>
+    </div>
   </div>
+  <div id="weddingInfoDisplay">
+    <table class="table" id="service_table_comfirm">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Mã dịch vụ</th>
+          <th scope="col">Số lượng</th>
+          <th scope="col">Đơn giá</th>
+          <th scope="col">Ghi chú</th>
+          <th scope="col">Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colSpan="5" style="textAlign: "right"">
+            Tổng tiền dịch vụ:
+          </td>
+          <td id="result_ttdd">
+            0
+          </td>
+        </tr>
+      </tfoot>
+      <div id="totalBill_result"></div>
+  </div>
+  
 </div>
+
+</div>
+
 {% endblock %}

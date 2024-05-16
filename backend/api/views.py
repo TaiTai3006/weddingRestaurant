@@ -61,8 +61,16 @@ def create(request):
     
     return render(request, 'base.html',serialized_data)
 
-def getFoodTable(requet, type):
-    foods = Monan.objects.all()
+def getFoodTable(request, type): 
+
+    if type == 'all':
+        foods = Monan.objects.all()
+        serializer = FoodSerializer(foods, many=True)
+        return render(request, 'foodTable.html', {"foods": serializer.data})
+    
+    foods = Monan.objects.filter(maloaimonan=type)
+    serializer = FoodSerializer(foods, many=True)
+    return render(request, 'foodTable.html', {"foods": serializer.data})
 
 
 
@@ -208,34 +216,35 @@ def availablelobbiesListAPI(request):
 #Lưu trữ thông tin đặt tiệc cưới của khách hàng
 @api_view(['POST'])
 def bookingPartyWeddingAPI(request):
+    data = json.loads(request.body)
     # Tạo mã phiếu đặt tiệc theo định dạng 'TC****' Ví dụ: 'TC0001'
     matieccuoi = getNextID(Phieudattieccuoi, 'matieccuoi')
     
     # Lưu trữ thông tin đặt tiệc của khách hàng.
     party_booking_info = {
         'matieccuoi': matieccuoi,
-        'ngaydat': request.data.get('ngaydat'),
-        'ngaydaitiec': request.data.get('ngaydaitiec'),
-        'soluongban': request.data.get('soluongban'),
+        'ngaydat': data.get('ngaydattiec'),
+        'ngaydaitiec': data.get('ngaydaitiec'),
+        'soluongban': data.get('soluongban'),
         'soluongbandutru': 0,
-        'dongiaban': request.data.get('dongiaban'),
-        'tongtienban': request.data.get('tongtienban'),
-        'tongtiendichvu': request.data.get('tongtiendichvu'),
-        'tongtiendattiec': request.data.get('tongtiendattiec'),
-        'conlai': request.data.get('conlai'),
-        'tencodau': request.data.get('tencodau'),
-        'sdt': request.data.get('sdt'),
+        'dongiaban': data.get('dongiaban'),
+        'tongtienban': data.get('tongtienban'),
+        'tongtiendichvu': data.get('tongtiendichvu'),
+        'tongtiendattiec': data.get('tongtiendattiec'),
+        'conlai': data.get('conlai'),
+        'tencodau': data.get('tencodau'),
+        'sdt': data.get('sdt'),
         'tinhtrangphancong': None,
-        'maca': request.data.get('maca'),
-        'masanh': request.data.get('masanh'),
-        'username': request.data.get('username')
+        'maca': data.get('maca'),
+        'masanh': data.get('masanh'),
+        'username': 'taitai'
     }
 
     partyBookingForm = PartyBookingFormSerializer(data=party_booking_info)
     if partyBookingForm.is_valid():
         partyBookingForm.save() #Lưu trữ thông tin khách hàng và thông tin đặt tiệc vào bảng Phieuchitietdattiec trong database
         # Lưu trữ thông tin món ăn đã đặt vào bảng Chitietmonan trong database
-        foodList = request.data.get('danhsachmonan')
+        foodList = data.get('danhsachmonan')
         for food in foodList:
             food['matieccuoi'] = matieccuoi
             foodDetail = FoodDetailsSerializer(data = food)
@@ -245,7 +254,7 @@ def bookingPartyWeddingAPI(request):
             else: foodDetail.save()
         
         # Lưu trữ thông tin dịch vụ đã đặt vào bảng Chitietmonan trong database
-        serviceList = request.data.get('danhsachdichvu')
+        serviceList = data.get('danhsachdichvu')
         for service in serviceList:
             service['matieccuoi'] = matieccuoi
             serviceDetail = ServiceDetailsSerializer(data = service)
@@ -256,7 +265,7 @@ def bookingPartyWeddingAPI(request):
             else: serviceDetail.save()
 
         cache.delete('searchPartyBooking')
-        return Response(status = status.HTTP_201_CREATED)
+        return redirect('/create')
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
 

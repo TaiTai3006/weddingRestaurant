@@ -21,7 +21,8 @@ urlpatterns = [
   path('statistic/countServiceBooking/', countServiceBookingAPI),
   path('searchParty/', searchPartyBookingFormAPI),
   path('create/bookingParty/bollies/available/', availablelobbiesListAPI),
-  path('bookingParty/', bookingPartyWeddingAPI),
+  path('create/getFoodTable/<str:type>/', getFoodTable),
+  path('create/bookingParty/', bookingPartyWeddingAPI),
   path('<str:model_name>/', LobbyView),
   path('<str:model_name>/<str:id>/', LobbyView),
   
