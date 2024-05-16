@@ -307,13 +307,11 @@ window.onload = function() {
     button.previousElementSibling.style.display = "block";
   }
 
-
   editButtons.forEach(function(editButton) {
     editButton.addEventListener("click", function() {
       enableEditing(this);
     });
   });
-
 
   saveButtons.forEach(function(saveButton) {
     saveButton.addEventListener("click", function() {
