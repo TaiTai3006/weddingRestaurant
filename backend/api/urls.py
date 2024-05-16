@@ -10,6 +10,7 @@ urlpatterns = [
   path('invoice/', invoice),
   path('search/', search),
   path('search/searchParty/', searchPartyBookingFormAPI, name='search_party'),
+  path('search/searchFoodService/', displayFoodServiceDetailChecked),
   path('management/', management),
   path('login/', login),
   path('logout/', logout),

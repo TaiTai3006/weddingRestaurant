@@ -40,29 +40,45 @@ def report(request):
 def invoice(request):
     return render(request, 'invoice.html')
 def search(request):
+    foods = Monan.objects.all()
+    food_serializer = FoodSerializer(foods, many=True)
+    services = Dichvu.objects.all()
+    service_serializer = ServiceSerializer(services, many=True)
     lobby_types = Loaisanh.objects.all()
     shifts = Ca.objects.all()
-    foods = Monan.objects.all()
     food_types = Loaimonan.objects.all()
-    services = Dichvu.objects.all()
-
-    lobby_type_serializer = LobbyTypeSerializer(lobby_types, many=True)
-    shift_serializer = ShiftSerializer(shifts, many = True)
-
+    
     food_serializer = FoodSerializer(foods, many=True)
     food_type_serializer = FoodTypeSerializer(food_types, many=True)
     service_serializer = ServiceSerializer(services, many=True)
-    
-    
+    lobby_type_serializer = LobbyTypeSerializer(lobby_types, many=True)
+    shift_serializer = ShiftSerializer(shifts, many = True)
+
+    query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi not in (SELECT maTiecCuoi FROM HoaDon) ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC')
+    serializer = PartyBookingFormSerializer(query, many = True)
     serialized_data = {
-        
+        'weddings': serializer.data,
+        'foods': food_serializer.data,
+        'services': service_serializer.data,
         'lobbyTypes': lobby_type_serializer.data,
         'shifts' : shift_serializer.data,
-        'foods': food_serializer.data,
         'foodTypes': food_type_serializer.data, 
-        'services': service_serializer.data,
-        
+
     }
+    
+   
+    for item in serializer.data:
+        query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
+        query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
+        query3 = Sanh.objects.filter(masanh = item['masanh'])
+        query4 = Ca.objects.filter(maca = item['maca'])
+        item['danhsachdichvu'] = ServiceDetailsSerializer(query1, many=True).data
+        item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
+        item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
+        item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        
+   
+   
     print(serialized_data)
     
     return render(request, 'search.html',serialized_data)
@@ -110,7 +126,6 @@ def getFoodTable(request, type):
     foods = Monan.objects.filter(maloaimonan=type)
     serializer = FoodSerializer(foods, many=True)
     return render(request, 'foodTable.html', {"foods": serializer.data})
-
 
 
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
@@ -363,7 +378,63 @@ def bookingPartyWeddingAPI(request):
         return redirect('/create')
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
-
+# Hiển thị thông tin các món ăn và dịch vụ đã chọn
+@api_view(['GET'])
+def displayFoodServiceDetailChecked(request):
+    matieccuoi = request.GET.get('matieccuoi')
+    
+    try:
+        wedding = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi)
+    except Phieudattieccuoi.DoesNotExist:
+        return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
+    
+    serializer = PartyBookingFormSerializer(wedding)
+    
+    chitietmonan_query = Chitietmonan.objects.filter(matieccuoi=matieccuoi)
+    chitietmonan_serializer = FoodDetailsSerializer(chitietmonan_query, many=True)
+    data={
+        'wedding': serializer.data,
+        'food': chitietmonan_serializer.data
+    }
+    serializer.data['danhsachmonan'] = chitietmonan_serializer.data
+    print(data)
+    return JsonResponse(data)
+def displayFoodServiceDetailCheckedffff(request):
+    matieccuoi = request.GET.get('matieccuoi')
+    query = "SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi = '{matieccuoi}' "
+    try:
+        wedding = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi)
+        # print("wehiing",wedding)
+    except Phieudattieccuoi.DoesNotExist:
+        return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
+    serializer = PartyBookingFormSerializer(query, many = False)
+    print("wehiing",serializer)
+    for item in serializer.data:
+        query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
+        query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
+        query3 = Sanh.objects.filter(masanh = item['masanh'])
+        query4 = Ca.objects.filter(maca = item['maca'])
+        item['danhsachdichvu'] = ServiceDetailsSerializer(query1, many=True).data
+        item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
+        item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
+        item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        
+    # selected_foods = list(wedding.danhsachmonan.values_list('mamonan', flat=True))
+    # selected_services = list(wedding.danhsachdichvu.values_list('madichvu', flat=True))
+    
+    # Lấy danh sách tất cả món ăn và dịch vụ
+    all_foods = Monan.objects.all()
+    all_services = Dichvu.objects.all()
+    food_serializer = FoodSerializer(all_foods, many=True)
+    
+    service_serializer = ServiceSerializer(all_services, many=True)
+    
+    # Tạo danh sách JSON chứa thông tin món ăn và dịch vụ, đánh dấu các mục đã chọn
+    # food_list = [{'id': food.id, 'name': food.tenmonan, 'checked': food.id in selected_foods} for food in all_foods]
+    # service_list = [{'id': service.id, 'name': service.tendichvu, 'checked': service.id in selected_services} for service in all_services]
+    # print(food_list,service_list)
+    return JsonResponse({'foods': food_serializer.data, 'services': service_serializer.data}) 
+    
 # Thống kê số lượng tiệc trong tháng theo từng ngày
 @api_view(['GET'])
 # @authentication_classes([SessionAuthentication, TokenAuthentication])

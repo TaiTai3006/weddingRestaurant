@@ -135,7 +135,7 @@
                 {% endfor %}
               </tbody>
             </table>
-            <button type="button" id="modal-add-food"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
+            <button type="button" id="modal-add-food"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" data-wedding-id="{{ wedding.matieccuoi }}"   >
               Thêm món ăn
             </button>
           </div>
@@ -159,15 +159,13 @@
                   <td>{{ service.soluong }}</td>
                   <td>{{ service.dongiadichvu|intcomma }}</td>
                   <td>
-                    {{
-                    service.dongiadichvu|floatformat|mul:service.soluong|intcomma
-                    }}
+                    {{service.dongiadichvu|floatformat|mul:service.soluong|intcomma}}
                   </td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
-            <button type="button" id="modal-add-service"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModalService">
+            <button type="button" id="modal-add-service"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModalService" >
               Thêm dịch vụ
             </button>
           </div>
@@ -207,6 +205,10 @@
                   type="checkbox"
                   name="selected_foods"
                   value="{{ food.mamonan }}"
+                  
+                  {% for wed_food in wedding.danhsachmonan %}
+                    {% if wed_food.mamonan == food.mamonan %} checked {% endif %}
+                  {% endfor %}
                 />
               </td>
             </tr>
@@ -270,13 +272,16 @@
   </div>
 </div>
 <script>
-   console.log("first page loaded");
+
+   function readFoodServiceDetailChecked(wedding_id){
+console.log("ma tiec cuoi :",wedding_id)
+  }
 window.onload = function() {
   console.log("first page loaded");
 
   // Retrieve all edit and save buttons using class selectors
-  const editButtons = document.querySelectorAll(".editButton");
-  const saveButtons = document.querySelectorAll(".saveButton");
+  const editButtons = document.querySelectorAll("#editButton");
+  const saveButtons = document.querySelectorAll("#saveButton");
 
   // Function to enable form fields for editing
   function enableEditing(button) {
@@ -302,14 +307,14 @@ window.onload = function() {
     button.previousElementSibling.style.display = "block";
   }
 
-  // Add event listeners for edit buttons
+
   editButtons.forEach(function(editButton) {
     editButton.addEventListener("click", function() {
       enableEditing(this);
     });
   });
 
-  // Add event listeners for save buttons
+
   saveButtons.forEach(function(saveButton) {
     saveButton.addEventListener("click", function() {
       disableEditing(this);

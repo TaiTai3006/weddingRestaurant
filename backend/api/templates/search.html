@@ -1,7 +1,11 @@
-{% extends 'layout.html' %} {% block title %} Home {% endblock %} {% block content %}
-{% load mathfilters %}
-{% load humanize %}
-<form className="form-columns" id="searchWedding" action="{% url 'search_party' %}" method="GET">
+{% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
+{% load mathfilters %} {% load humanize %}
+<form
+  className="form-columns"
+  id="searchWedding"
+  action="{% url 'search_party' %}"
+  method="GET"
+>
   <div class="row">
     <div class="col mb-3">
       <label for="tencodau" class="form-label">Tên cô dâu </label>
@@ -31,7 +35,8 @@
         name="maca"
         id="maca"
         aria-label="Default select example"
-      > <option value="">Chọn ca</option>
+      >
+        <option value="">Chọn ca</option>
         {% for ca in shifts %}
 
         <option value="{{ ca.maca }}">{{ ca.tenca }}</option>
@@ -48,7 +53,7 @@
       >
         <option value="">Chọn loại sảnh</option>
         {% for sanh in lobbyTypes %}
-        <option value={{sanh.maloaisanh}}>{{sanh.tenloaisanh}}</option>
+        <option value="{{sanh.maloaisanh}}">{{sanh.tenloaisanh}}</option>
         {% endfor %}
       </select>
     </div>
@@ -99,278 +104,123 @@
     </div>
   </div>
   <div class="d-flex justify-content-end my-3">
-    <button type="submit" id="searchButton" class="btn btn-outline-primary">Tìm kiếm</button>
+    <button type="submit" id="searchButton" class="btn btn-outline-primary">
+      Tìm kiếm
+    </button>
     <button type="button" class="btn btn-outline-primary">Nhập lại</button>
   </div>
 </form>
-<!-- <table class="table border">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Mã tiệc cưới</th>
-      <th>Tên cô dâu</th>
-      <th>Tên chú rể</th>
-      <th>Số điện thoại</th>
-      <th>Sảnh</th>
-      <th>Giờ</th>
-      <th>Ngày đãi tiệc</th>
-      <th>Nhân viên</th>
-    </tr>
-  </thead>
-  <tbody id="accordion">
-    {% for wedding in data %}
-    <tr
-      data-toggle="collapse"
-      data-target="#collapse{{ wedding.matieccuoi }}"
-      aria-expanded="true"
-      aria-controls="collapse{{ wedding.matieccuoi }}"
-      class="accordion-toggle"
-    >
-      <td>{{forloop.counter }}</td>
-      <td>{{ wedding.matieccuoi }}</td>
-      <td>{{ wedding.tencodau }}</td>
-      <td>{{ wedding.tenchure }}</td>
-      <td>{{ wedding.sdt }}</td>
-      <td>{{ wedding.thongtinsanh.tensanh }}</td>
-      <td>{{ wedding.thongtinca.giobatdau }}</td>
-      <td>{{ wedding.ngaydaitiec }}</td>
-      <td>{{ wedding.username }}</td>
-    </tr>
-    <tr>
-      <td colspan="9" class="hiddenRow">
-        <div
-          id="collapse{{ wedding.matieccuoi }}"
-          class="collapse p-3 accordion-content"
-          aria-labelledby="heading{{ wedding.matieccuoi }}"
-          data-parent="#accordion"
-        >
-          <form class="wedding_info">
-            <div class="row">
-              <div class="col mb-3">
-                <label for="matieccuoi" class="form-label">Mã tiệc cưới:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="matieccuoi"
-                  name="matieccuoi_disable"
-                  value="{{ wedding.matieccuoi }}"
-                  disabled
-                />
-              </div>
-              <div class="col mb-3">
-                <label for="tencodau" class="form-label">Tên cô dâu:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="tencodau"
-                  name="tencodau"
-                  value="{{ wedding.tencodau }}"
-                  disabled
-                />
-              </div>
-              <div class="col mb-3">
-                <label for="tenchure" class="form-label">Tên chú rể:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="tenchure"
-                  name="tenchure"
-                  value="{{ wedding.tenchure }}"
-                  disabled
-                />
-              </div>
-              <div class="col mb-3">
-                <label for="ngaydaitiec" class="form-label"
-                  >Ngày đãi tiệc:</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="ngaydaitiec"
-                  name="ngaydaitiec"
-                  value="{{ wedding.ngaydaitiec }}"
-                  disabled
-                />
-              </div>
-              <div class="d-flex justify-content-end">
-                <div class="btn-group" role="group">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    id="editButton"
-                  >
-                    Chỉnh sửa
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    id="saveButton"
-                    style="display: none"
-                  >
-                    Lưu
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
-          <div>
-            <strong>Món ăn:</strong>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Tên món ăn</th>
-                  <th>Số lượng</th>
-                  <th>Đơn giá</th>
-                  <th>Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for food in wedding.danhsachmonan %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td id="chitiet_mamonan">{{ food.mamonan }}</td>
-                  <td>{{ food.soluong }}</td>
-                  <td>{{ food.dongiamonan|floatformat|intcomma }}</td>
-                  <td>
-                    {{ food.dongiamonan|floatformat|mul:food.soluong|intcomma }}
-                  </td>
-                </tr>
-                {% endfor %}
-                <button type="button" id="modal-add-food"class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
-                  Thêm món ăn
-                </button>
-                
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <strong>Dịch vụ:</strong>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Tên dịch vụ</th>
-                  <th>Số lượng</th>
-                  <th>Đơn giá</th>
-                  <th>Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for service in wedding.danhsachdichvu %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td id="chitiet_madichvu">{{ service.madichvu }}</td>
-                  <td>{{ service.soluong }}</td>
-                  <td>{{ service.dongiadichvu|intcomma }}</td>
-                  <td>
-                    {{service.dongiadichvu|floatformat|mul:service.soluong|intcomma}}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table> -->
+
 <div id="searchResult"></div>
 
-<!-- <div id="searchResult"></div> -->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-  
-function readSearchResult() {
-  const xhttp = new XMLHttpRequest();
+  console.log(document.getElementById("searchResult"));
 
-  xhttp.onload = function() {
-    if (this.status >= 200 && this.status < 300) {
-      document.getElementById("searchResult").innerHTML = this.responseText;
-      
-      // Xử lý dữ liệu nếu cần
-      
-    } else {
-      console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+  function readFoodServiceDetailChecked(matieccuoi) {
+    console.log("Mã tiệc cưới:", matieccuoi);
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var responseData = JSON.parse(this.responseText);
+        console.log(responseData);
+     
+        
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    const url = `searchFoodService/?matieccuoi=${matieccuoi}`;
+
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send();
+  }
+  function readSearchResult() {
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        document.getElementById("searchResult").innerHTML = this.responseText;
+        console.log(document.getElementById("searchResult"));
+        console.log(document.getElementById("modal-add-food"));
+        document
+          .getElementById("modal-add-food")
+          .addEventListener("click", function () {
+            console.log("hellooo");
+            var wedding_id = this.getAttribute("data-wedding-id");
+            console.log(wedding_id);
+            readFoodServiceDetailChecked(wedding_id);
+          });
+
+        // Xử lý dữ liệu nếu cần
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    // Lấy các giá trị từ các trường nhập liệu
+    var tenchure = document.getElementById("tenchure").value || null;
+    var tencodau = document.getElementById("tencodau").value || null;
+    var maca = document.getElementById("maca").value || null;
+    var masanh = document.getElementById("masanh").value || null;
+    var ngaydattiec = document.getElementById("ngaydattiec").value || null;
+    var ngaydaitiec = document.getElementById("ngaydaitiec").value || null;
+    var soluongban = document.getElementById("soluongban").value || null;
+    var soluongbandutru =
+      document.getElementById("soluongbandutru").value || null;
+    var url = "searchParty/?";
+    if (tenchure) {
+      url += "tenchure=" + encodeURIComponent(tenchure) + "&";
     }
-  };
+    if (tencodau) {
+      console.log("tencodau");
+      url += "tencodau=" + encodeURIComponent(tencodau) + "&";
+    }
+    if (maca) {
+      url += "maca=" + encodeURIComponent(maca) + "&";
+    }
+    if (masanh) {
+      url += "masanh=" + encodeURIComponent(masanh) + "&";
+    }
+    if (ngaydattiec) {
+      url += "ngaydattiec=" + encodeURIComponent(ngaydattiec) + "&";
+    }
+    if (ngaydaitiec) {
+      url += "ngaydaitiec=" + encodeURIComponent(ngaydaitiec) + "&";
+    }
+    if (soluongban) {
+      url += "soluongban=" + encodeURIComponent(soluongban) + "&";
+    }
+    if (soluongbandutru) {
+      url += "soluongbandutru=" + encodeURIComponent(soluongbandutru) + "&";
+    }
 
-  // Lấy các giá trị từ các trường nhập liệu
-        var tenchure = document.getElementById("tenchure").value || null;
-        var tencodau = document.getElementById("tencodau").value || null;
-        var maca = document.getElementById("maca").value || null;
-        var masanh = document.getElementById("masanh").value || null;
-        var ngaydattiec = document.getElementById("ngaydattiec").value || null;
-        var ngaydaitiec = document.getElementById("ngaydaitiec").value || null;
-        var soluongban = document.getElementById("soluongban").value || null;
-        var soluongbandutru = document.getElementById("soluongbandutru").value || null;
-        console.log('Tên chú rể:', tenchure);
-        console.log('Tên cô dâu:', tencodau);
-        console.log('Ca:', maca);
-        console.log('Sảnh:', masanh);
-        console.log('Ngày đặt tiệc:', ngaydattiec);
-        console.log('Ngày đãi tiệc:', ngaydaitiec);
-        console.log('Số lượng bàn:', soluongban);
-        console.log('Số lượng bàn dự trữ:', soluongbandutru);
-  // Tạo URL với các tham số query string
-  var url = "searchParty/?";
-  if (tenchure) {
-    url += "tenchure=" + encodeURIComponent(tenchure) + "&";
-  }
-  if (tencodau) {
-    console.log("tencodau")
-    url += "tencodau=" + encodeURIComponent(tencodau) + "&";
-  }
-  if (maca ) {
-    url += "maca=" + encodeURIComponent(maca) + "&";
-  }
-  if (masanh ) {
-    url += "masanh=" + encodeURIComponent(masanh) + "&";
-  }
-  if (ngaydattiec ) {
-    url += "ngaydattiec=" + encodeURIComponent(ngaydattiec) + "&";
-  }
-  if (ngaydaitiec ) {
-    url += "ngaydaitiec=" + encodeURIComponent(ngaydaitiec) + "&";
-  }
-  if (soluongban ) {
-    url += "soluongban=" + encodeURIComponent(soluongban) + "&";
-  }
-  if (soluongbandutru) {
-    url += "soluongbandutru=" + encodeURIComponent(soluongbandutru) + "&";
-  }
+    // Loại bỏ dấu & cuối cùng nếu có
+    url = url.replace(/&$/, "");
+    console.log(url);
+    // Mở một yêu cầu GET đến URL
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
 
-  // Loại bỏ dấu & cuối cùng nếu có
-  url = url.replace(/&$/, "");
-console.log(url)
-  // Mở một yêu cầu GET đến URL
-  xhttp.open("GET", url);
-  xhttp.setRequestHeader("Content-type", "application/json");
-
-  // Gửi yêu cầu
-  xhttp.send();
-}
-document.querySelectorAll('#searchWedding input, #searchWedding select').forEach((input) => {
-  input.addEventListener("input", function(){
-    readSearchResult();
-  })
-})
-// Thêm sự kiện nghe cho nút "Tìm kiếm"
-// document.getElementById("searchButton").addEventListener("click", function() {
-  
-// });
-
-// Khi trang được tải, gọi hàm readSearchResult() một lần
-
+    // Gửi yêu cầu
+    xhttp.send();
+  }
+  document
+    .querySelectorAll("#searchWedding input, #searchWedding select")
+    .forEach((input) => {
+      input.addEventListener("input", function () {
+        readSearchResult();
+      });
+    });
   const apiUrlFoods = "http://127.0.0.1:8000/foods/";
   const apiUrlServices = "http://127.0.0.1:8000/services/";
   const fetchFoods = async () => {
     try {
       const response = await axios.get(apiUrlFoods);
       return response.data;
-      
     } catch (error) {
       console.error("Error fetching wedding foods:", error);
       throw error;
@@ -380,7 +230,6 @@ document.querySelectorAll('#searchWedding input, #searchWedding select').forEach
     try {
       const response = await axios.get(apiUrlServices);
       return response.data;
-      
     } catch (error) {
       console.error("Error fetching wedding services:", error);
       throw error;
@@ -388,65 +237,84 @@ document.querySelectorAll('#searchWedding input, #searchWedding select').forEach
   };
   window.onload = async () => {
     try {
-    
-      readSearchResult()
+      readSearchResult();
       const weddingFoods = await fetchFoods();
       const weddingServices = await fetchServices();
-      
+
       const chitiet_mamonan = document.querySelectorAll("#chitiet_mamonan");
       chitiet_mamonan.forEach(async (element) => {
         const mamonan = element.textContent.trim();
-    
-        const matchingFood = weddingFoods.find(food => food.mamonan === mamonan);
-    
-    if (matchingFood) {
-        element.textContent = matchingFood.tenmonan;
-    }
-    const chitiet_madichvu = document.querySelectorAll('#chitiet_madichvu');
-    chitiet_madichvu.forEach(async(element) =>{
-        const madichvu = element.textContent.trim();
-        
-         const matchingService = weddingServices.find(dichvu => dichvu.madichvu = madichvu)
 
-         if(matchingService){
+        const matchingFood = weddingFoods.find(
+          (food) => food.mamonan === mamonan
+        );
+
+        if (matchingFood) {
+          element.textContent = matchingFood.tenmonan;
+        }
+        const chitiet_madichvu = document.querySelectorAll("#chitiet_madichvu");
+        chitiet_madichvu.forEach(async (element) => {
+          const madichvu = element.textContent.trim();
+
+          const matchingService = weddingServices.find(
+            (dichvu) => (dichvu.madichvu = madichvu)
+          );
+
+          if (matchingService) {
             element.textContent = matchingService.tendichvu;
-         }
-    })
-  
-});
+          }
+        });
+      });
     } catch (error) {
       console.error("Error handling hall types:", error);
     }
   };
- const collapses = document.querySelectorAll("#collapse")
-collapses.forEach((element)=>{
-  console.log(element)
-})
-  const editButton = document.querySelectorAll("#editButton");
-  console.log(editButton)
-  
-  const saveButton = document.getElementById("saveButton");
-  var inputs = document.querySelectorAll(".wedding_info input");
 
-  editButton.forEach((edit)=>{
-    edit.addEventListener("click", function () {
-    console.log("editButton");
-    editButton.style.display = "none";
-    saveButton.style.display = "block";
-    inputs.forEach((input) => {
-      console.log(input);
-      if (input.id !== "matieccuoi_disable") {
-        input.disabled = false;
-      }
+  const editButtons = document.querySelectorAll("#editButton");
+  const saveButtons = document.querySelectorAll("#saveButton");
+
+  // Function to enable form fields for editing
+  function enableEditing(button) {
+    const formFields = button
+      .closest(".wedding_info")
+      .querySelectorAll("input[type='text']");
+
+    formFields.forEach(function (inputField) {
+      inputField.disabled = false;
     });
+    document.getElementById("modal-add-food").style.display = "block";
+    document.getElementById("modal-add-service").style.display = "block";
 
-  })
+    button.style.display = "none";
+    button.nextElementSibling.style.display = "block";
+  }
 
-    
+  // Function to disable form fields after editing
+  function disableEditing(button) {
+    const formFields = button
+      .closest(".wedding_info")
+      .querySelectorAll("input[type='text']");
+
+    formFields.forEach(function (inputField) {
+      inputField.disabled = true;
+    });
+    document.getElementById("modal-add-food").style.display = "none";
+    document.getElementById("modal-add-service").style.display = "none";
+    button.style.display = "none";
+    button.previousElementSibling.style.display = "block";
+  }
+
+  editButtons.forEach(function (editButton) {
+    editButton.addEventListener("click", function () {
+      enableEditing(this);
+    });
   });
 
-  
-  
+  saveButtons.forEach(function (saveButton) {
+    saveButton.addEventListener("click", function () {
+      disableEditing(this);
+    });
+  });
 </script>
 
 {% endblock %}
