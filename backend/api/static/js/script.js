@@ -549,6 +549,7 @@ document
         dataCreateWedding.tiendatcoc
       )}</p>` +
       `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
+      console.log(dataCreateWedding)
   });
 
 document
@@ -557,8 +558,8 @@ document
     e.preventDefault();
     const xhttp = new XMLHttpRequest();
     xhttp.onload = function () {
-      localStorage.removeItem("dataWedding");
-      window.location.reload();
+      // localStorage.removeItem("dataWedding");
+      // window.location.reload();
     };
     xhttp.open("POST", "bookingParty/");
     xhttp.setRequestHeader("Content-type", "application/json");

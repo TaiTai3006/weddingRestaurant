@@ -324,7 +324,7 @@ def availablelobbiesListAPI(request):
 
 
 #Lưu trữ thông tin đặt tiệc cưới của khách hàng
-@api_view(['POST'])
+# @api_view(['POST'])
 def bookingPartyWeddingAPI(request):
     data = json.loads(request.body)
     # Tạo mã phiếu đặt tiệc theo định dạng 'TC****' Ví dụ: 'TC0001'
@@ -342,7 +342,9 @@ def bookingPartyWeddingAPI(request):
         'tongtiendichvu': data.get('tongtiendichvu'),
         'tongtiendattiec': data.get('tongtiendattiec'),
         'conlai': data.get('conlai'),
+        'tiendatcoc': data.get('tiendatcoc'),
         'tencodau': data.get('tencodau'),
+        'tenchure': data.get('tenchure'),
         'sdt': data.get('sdt'),
         'tinhtrangphancong': None,
         'maca': data.get('maca'),
