@@ -18,6 +18,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Count
 from django.db.models.functions import ExtractDay
 from django.http import JsonResponse
+from datetime import datetime
 
 import json
 
@@ -34,7 +35,85 @@ model_serializer_map = {
     }
 # Trang dashboard
 def getindex(request):
-    return render(request, 'dashboard.html')
+    print(request.POST)
+    date_string = request.POST.get('date')
+    type = request.POST.get('type', 'day')
+    now = datetime.now()
+    date = ''
+    year = ''
+    month = ''
+
+    if(date_string):
+        date = datetime.strptime(date_string, "%Y-%m-%d")
+        year = date.year
+        month = date.month
+    
+    current_month = month if month else now.month
+    current_year = year if year else now.year
+    current_date = date_string if date_string else f"{current_year}-{current_month:02}-{now.day:02}"    
+
+    if type == 'day':
+        data_count_wedding = countWeddingEventsPerDayInMonth(current_month, current_year)
+    else:
+        data_count_wedding = countWeddingEventsPerMonth(current_year)
+
+    data_wedding_events = countWeddingEventsPerDay(current_date)
+
+    print(data_count_wedding, data_wedding_events)
+
+    options_chart = {
+        "categories": list(map(lambda x: x.get("day") if type == 'day' else x.get("month"), data_count_wedding)),
+        "series":  list(map(lambda x: x.get("count"), data_count_wedding))
+        };
+    return render(request, 'dashboard.html', {"optionsChart": json.dumps(options_chart), 
+                                              "dataWeddingEvents" : data_wedding_events,
+                                              "dataRequest": {"date": current_date, "type":type}})
+
+
+def countWeddingEventsPerDayInMonth(month, year):
+    print(month, year)
+    query = Phieudattieccuoi.objects.raw(f"""
+        SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
+        FROM `PhieuDatTiecCuoi` 
+        WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} 
+        GROUP BY DAY(`ngayDaiTiec`)
+    """)
+    
+    result_list = []
+    for item in query:
+        day = item.Day
+        count = item.Count
+        result_list.append({'day': day, 'count': count})
+    print(result_list)
+    return result_list
+
+def countWeddingEventsPerMonth(year):
+    print( year)
+    query = Phieudattieccuoi.objects.raw(f"""
+        SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
+        FROM `PhieuDatTiecCuoi` 
+        WHERE YEAR(`ngayDaiTiec`) = {year} 
+        GROUP BY MONTH(`ngayDaiTiec`)
+    """)
+    
+    result_list = []
+    for item in query:
+        month = item.Month
+        count = item.Count
+        result_list.append({'month': month, 'count': count})
+
+    return result_list
+
+def countWeddingEventsPerDay(date):
+    query = Phieudattieccuoi.objects.raw(
+        f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
+        f"FROM `PhieuDatTiecCuoi`, Ca "
+        f"WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' "
+        f"GROUP BY Ca.tenCa"
+    )
+    results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
+    print(results)
+    return results
 def report(request):
     return render(request, 'report.html')
 def invoice(request):
@@ -438,45 +517,45 @@ def displayFoodServiceDetailCheckedffff(request):
     return JsonResponse({'foods': food_serializer.data, 'services': service_serializer.data}) 
     
 # Thống kê số lượng tiệc trong tháng theo từng ngày
-@api_view(['GET'])
+# @api_view(['GET'])
 # @authentication_classes([SessionAuthentication, TokenAuthentication])
 # @permission_classes([IsAuthenticated])
-def countWeddingEventsPerDayInMonthAPI(request):
-    month = request.GET.get('month')
-    year = request.GET.get('year')
-    print(month, year)
-    query = Phieudattieccuoi.objects.raw(f"""
-        SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
-        FROM `PhieuDatTiecCuoi` 
-        WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} 
-        GROUP BY DAY(`ngayDaiTiec`)
-    """)
+# def countWeddingEventsPerDayInMonthAPI(request):
+#     month = request.GET.get('month')
+#     year = request.GET.get('year')
+#     print(month, year)
+#     query = Phieudattieccuoi.objects.raw(f"""
+#         SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
+#         FROM `PhieuDatTiecCuoi` 
+#         WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} 
+#         GROUP BY DAY(`ngayDaiTiec`)
+#     """)
     
-    result_list = []
-    for item in query:
-        day = item.Day
-        count = item.Count
-        result_list.append({'day': day, 'count': count})
-    print(result_list)
-    return JsonResponse(result_list, safe=False)
-@api_view(['GET'])
-def countWeddingEventsPerMonthAPI(request):
-    year = request.GET.get('year')
-    print( year)
-    query = Phieudattieccuoi.objects.raw(f"""
-        SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
-        FROM `PhieuDatTiecCuoi` 
-        WHERE YEAR(`ngayDaiTiec`) = {year} 
-        GROUP BY MONTH(`ngayDaiTiec`)
-    """)
+#     result_list = []
+#     for item in query:
+#         day = item.Day
+#         count = item.Count
+#         result_list.append({'day': day, 'count': count})
+#     print(result_list)
+#     return JsonResponse(result_list, safe=False)
+# @api_view(['GET'])
+# def countWeddingEventsPerMonthAPI(request):
+#     year = request.GET.get('year')
+#     print( year)
+#     query = Phieudattieccuoi.objects.raw(f"""
+#         SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
+#         FROM `PhieuDatTiecCuoi` 
+#         WHERE YEAR(`ngayDaiTiec`) = {year} 
+#         GROUP BY MONTH(`ngayDaiTiec`)
+#     """)
     
-    result_list = []
-    for item in query:
-        month = item.Month
-        count = item.Count
-        result_list.append({'month': month, 'count': count})
-    print(result_list)
-    return JsonResponse(result_list, safe=False)
+#     result_list = []
+#     for item in query:
+#         month = item.Month
+#         count = item.Count
+#         result_list.append({'month': month, 'count': count})
+#     print(result_list)
+#     return JsonResponse(result_list, safe=False)
 
 # def countWeddingEventsPerDayInMonthAPI(request):
 #     # model_cache = cache.get('countWeddingEventsPerDayInMonth')
@@ -502,24 +581,24 @@ def countWeddingEventsPerMonthAPI(request):
 #     return render(request, 'workScheduleChart.html', {"result_list" : result_list})
 
 #Thống kê số lượng tiệc cưới trong ngày theo từng ca
-@api_view(['GET'])
+# @api_view(['GET'])
 # @authentication_classes([SessionAuthentication, TokenAuthentication])
 # @permission_classes([IsAuthenticated])
-def countWeddingEventsPerDayAPI(request):
-    date = request.GET.get('date')
-    print(request,date)
+# def countWeddingEventsPerDayAPI(request):
+#     date = request.GET.get('date')
+#     print(request,date)
 
-    if not date:
-        return Response({"error": "date query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    query = Phieudattieccuoi.objects.raw(
-        f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
-        f"FROM `PhieuDatTiecCuoi`, Ca "
-        f"WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' "
-        f"GROUP BY Ca.tenCa"
-    )
-    results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
-    print(results)
-    return JsonResponse(results, safe=False)
+#     if not date:
+#         return Response({"error": "date query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+#     query = Phieudattieccuoi.objects.raw(
+#         f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
+#         f"FROM `PhieuDatTiecCuoi`, Ca "
+#         f"WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' "
+#         f"GROUP BY Ca.tenCa"
+#     )
+#     results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
+#     print(results)
+#     return JsonResponse(results, safe=False)
 
 
 

@@ -4,7 +4,8 @@ from api.models import *
 from api.serializers import *
 
 urlpatterns = [
-  path('', getindex),
+  path('', getindex, name='index'),
+  # path('<type>/', selectDashboard),
   path('create/', create),
   path('report/', report),
   path('invoice/', invoice),
@@ -17,9 +18,9 @@ urlpatterns = [
   path('signup/', signup),
   path('assignTask/', assignTaskAPI),
   path('paymentInvoice/',paymentInvoiceAPI),
-  path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
-  path('statistic/eventsPerMonth/', countWeddingEventsPerMonthAPI),
-  path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
+  # path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
+  # path('statistic/eventsPerMonth/', countWeddingEventsPerMonthAPI),
+  # path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
   path('statistic/revenueReportPerDay/', revenueReportPerDayAPI),
   path('statistic/revenueReportPerMonth/', revenueReportPerMonthAPI),
   path('statistic/revenueReportPerYear/', revenueReportPerYearAPI),

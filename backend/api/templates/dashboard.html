@@ -1,5 +1,5 @@
 {% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
-
+{% csrf_token %}
 <div class="row">
   <div class="col-12">
     <div class="card mb-4">
@@ -8,6 +8,8 @@
       </div>
     </div>
   </div>
+  <form id="formSubmit" action="{% url 'index' %}" method="post">
+    {% csrf_token %}
   <div class="col-12">
     <div class="row">
       <div class="col-lg-8">
@@ -15,12 +17,15 @@
           <div class="row card-body">
             <h5 class="col card-title">Lịch phân công công việc</h5>
             <select
+              name = "type"
               id="phancongcongviec_select"
               class="col form-control mb-3"
               style="max-width: 100px"
+              value={{dataRequest.type}}
+              onchange="document.getElementById('formSubmit').submit();"
             >
-              <option selected="daily">Ngày</option>
-              <option value="monthly">Tháng</option>
+              <option value="day" {% if dataRequest.type == 'day' %}selected{% endif %}>Ngày</option>
+              <option value="month" {% if dataRequest.type == 'month' %}selected{% endif %}>Tháng</option>
             </select>
             <div class="chart-container">
               <div id="workScheduleChart"></div>
@@ -32,6 +37,7 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Lịch tháng</h5>
+            <input id="currentDate" name="date" type="date" value={{dataRequest.date}} readonly/>
             <div class="calendar">
               <div class="row calendar-controls">
                 <select id="monthSelect" class="col form-control m-2"></select>
@@ -70,10 +76,19 @@
                 </tr>
               </thead>
               <tbody>
+                {%if dataWeddingEvents%}
+                {%for dataWeddingEvent in dataWeddingEvents%}
                 <tr>
-                  <td>Chiều</td>
-                  <td>1</td>
+                  <td>{{dataWeddingEvent.ca}}</td>
+                  <td>{{dataWeddingEvent.event_count}}</td>
                 </tr>
+                {%endfor%}
+                {%else%}
+                <tr>
+                  <td></td>
+                  <td>Không có dữ liệu</td>
+                </tr>
+                {% endif %}
               </tbody>
             </table>
           </div>
@@ -81,192 +96,45 @@
       </div>
     </div>
   </div>
+</form>
 </div>
 
 <script>
-  var currentMonth = 6;
-  var currentYear = 2023;
-  // var currentYear = new Date().getFullYear();
-  // var currentMonth = new Date().getMonth() + 1; // Tháng trong JavaScript bắt đầu từ 0, nên cần cộng thêm 1
-
-  var phancongcongviec_select = document.getElementById(
-    "phancongcongviec_select"
-  );
-  phancongcongviec_select.addEventListener("change", function () {
-    var selectedOption = this.value;
-    console.log(selectedOption);
-
-    if (selectedOption === "monthly") {
-      readCountWeddingEventsPerMonthAPI(currentYear);
-    } else {
-      readCountWeddingEventsPerDayInMonthAPI(
-        currentMonth,
-        currentYear
-      );
-    }
-  });
-  function readCountWeddingEventsPerMonthAPI(year) {
-    const xhttp = new XMLHttpRequest();
-
-    xhttp.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        var responseData = JSON.parse(this.responseText);
-        console.log(responseData);
-        var options = {
-          series: [
-            {
-              name: "Số lượng tiệc cưới",
-              data: responseData.map((item) => item.count),
-            },
-          ],
-          stroke: {
-            curve: "smooth",
-          },
-          dataLabels: {
-            enabled: false,
-          },
-          chart: {
-            height: 400,
-            type: "area",
-          },
-          xaxis: {
-            categories: responseData.map((item) => item.month),
-          },
-        };
-        console.log(options);
-        document.getElementById("workScheduleChart").innerHTML = "";
-        var chart = new ApexCharts(
-          document.querySelector("#workScheduleChart"),
-          options
-        );
-        chart.render();
-      } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
-      }
+  var today = new Date();
+  var currentYear = today.getFullYear();
+  var currentMonth = today.getMonth() + 1;
+  
+  document.addEventListener("DOMContentLoaded", function(){
+    // Hien thi bang do
+    var option = {{optionsChart |safe}}
+     var options = {
+      series: [
+        {
+          name: "Số lượng tiệc cưới",
+          data: option.series,
+        },
+      ],
+      stroke: {
+        curve: "smooth",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      chart: {
+        height: 400,
+        type: "area",
+      },
+      xaxis: {
+        categories: option.categories,
+      },
     };
+    var chart = new ApexCharts(
+            document.querySelector("#workScheduleChart"),
+            options
+          );
 
-    const url = `statistic/eventsPerMonth/?year=${year}`;
+    chart.render();
 
-    xhttp.open("GET", url);
-    xhttp.setRequestHeader("Content-type", "application/json");
-
-    // Send the request without data
-    xhttp.send();
-  }
-
-  function readCountWeddingEventsPerDayInMonthAPI(month, year) {
-    const xhttp = new XMLHttpRequest();
-
-    xhttp.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        var responseData = JSON.parse(this.responseText);
-        console.log(responseData);
-        var options = {
-          series: [
-            {
-              name: "Số lượng tiệc cưới",
-              data: responseData.map((item) => item.count),
-            },
-          ],
-          stroke: {
-            curve: "smooth",
-          },
-          dataLabels: {
-            enabled: false,
-          },
-          chart: {
-            height: 400,
-
-            type: "area",
-          },
-          xaxis: {
-            categories: responseData.map((item) => item.day),
-          },
-        };
-        document.getElementById("workScheduleChart").innerHTML = "";
-        var chart = new ApexCharts(
-          document.querySelector("#workScheduleChart"),
-          options
-        );
-        chart.render();
-      } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
-      }
-    };
-
-    const url = `statistic/eventsPerDayInMonth/?month=${month}&year=${year}`;
-
-    xhttp.open("GET", url);
-    xhttp.setRequestHeader("Content-type", "application/json");
-
-    // Send the request without data
-    xhttp.send();
-  }
-  function dateToYMD(date) {
-    var d = date.getDate();
-    var m = date.getMonth() + 1; //Month from 0 to 11
-    var y = date.getFullYear();
-    return "" + y + "-" + (m <= 9 ? "0" + m : m) + "-" + (d <= 9 ? "0" + d : d);
-  }
-  function countWeddingEventsPerDay(date) {
-    console.log(date);
-
-    formattedDate = dateToYMD(date);
-    console.log("Ngày được chọn 2:", formattedDate);
-    const xhttp = new XMLHttpRequest();
-
-    xhttp.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        var responseData = JSON.parse(this.responseText);
-        console.log(responseData);
-        var tableBody = document.querySelector("#event_count tbody");
-
-        // Xóa nội dung cũ trong tbody
-        tableBody.innerHTML = "";
-
-        // Kiểm tra xem responseData có dữ liệu không
-        if (responseData.length > 0) {
-          // Duyệt qua từng phần tử trong responseData và tạo hàng cho mỗi phần tử
-          responseData.forEach(function (item) {
-            // Tạo một hàng mới
-            var row = document.createElement("tr");
-
-            // Tạo ô dữ liệu cho 'Ca' và 'Số lượng tiệc cưới'
-            var caCell = document.createElement("td");
-            var eventCountCell = document.createElement("td");
-
-            // Đặt nội dung cho các ô dữ liệu
-            caCell.textContent = item.ca;
-            eventCountCell.textContent = item.event_count;
-
-            // Thêm các ô dữ liệu vào hàng
-            row.appendChild(caCell);
-            row.appendChild(eventCountCell);
-
-            // Thêm hàng vào tbody
-            tableBody.appendChild(row);
-          });
-        } else {
-          // Nếu không có dữ liệu, hiển thị thông báo
-          var noDataMessage = document.createElement("tr");
-          var messageCell = document.createElement("td");
-          messageCell.setAttribute("colspan", "2"); //  ô thông báo chiếm toàn bộ hàng
-          messageCell.textContent = "Không có dữ liệu để hiển thị";
-          noDataMessage.appendChild(messageCell);
-          tableBody.appendChild(noDataMessage);
-        }
-      } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
-      }
-    };
-
-    const url = `statistic/eventsPerDay/?date=${formattedDate}`;
-
-    xhttp.open("GET", url);
-    xhttp.setRequestHeader("Content-type", "application/json");
-    xhttp.send();
-  }
-  document.addEventListener("DOMContentLoaded", function () {
     function populateCalendar(month, year) {
       var calendarBody = document.getElementById("calendarBody");
       calendarBody.innerHTML = "";
@@ -297,9 +165,11 @@
         var clickedCell = event.target;
         var selectedDay = clickedCell.textContent;
 
-        var selectedDate = new Date(year, month - 1, selectedDay);
-
-        countWeddingEventsPerDay(selectedDate);
+        var selectedDate =`${year}-${String(month).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
+        console.log(`${year}-${month-1}-${selectedDay}`);
+        console.log(document.getElementById("phancongcongviec_select").value)
+        document.getElementById("currentDate").value = selectedDate
+        document.getElementById("formSubmit").submit();
       });
     }
 
@@ -315,9 +185,6 @@
 
       console.log("Tháng được chọn:", selectedMonth);
       console.log("Năm được chọn:", selectedYear);
-
-      //Gọi hàm xử lý dữ liệu mới
-      // readCountWeddingEventsPerDayInMonthAPI(selectedMonth, selectedYear);
     }
 
     if (!monthSelect.value) {
@@ -326,7 +193,6 @@
     if (!yearSelect.value) {
       yearSelect.value = currentYear;
     }
-    readCountWeddingEventsPerDayInMonthAPI(currentMonth, currentYear);
 
     for (var i = 0; i < 12; i++) {
       var option = document.createElement("option");
@@ -346,7 +212,7 @@
     yearSelect.value = currentYear;
 
     populateCalendar(currentMonth, currentYear);
-  });
-</script>
 
+  })
+</script>
 {% endblock %}
