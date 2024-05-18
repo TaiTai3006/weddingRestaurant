@@ -35,43 +35,61 @@ model_serializer_map = {
     }
 # Trang dashboard
 def getindex(request):
-    print(request.POST)
+    """
+    Trang dashboard hiển thị thông tin thống kê về sự kiện cưới và biểu đồ tương ứng.
+    url: '/'
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa dữ liệu được gửi bởi người dùng.
+    + request.POST['type'] (str): loại thống kê bản đồ muốn trả về (day, month)
+    + request.POST['date'] (str): ngày thống kê bản đồ muốn trả về (yyyy-mm-dd)
+
+    Trả về:
+    - Đối tượng HttpResponse hiển thị trang dashboard với thông tin thống kê và biểu đồ tương ứng.
+    + optionsChart (list): Chứa các dữ liệu thông số để vẽ bản đồ biểu diễn thống kê.
+    + dataWeddingEvents (list): Chứa các dữ liệu thống kê sự kiện cưới theo từng loại.
+    + dataRequest (dict): Chứa các thông tin dữ liệu được gửi bởi người dùng.
+    """
     date_string = request.POST.get('date')
     type = request.POST.get('type', 'day')
     now = datetime.now()
-    date = ''
-    year = ''
-    month = ''
 
-    if(date_string):
-        date = datetime.strptime(date_string, "%Y-%m-%d")
-        year = date.year
-        month = date.month
+    date = datetime.strptime(date_string, "%Y-%m-%d") if date_string else None
+    year = date.year if date else now.year
+    month = date.month if date else now.month
     
-    current_month = month if month else now.month
-    current_year = year if year else now.year
-    current_date = date_string if date_string else f"{current_year}-{current_month:02}-{now.day:02}"    
+    current_date = date_string if date_string else f"{year}-{month:02}-{now.day:02}"    
 
     if type == 'day':
-        data_count_wedding = countWeddingEventsPerDayInMonth(current_month, current_year)
+        data_count_wedding = countWeddingEventsPerDayInMonth(month, year)
     else:
-        data_count_wedding = countWeddingEventsPerMonth(current_year)
+        data_count_wedding = countWeddingEventsPerMonth(year)
 
     data_wedding_events = countWeddingEventsPerDay(current_date)
 
-    print(data_count_wedding, data_wedding_events)
-
     options_chart = {
-        "categories": list(map(lambda x: x.get("day") if type == 'day' else x.get("month"), data_count_wedding)),
-        "series":  list(map(lambda x: x.get("count"), data_count_wedding))
-        };
-    return render(request, 'dashboard.html', {"optionsChart": json.dumps(options_chart), 
-                                              "dataWeddingEvents" : data_wedding_events,
-                                              "dataRequest": {"date": current_date, "type":type}})
+        "categories": [x.get("day") if type == 'day' else x.get("month") for x in data_count_wedding],
+        "series": [x.get("count") for x in data_count_wedding]
+    }
 
+    return render(request, 'dashboard.html', {
+        "optionsChart": json.dumps(options_chart), 
+        "dataWeddingEvents": data_wedding_events,
+        "dataRequest": {"date": current_date, "type": type}
+    })
 
+#Đếm số lượng tiệc cưới theo từng ngày theo tháng, năm cụ thể
 def countWeddingEventsPerDayInMonth(month, year):
-    print(month, year)
+    """
+    Đếm số lượng tiệc cưới theo từng ngày trong một tháng và năm cụ thể.
+
+    Tham số:
+    - month (int): Tháng cần thống kê số lượng tiệc cưới (1 đến 12).
+    - year (int): Năm cần thống kê số lượng tiệc cưới.
+
+    Trả về:
+    - Danh sách (list) các bản ghi chứa số lượng tiệc cưới theo từng ngày trong tháng và năm chỉ định.
+    """
     query = Phieudattieccuoi.objects.raw(f"""
         SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
         FROM `PhieuDatTiecCuoi` 
@@ -84,11 +102,20 @@ def countWeddingEventsPerDayInMonth(month, year):
         day = item.Day
         count = item.Count
         result_list.append({'day': day, 'count': count})
-    print(result_list)
+
     return result_list
 
+#Đếm số lượng tiệc cưới theo từng tháng theo năm cụ thể
 def countWeddingEventsPerMonth(year):
-    print( year)
+    """
+    Đếm số lượng tiệc cưới theo từng tháng trong một năm cụ thể.
+
+    Tham số:
+    - year (int): Năm cần thống kê số lượng tiệc cưới.
+
+    Trả về:
+    - Danh sách (list) các bản ghi chứa số lượng tiệc cưới theo từng tháng trong năm chỉ định.
+    """
     query = Phieudattieccuoi.objects.raw(f"""
         SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
         FROM `PhieuDatTiecCuoi` 
@@ -104,7 +131,31 @@ def countWeddingEventsPerMonth(year):
 
     return result_list
 
+def getDayFromDateString(date_string):
+    """
+    Trích xuất ngày từ một chuỗi ngày tháng năm.
+
+    Tham số:
+    - date_string (str): Chuỗi đại diện cho ngày tháng năm trong định dạng "YYYY-MM-DD".
+
+    Trả về:
+    - Ngày (str) được trích xuất từ chuỗi đầu vào.
+    """
+    date_parts = date_string.split('-')
+    day = date_parts[2]
+    return day
+
+#Dếm số tiệc cưới theo từng ca theo 1 ngày cụ thể
 def countWeddingEventsPerDay(date):
+    """
+    Đếm số lượng tiệc cưới theo từng ca trong một ngày cụ thể.
+
+    Tham số:
+    - date (str): Ngày cần thống kê số lượng tiệc cưới (trong định dạng 'YYYY-MM-DD').
+
+    Trả về:
+    - Danh sách (list) các bản ghi chứa số lượng tiệc cưới theo từng ca trong ngày chỉ định.
+    """
     query = Phieudattieccuoi.objects.raw(
         f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
         f"FROM `PhieuDatTiecCuoi`, Ca "
@@ -114,6 +165,136 @@ def countWeddingEventsPerDay(date):
     results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
     print(results)
     return results
+
+def revenueReport(request):
+    """
+    Thống kê doanh thu của nhà hàng theo từng ngày, từng tháng từ năm
+    url: '/repost/'
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa dữ liệu được gửi bởi người dùng.
+    + request.POST[type] (str): loại thống kê muốn trả về (daily, monthly, annual)
+    + request.POST[month] (int): tháng muốn thống kê
+    + request.POST[year] (int): năm muốn thống kê
+
+    Trả về:
+    - Đối tượng HttpResponse hiển thị mẫu báo cáo doanh thu với dữ liệu cần thiết.
+    + optionsChart (list): Chứa các dữ liệu thông số để vẽ bản đồ biểu diễn thống kê.
+    + reportData (list): Chứa các dữ liệu thống kê doanh thu theo từng loại.
+    + requestData (dict): Chứa các thông tin dữ liệu được gửi bởi người dùng.
+    """
+    now = datetime.now() #sua thanh now
+    type = request.POST.get('type', 'daily')
+    month = request.POST.get('month', 6)
+    year = request.POST.get('year', 2023)
+   
+    report_data = []
+    options_chart = []
+
+    if type == 'daily':
+        report_data = revenueReportPerDay(month, year)
+        options_chart = {
+            "series": [x.get("tile") for x in report_data],
+            "labels": [f"Ngày {x.get('ngay')}" for x in report_data]
+        }
+
+    elif type == 'monthly':
+        report_data = revenueReportPerMonth(year)
+        options_chart = [{"x": data.get('thang'), "y": data.get('tongdoanhthu')} for data in report_data]
+
+    elif type == 'annual':
+        report_data = revenueReportPerYear()
+        options_chart = [{"x": data.get('nam'), "y": data.get('tongdoanhthu')} for data in report_data]
+
+    return render(request, 'report.html', {
+        "optionsChart": json.dumps(options_chart),
+        "reportData": report_data,
+        "requestData": {"type": type, "month": month, "year": year}
+    })
+
+# Thống kê doanh thu theo từng ngày
+def revenueReportPerDay(month, year): 
+    """
+    Thống kê doanh thu theo từng ngày cho một tháng và năm cụ thể.
+
+    Tham số:
+    - month (int): Tháng cần thống kê doanh thu (1 đến 12).
+    - year (int): Năm cần thống kê doanh thu.
+
+    Trả về:
+    - Danh sách (list) các bản ghi thống kê doanh thu theo từng ngày trong tháng và năm chỉ định.
+    """   
+    query = Chitietbaocao.objects.raw(f"SELECT * FROM `ChiTietBaoCao` WHERE MONTH(`ngay`) = {month} AND YEAR(`ngay`) = {year}")
+    serializer = RevenueReportDetailSerializer(query, many = True)
+
+    for index,data in enumerate(serializer.data):
+        data['id'] = index + 1
+        data['tile'] = round(data.get("tile") * 100,2)
+        data['ngay'] = getDayFromDateString(data.get('ngay'))
+
+    return serializer.data
+
+# Thống kê doanh thu theo từng thang
+def revenueReportPerMonth(year):
+    """
+    Thống kê doanh thu theo từng tháng cho một năm cụ thể.
+
+    Tham số:
+    - year (int): Năm cần thống kê doanh thu.
+
+    Trả về:
+    - Danh sách (list) các bản ghi thống kê doanh thu theo từng tháng trong năm chỉ định.
+    """   
+    query = Baocaodoanhthu.objects.raw(f"SELECT * FROM `BaoCaoDoanhThu` WHERE `nam` = {year}")
+    serializer = RevenueReportSerializer(query, many = True)
+
+    for data in serializer.data:
+        data['tongdoanhthu'] = int(float(data['tongdoanhthu']))
+
+    return serializer.data
+
+# Thống kê doanh thu theo từng năm
+def revenueReportPerYear():
+    """
+    Thống kê doanh thu theo từng năm.
+
+    Trả về:
+    - Danh sách (list) các bản ghi thống kê doanh thu theo từng năm, bao gồm tổng doanh thu cho mỗi năm.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT nam, SUM(`tongDoanhThu`) FROM `BaoCaoDoanhThu` ORDER BY nam ")
+        temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'nam': item[0], 'tongdoanhthu': float(item[1])})
+
+    return data
+
+# Thống kê số lượng sảnh được đặt theo tháng, năm
+def countLobbyBookingAPI(request):
+    month = request.data.get('month')
+    year = request.data.get('year')
+
+    if (not month and not year ) or (month and not year):
+        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if month and year:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
+            temp = cursor.fetchall()
+    else: 
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
+            temp = cursor.fetchall()
+
+    data = []
+    for item in temp:
+        data.append({'tenSanh': item[0], 'soluongSanh': item[1]})
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
 def report(request):
     return render(request, 'report.html')
 def invoice(request):
@@ -602,77 +783,7 @@ def displayFoodServiceDetailCheckedffff(request):
 
 
 
-# Thống kê doanh thu theo từng ngày
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def revenueReportPerDayAPI(request):
-    month = request.data.get('month')
-    year = request.data.get('year')
 
-    if not month or not year:
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    query = Chitietbaocao.objects.raw(f"SELECT * FROM `ChiTietBaoCao` WHERE MONTH(`ngay`) = {month} AND YEAR(`ngay`) = {year}")
-    serializer = RevenueReportDetailSerializer(query, many = True)
-
-    return Response(serializer.data, status = status.HTTP_200_OK)
-
-# Thống kê doanh thu theo từng thang
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def revenueReportPerMonthAPI(request):
-    year = request.data.get('year')
-
-    if  not year:
-        return Response({"error": "year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    query = Baocaodoanhthu.objects.raw(f"SELECT * FROM `BaoCaoDoanhThu` WHERE `nam` = {year}")
-    serializer = RevenueReportSerializer(query, many = True)
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-# Thống kê doanh thu theo từng năm
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def revenueReportPerYearAPI(request):
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT nam, SUM(`tongDoanhThu`) FROM `BaoCaoDoanhThu` ORDER BY nam ")
-        temp = cursor.fetchall()
-
-    data = []
-    for item in temp:
-        data.append({'nam': item[0], 'tongDoanhThu': item[1]})
-
-    return Response(data, status=status.HTTP_200_OK)
-
-# Thống kê số lượng sảnh được đặt theo tháng, năm
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def countLobbyBookingAPI(request):
-    month = request.data.get('month')
-    year = request.data.get('year')
-
-    if (not month and not year ) or (month and not year):
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if month and year:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
-            temp = cursor.fetchall()
-    else: 
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
-            temp = cursor.fetchall()
-
-    data = []
-    for item in temp:
-        data.append({'tenSanh': item[0], 'soluongSanh': item[1]})
-
-    return Response(data, status=status.HTTP_200_OK)
 
 # Thống kê số lượng mon an được đặt theo tháng, năm
 @api_view(['GET'])

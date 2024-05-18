@@ -1,32 +1,40 @@
-{% extends 'layout.html' %} {% block title %} Home {% endblock %} {% block content %}
+{% extends 'layout.html' %} {% block title %}THỐNG KÊ DOANH THU{% endblock %} {% block content %}
 <div class="container-lg">
   <div class="row">
     <div class="col-12">
       <h2 class="text-center">THỐNG KÊ DOANH THU</h2>
       <div class="card">
         <div class="card-body d-flex justify-content-between">
-          <form id="filterForm" class="form-inline">
+          <form id="filterForm" class="form-inline" action="{% url 'report' %}" method="post">
+            {% csrf_token %}
             <div class="form-group mr-3">
               <label for="statisticType" class="mr-2">Thống kê theo:</label>
-              <select id="statisticType" class="form-control">
-                <option value="daily">Ngày</option>
-                <option value="monthly">Tháng</option>
+              <select name='type' id="statisticType" class="form-control">
+                <option value="daily" {%if requestData.type == 'daily'%} selected {% endif %} >Ngày</option>
+                <option value="monthly" {%if requestData.type == 'monthly'%} selected {% endif %}>Tháng</option>
+                <option value="annual" {%if requestData.type == 'annual'%} selected {% endif %}>Năm</option>
               </select>
             </div>
+            {%if requestData.type == 'daily' %}
             <div class="form-group mr-3">
               <label for="month" class="mr-2">Tháng:</label>
-              <input type="number" id="month" class="form-control" value="6" />
+              <input name="month" type="number" id="month" min="1" max="12" class="form-control" value={{requestData.month}} />
             </div>
+            {%endif%}
+            {%if requestData.type != 'annual' %}
             <div class="form-group mr-3">
               <label for="year" class="mr-2">Năm:</label>
               <input
+                name = "year"
                 type="number"
+                min = "2000"
                 id="year"
                 class="form-control"
-                value="2023"
+                value={{requestData.year}}
               />
             </div>
-            <button type="button" id="filterButton" class="btn btn-primary">
+            {%endif%}
+            <button type="submit" id="filterButton" class="btn btn-primary">
               Xem
             </button>
           </form>
@@ -35,6 +43,7 @@
             <div id="revenueChart"></div>
           </div>
         </div>
+        {%if requestData.type == 'daily'%}
         <table class="table table-bordered mt-4">
           <thead>
             <tr>
@@ -45,135 +54,66 @@
               <th>Tỷ lệ</th>
             </tr>
           </thead>
+          {%for data in reportData%}
           <tbody id="revenueTableBody">
+            {% load humanize %}
             <tr>
-              <td>1</td>
-              <td>14</td>
-              <td>1</td>
-              <td>244,842,000 đ</td>
-              <td>23.0%</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>15</td>
-              <td>2</td>
-              <td>415,211,000 đ</td>
-              <td>39.1%</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>29</td>
-              <td>1</td>
-              <td>403,008,000 đ</td>
-              <td>37.9%</td>
+              <td>{{data.id}}</td>
+              <td>{{data.ngay}}</td>
+              <td>{{data.soluongtiec}}</td>
+              <td>{{data.doanhthu |floatformat|intcomma}}</td>
+              <td>{{data.tile}}</td>
             </tr>
           </tbody>
+          {%endfor%}
         </table>
+        {%endif%}
       </div>
     </div>
   </div>
 </div>
 
 <script>
-function readCountWeddingEventsPerDayInMonthAPI(month,year) {
-    console.log("countWeddingEventsPerDayInMonth")
-  const xhttp = new XMLHttpRequest();
+var optionsChart = {{optionsChart | safe}}
+var type = document.getElementById('statisticType').value
 
-  xhttp.onload = function () {
-    if (this.status >= 200 && this.status < 300) {
-        document.getElementById("countWeddingEventsPerDayInMonth").innerHTML = this.responseText;
-    } else {
-      console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
-    }
+if (type == 'daily'){
+  var options = {
+    series: optionsChart.series,
+    labels: optionsChart.labels,
+    chart: {
+      height: 350,
+      type: "pie",
+    },
+    legend: {
+      position: "bottom",
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val, opts) {
+        return opts.w.config.series[opts.seriesIndex] + "%";
+      },
+    },
   };
-
-  var month = document.getElementById("month").value;
-  var year = document.getElementById("year").value;
-
-  // Check if month and year are not empty
-  if (!month || !year) {
-    console.error("Month and year are required.");
-    return;
-  }
-
-  const url = `statistic/eventsPerDayInMonth/?month=${month}&year=${year}`;
-  console.log("URL:", url);
-
-  xhttp.open("GET", url);
-  xhttp.setRequestHeader("Content-type", "application/json");
-
-  // Send the request without data
-  xhttp.send();
 }
-  
+else{
+  var options = {
+    chart: {
+      height: 200,
+      width: 500,
+      type: 'bar'
+    },
+    series: [{
+      data: optionsChart
+    }],
+    
+  }
+}
 
-document.addEventListener("DOMContentLoaded", function () {
-    readCountWeddingEventsPerDayInMonthAPI(5,2023)
-    var options = {
-      series: [23, 39.1, 37.9],
-      labels: ["Ngày 14", "Ngày 15", "Ngày 29"],
-      chart: {
-        height: 350,
-        type: "pie",
-      },
-      legend: {
-        position: "bottom",
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: function (val, opts) {
-          return opts.w.config.series[opts.seriesIndex] + "%";
-        },
-      },
-    };
-
-    var chart = new ApexCharts(
-      document.querySelector("#revenueChart"),
-      options
-    );
-    chart.render();
-
-    // Update chart and table based on form input
-    document
-      .getElementById("filterButton")
-      .addEventListener("click", function () {
-        var type = document.getElementById("statisticType").value;
-        var month = document.getElementById("month").value;
-        var year = document.getElementById("year").value;
-
-        // Here you would fetch new data based on the selected filters
-        // For demonstration, let's just log the values
-        console.log("Filter by:", type, "Month:", month, "Year:", year);
-
-        // Update chart with new data
-        chart.updateSeries([30, 40, 30]); // Example new data
-
-        // Update table with new data
-        var tableBody = document.getElementById("revenueTableBody");
-        tableBody.innerHTML = `
-                    <tr>
-                        <td>1</td>
-                        <td>14</td>
-                        <td>1</td>
-                        <td>300,000,000 đ</td>
-                        <td>30.0%</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>15</td>
-                        <td>2</td>
-                        <td>400,000,000 đ</td>
-                        <td>40.0%</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>29</td>
-                        <td>1</td>
-                        <td>300,000,000 đ</td>
-                        <td>30.0%</td>
-                    </tr>
-                `;
-      });
-  });
+var chart = new ApexCharts(
+  document.querySelector("#revenueChart"),
+  options
+);
+chart.render();
 </script>
 {% endblock %}

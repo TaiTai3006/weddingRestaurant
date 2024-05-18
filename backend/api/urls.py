@@ -5,9 +5,8 @@ from api.serializers import *
 
 urlpatterns = [
   path('', getindex, name='index'),
-  # path('<type>/', selectDashboard),
   path('create/', create),
-  path('report/', report),
+  path('report/', revenueReport, name='report'),
   path('invoice/', invoice),
   path('search/', search),
   path('search/searchParty/', searchPartyBookingFormAPI, name='search_party'),
@@ -18,12 +17,6 @@ urlpatterns = [
   path('signup/', signup),
   path('assignTask/', assignTaskAPI),
   path('paymentInvoice/',paymentInvoiceAPI),
-  # path('statistic/eventsPerDayInMonth/', countWeddingEventsPerDayInMonthAPI),
-  # path('statistic/eventsPerMonth/', countWeddingEventsPerMonthAPI),
-  # path('statistic/eventsPerDay/', countWeddingEventsPerDayAPI),
-  path('statistic/revenueReportPerDay/', revenueReportPerDayAPI),
-  path('statistic/revenueReportPerMonth/', revenueReportPerMonthAPI),
-  path('statistic/revenueReportPerYear/', revenueReportPerYearAPI),
   path('statistic/countLobbyBooking/', countLobbyBookingAPI),
   path('statistic/countFoodBooking/', countFoodBookingAPI),
   path('statistic/countServiceBooking/', countServiceBookingAPI),
