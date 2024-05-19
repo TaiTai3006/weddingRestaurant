@@ -294,6 +294,41 @@ def countLobbyBookingAPI(request):
 
     return Response(data, status=status.HTTP_200_OK)
 
+def createRevenueReport(date_string, tongtienhoadon):
+    """
+    Tạo hoặc cập nhật báo cáo doanh thu cho 2 bảng (Baocaodoanhthu, Chitietbaocao) và cập nhật tỷ lệ doanh thu.
+
+    Tham số:
+    date_string (str): Ngày cần tạo hoặc cập nhật báo cáo, định dạng 'YYYY-MM-DD'.
+    tongtienhoadon (float): Tổng tiền hóa đơn cần thêm vào báo cáo doanh thu.
+    """
+    date =  date_string.split('-')
+    year, month = date[0], date[1]
+
+    bao_cao_doanh_thu = Baocaodoanhthu.objects.get(year=year, month=month)
+    chi_tiet_bao_cao = Chitietbaocao.objects.get(ngay=date_string)
+
+    if bao_cao_doanh_thu:
+        bao_cao_doanh_thu.updateDoanhThu(tongtienhoadon)
+
+    else:
+        data = {"mabaocao": getNextID(Baocaodoanhthu, "mabaocao"), "thang": month, "nam": year, "tongdoanhthu": tongtienhoadon}
+        reportSerializer = RevenueReportSerializer(data=data)
+        if reportSerializer.is_valid():
+            reportSerializer.save()
+
+    if chi_tiet_bao_cao:
+        chi_tiet_bao_cao.updateBaoCao(tongtienhoadon)
+    else:
+        data = {"mabaocao": chi_tiet_bao_cao.mabaocao, "ngay": date_string, "soluongtiec": 1, "doanhthu": tongtienhoadon, "tile": 0}
+        reportDetailserializer = RevenueReportDetailSerializer(data=data)
+        if reportDetailserializer.is_valid():
+            reportDetailserializer.save()
+    
+    chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
+    list(map(lambda x: x.setTiLe(), chi_tiet_bao_cao_all))
+        
+
 
 def report(request):
     return render(request, 'report.html')

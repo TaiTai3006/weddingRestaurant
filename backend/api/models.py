@@ -131,6 +131,12 @@ class Baocaodoanhthu(models.Model):
     class Meta:
         managed = False
         db_table = 'BaoCaoDoanhThu'
+    
+    def updateDoanhThu(self, tongtienhoadon):
+        self.tongdoanhthu = self.tongdoanhthu + tongtienhoadon
+        self.save()
+    
+
 class Chitietbaocao(models.Model):
     mabaocao = models.OneToOneField(Baocaodoanhthu, models.DO_NOTHING, db_column='maBaoCao', primary_key=True)  # Field name made lowercase. The composite primary key (maBaoCao, ngay) found, that is not supported. The first column is selected.
     ngay = models.DateField()
@@ -142,6 +148,18 @@ class Chitietbaocao(models.Model):
         managed = False
         db_table = 'ChiTietBaoCao'
         unique_together = (('mabaocao', 'ngay'),)
+
+    def updateBaoCao(self, tongtienhoadon):
+        self.soluongtiec = self.soluongtiec + 1
+        self.doanhthu = self.doanhthu + tongtienhoadon
+        self.save()
+    
+    def setTiLe(self):
+        tongdoanhthu = Baocaodoanhthu.objects.get(mabacao=self.mabacao)['tongdoanhthu']
+        self.tile = self.doanhthu / tongdoanhthu
+        self.save()
+
+
 
 class Congviec(models.Model):
     macongviec = models.CharField(db_column='maCongViec', primary_key=True, max_length=6)  # Field name made lowercase.
@@ -184,6 +202,7 @@ class Hoadon(models.Model):
     class Meta:
         managed = False
         db_table = 'HoaDon'
+
 
 class ChitietDvThanhtoan(models.Model):
     mahoadon = models.CharField(db_column='maHoaDon', max_length=6)  # Field name made lowercase.
