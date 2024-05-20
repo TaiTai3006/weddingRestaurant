@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    {% load humanize %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hoa Don Dat Tiec {{bookingDetails.matieccuoi}}</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: DejaVu Sans, sans-serif;
+      }
+      .invoice-box {
+        max-width: 800px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      }
+      .invoice-box .table td {
+        padding: 5px;
+        vertical-align: top;
+      }
+      .invoice-box .table td:nth-child(2),
+      .invoice-box .table td:nth-child(3),
+      .invoice-box .table td:nth-child(4) {
+        text-align: right;
+      }
+      .table-borderless td,
+      .table-borderless th {
+        border: 0;
+      }
+      .header-invoice {
+        text-align: center;
+        font-size: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-box">
+      <table class="table table-borderless">
+        <tr>
+          <td colspan="3">
+            <h2 class="text-center">UIT WEDDING RESTAURANT</h2>
+            <p class="text-center">
+              Toa A, Duong Han Thuyen, khu pho 6,<br />
+              Thu Duc, Thanh pho Ho Chi Minh.<br />
+              Tel: 0886833453<br />
+              Mail: uitweddingrestaurant@gmail.com
+            </p>
+          </td>
+          <td class="text-right">
+            <p>{{bookingDetails.matieccuoi}}</p>
+            <p>{{bookingDetails.ngaydat}}</p>
+            <p>{{bookingDetails.username}}</p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4" class="header-invoice text-center text-primary">
+            <h1>HOA DON DAT TIEC</h1>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <strong>Thong tin khach hang:</strong><br />
+            Ten chu re: {{bookingDetails.tenchure}}<br />
+            Ten co dau: {{bookingDetails.tencodau}}<br />
+            Tel: 02368334
+          </td>
+          <td colspan="2">
+            <strong>Thong tin dat tiec:</strong><br />
+            Ngay dai tiec: {{bookingDetails.ngaydaitiec}}<br />
+            Thoi gian:{{shiftInfo.giobatdau| time:"H:i"}} -
+            {{shiftInfo.gioketthuc| time:"H:i"}} <br />
+            Ma sanh: {{bookingDetails.masanh}}<br />
+            So luong ban: {{bookingDetails.soluongban}}<br />
+            Don gia ban: {{bookingDetails.dongiaban |floatformat|intcomma }}<br />
+          </td>
+        </tr>
+      </table>
+      <table class="table">
+        <thead>
+          <tr class="heading">
+            <th>Ma dich vu</th>
+            <th>So luong</th>
+            <th>Don gia</th>
+            <th>Thanh tien</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%for serviceDetail in serviceDetails%}
+          <tr class="item">
+            <td>{{serviceDetail.madichvu}}</td>
+            <td>{{serviceDetail.soluong}}</td>
+            <td>{{serviceDetail.dongiadichvu|floatformat|intcomma }}</td>
+            <td>{{serviceDetail.thanhtien|floatformat|intcomma }}</td>
+          </tr>
+          {%endfor%}
+          <tr>
+            <td colspan="3" class="text-right">
+              <strong>Tong tien dich vu:</strong>
+            </td>
+            <td>{{bookingDetails.tongtiendichvu|floatformat|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right">
+              <strong>Tong tien ban:</strong>
+            </td>
+            <td>{{bookingDetails.tongtienban|floatformat|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right"><strong>Tong cong:</strong></td>
+            <td>{{bookingDetails.tongtiendattiec|floatformat|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right"><strong>Tien coc({{parameters.tiledatcoc|floatformat}}%):</strong></td>
+            <td>{{bookingDetails.tiendatcoc|floatformat|intcomma }}</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right">
+              <strong>Tien khach tra:</strong>
+            </td>
+            <td>hsdgs</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="text-right"><strong>Tien thua:</strong></td>
+            <td>fdgfg</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="notice">
+        <strong>Luu y:</strong><br />
+        So tien con lai (tam tinh) phai thanh toan la:
+        <strong>{{bookingDetails.conlai|floatformat|intcomma }}</strong><br />
+        Han thanh toan la sau khi ket thuc bua tiec. Trong truong hop thanh toan
+        tre se phai chiu phat {{parameters.tilephat}}%/ngay.<br />
+        Trong truong hop huy dat tiec cuoi thi phai huy truoc {{parameters.tgphathuytiec}} ngay truoc khi
+        to chuc tiec cuoi (Khong hoan lai tien da coc). Neu sau {{parameters.tgphathuytiec}} ngay, phai
+        thanh toan hoan tat so tien con lai phai thanh toan.
+      </p>
+    </div>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

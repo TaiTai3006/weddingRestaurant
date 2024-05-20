@@ -19,6 +19,9 @@ from django.db.models import Count
 from django.db.models.functions import ExtractDay
 from django.http import JsonResponse
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from .pdf import *
+import io
 
 import json
 
@@ -33,6 +36,43 @@ model_serializer_map = {
         'parameter': (Thamso, ParameterSerializer, 'id'),
         'shifts': (Ca, ShiftSerializer, 'maca')
     }
+
+def documentPdfView(request, type, id):
+    """
+    In hoá đơn với dạng file PDF dựa trên loại tài liệu và ID cụ thể.
+
+    Hàm này xử lý hai loại tài liệu: 'bookingPayment' và 'invoicePayment'. 
+    Dựa trên loại tài liệu, nó sẽ truy xuất dữ liệu cần thiết từ cơ sở dữ liệu,
+    tạo dữ liệu (context) và sử dụng template tương ứng để render PDF.
+
+    url: "/create/pdf/<str:type>/<str:id>" method="GET"
+
+    Tham số:
+        -request: HttpRequest object chứa thông tin về request người dùng.
+        -type (str): Loại tài liệu cần tạo PDF. Có thể là 'bookingPayment' hoặc 'invoicePayment'.
+        -id (str): ID của tài liệu cần tạo PDF.
+
+    Returns:
+        HttpResponse: Phản hồi HTTP chứa file PDF được tạo.
+    """
+    if type == 'bookingPayment':
+        bookingDetails = PartyBookingFormSerializer(Phieudattieccuoi.objects.get(matieccuoi=id))
+        serviceDetails = Chitietdichvu.objects.filter(matieccuoi=id)
+        shiftInfo = Ca.objects.get(maca=bookingDetails.data['maca'])
+        parameters = Thamso.objects.all()[0]
+        template_path = "invoicePDF_bookingPayment.html"
+        context = {'bookingDetails': bookingDetails.data, "serviceDetails": serviceDetails, "shiftInfo": shiftInfo, "parameters": parameters}
+
+    elif type == 'invoicePayment':
+        invoiceDetails = InvoiceSerializer(Hoadon.objects.get(mahoadon=id))
+        bookingDetails = PartyBookingFormSerializer(Phieudattieccuoi.objects.get(matieccuoi=invoiceDetails.data['matieccuoi']))
+        serviceDetails = ChitietDvThanhtoan.objects.filter(mahoadon=id)
+        shiftInfo = Ca.objects.get(maca=bookingDetails.data['maca'])
+        template_path = "invoicePDF_invoicePayment.html"
+        context = {'invoiceDetails': invoiceDetails.data, 'bookingDetails': bookingDetails.data, "serviceDetails": serviceDetails, "shiftInfo": shiftInfo}
+    
+    return renderPdfView(template_path, context)
+
 # Trang dashboard
 def getindex(request):
     """
