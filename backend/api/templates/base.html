@@ -1,6 +1,6 @@
 {% extends 'layout.html' %} {% block title %} Home {% endblock %}
 {% block content %}
-
+{% load static %}
 <div class="row">
   <form class="col-9" method="POST" action="" id="weddingForm">
     {% csrf_token %}
@@ -279,5 +279,5 @@
 </div>
 
 </div>
-
+<script src="{% static 'js/script.js' %}" defer></script>
 {% endblock %}

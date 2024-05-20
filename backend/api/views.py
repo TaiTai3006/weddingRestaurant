@@ -342,12 +342,15 @@ def search(request):
     lobby_types = Loaisanh.objects.all()
     shifts = Ca.objects.all()
     food_types = Loaimonan.objects.all()
+    lobbies = Sanh.objects.all()
     
     food_serializer = FoodSerializer(foods, many=True)
     food_type_serializer = FoodTypeSerializer(food_types, many=True)
     service_serializer = ServiceSerializer(services, many=True)
     lobby_type_serializer = LobbyTypeSerializer(lobby_types, many=True)
     shift_serializer = ShiftSerializer(shifts, many = True)
+    lobby_serializer = LobbySerializer(lobbies, many=True)
+
 
     query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi not in (SELECT maTiecCuoi FROM HoaDon) ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC')
     serializer = PartyBookingFormSerializer(query, many = True)
@@ -358,6 +361,7 @@ def search(request):
         'lobbyTypes': lobby_type_serializer.data,
         'shifts' : shift_serializer.data,
         'foodTypes': food_type_serializer.data, 
+        'lobbies': lobby_serializer.data,
 
     }
     
@@ -373,10 +377,35 @@ def search(request):
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
         
    
-   
-    print(serialized_data)
+ 
+    
     
     return render(request, 'search.html',serialized_data)
+
+def update_wedding_info(request, wedding_id):
+    wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
+    
+    if request.method == 'POST':
+        wedding.tencodau = request.POST.get('tencodau')
+        wedding.tenchure = request.POST.get('tenchure')
+        wedding.ngaydattiec = request.POST.get('ngaydattiec')
+        wedding.ngaydaitiec = request.POST.get('ngaydaitiec')
+        maca_id = request.POST.get('maca')
+        maca_instance = get_object_or_404(Ca, maca=maca_id)
+
+       
+        wedding.maca = maca_instance
+        masanh_id = request.POST.get('masanh')
+        masanh_instance = get_object_or_404(Sanh, masanh=masanh_id)
+        wedding.masanh = masanh_instance
+        
+        wedding.save()
+        return redirect('/search')
+    
+    return render(request, 'searchResult.html')
+
+
+
 def management(request):
     data = searchPartyBookingFormAPI(request)
 
@@ -570,7 +599,10 @@ def searchPartyBookingFormAPI(request):
 
     query_f = Phieudattieccuoi.objects.raw(query)     
     
-    
+    shifts = Ca.objects.all()
+    lobbies = Sanh.objects.all()
+    shift_serializer = ShiftSerializer(shifts, many = True)
+    lobby_serializer = LobbySerializer(lobbies, many=True)
     serializer = PartyBookingFormSerializer(query_f, many = True)
     
     for item in serializer.data:
@@ -588,6 +620,8 @@ def searchPartyBookingFormAPI(request):
         'weddings': serializer.data,
         'foods': food_serializer.data,
         'services': service_serializer.data,
+        'shifts' : shift_serializer.data,
+        'lobbies': lobby_serializer.data,
         
     }
     # cache.set('searchPartyBooking', serializer.data, timeout=60*30)
@@ -676,8 +710,96 @@ def bookingPartyWeddingAPI(request):
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
 # Hiển thị thông tin các món ăn và dịch vụ đã chọn
+@api_view(['POST'])
+def addFoodDetail(request):
+    try:
+        # Retrieve 'matieccuoi' and 'danhsachmonan' from the request data
+        matieccuoi_id = request.data.get('matieccuoi')
+        danhsachmonan = request.data.get('danhsachmonan')
+        print(danhsachmonan)
+
+        try:
+            phieudattieccuoi = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi_id)
+        except Phieudattieccuoi.DoesNotExist:
+            return Response({"error": "Phieudattieccuoi does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        soluongban = phieudattieccuoi.soluongban
+
+        # Xóa những chi tiết món ăn có mã tiệc cưới
+        Chitietmonan.objects.filter(matieccuoi=matieccuoi_id).delete()
+
+        for food in danhsachmonan:
+            food['matieccuoi'] = matieccuoi_id
+            food['mamonan'] = food.get('mamonan')
+            food['ghichu'] = food.get('ghichu', '')
+
+            try:
+                monan_obj = Monan.objects.get(mamonan=food['mamonan'])
+            except Monan.DoesNotExist:
+                return Response({"error": f"Monan with mamonan {food['mamonan']} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+            food['dongiamonan'] = monan_obj.dongia
+            food['soluong'] = soluongban
+
+            foodDetail = FoodDetailsSerializer(data=food)
+
+            if not foodDetail.is_valid():
+                return Response(foodDetail.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            foodDetail.save()
+
+        return redirect('/search')
+
+    except Exception as e:
+        
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)      
+
+@api_view(['POST'])
+def addServiceDetail(request):
+    try:
+        matieccuoi_id = request.data.get('matieccuoi')
+        danhsachdichvu = request.data.get('danhsachdichvu')
+        
+
+        try:
+            phieudattieccuoi = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi_id)
+        except Phieudattieccuoi.DoesNotExist:
+            return Response({"error": "Phieudattieccuoi does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        Chitietdichvu.objects.filter(matieccuoi=matieccuoi_id).delete()
+
+        for service_id in danhsachdichvu:  
+            service = {
+            'matieccuoi': matieccuoi_id, 
+            'madichvu': service_id,
+            'soluong':1,
+            } 
+
+            try:
+                dichvu_obj = Dichvu.objects.get(madichvu=service_id)  
+            except Dichvu.DoesNotExist:
+                return Response({"error": f"Dichvu with madichvu {service_id} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+            service['dongiadichvu'] = dichvu_obj.dongia
+            service['soluong'] = 1
+
+            serviceDetail = ServiceDetailsSerializer(data=service) 
+
+            if not serviceDetail.is_valid():
+                return Response(serviceDetail.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            serviceDetail.save()
+
+        return redirect('/search')
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# Hiển thị thông tin toàn bộ món ăn và món ăn đã chọn
 @api_view(['GET'])
-def displayFoodServiceDetailChecked(request):
+def displayFoodDetailChecked(request):
     matieccuoi = request.GET.get('matieccuoi')
     
     try:
@@ -686,52 +808,47 @@ def displayFoodServiceDetailChecked(request):
         return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
     
     serializer = PartyBookingFormSerializer(wedding)
-    
+    foods = Monan.objects.all()
+    food_serializer = FoodSerializer(foods, many=True)
     chitietmonan_query = Chitietmonan.objects.filter(matieccuoi=matieccuoi)
     chitietmonan_serializer = FoodDetailsSerializer(chitietmonan_query, many=True)
     data={
         'wedding': serializer.data,
-        'food': chitietmonan_serializer.data
+        'selectedfood': chitietmonan_serializer.data,
+        'allfoods': food_serializer.data,
     }
     serializer.data['danhsachmonan'] = chitietmonan_serializer.data
-    print(data)
-    return JsonResponse(data)
-def displayFoodServiceDetailCheckedffff(request):
+
+    
+    
+    return render(request, 'addFoodTable.html',data)
+    # return JsonResponse(result_list, safe=False)
+    
+
+@api_view(['GET'])
+def displayServiceDetailChecked(request):
     matieccuoi = request.GET.get('matieccuoi')
-    query = "SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi = '{matieccuoi}' "
+    
     try:
         wedding = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi)
-        # print("wehiing",wedding)
     except Phieudattieccuoi.DoesNotExist:
         return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
-    serializer = PartyBookingFormSerializer(query, many = False)
-    print("wehiing",serializer)
-    for item in serializer.data:
-        query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
-        query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
-        query3 = Sanh.objects.filter(masanh = item['masanh'])
-        query4 = Ca.objects.filter(maca = item['maca'])
-        item['danhsachdichvu'] = ServiceDetailsSerializer(query1, many=True).data
-        item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
-        item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
-        item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
-        
-    # selected_foods = list(wedding.danhsachmonan.values_list('mamonan', flat=True))
-    # selected_services = list(wedding.danhsachdichvu.values_list('madichvu', flat=True))
     
-    # Lấy danh sách tất cả món ăn và dịch vụ
-    all_foods = Monan.objects.all()
-    all_services = Dichvu.objects.all()
-    food_serializer = FoodSerializer(all_foods, many=True)
+    serializer = PartyBookingFormSerializer(wedding)
+    services = Dichvu.objects.all()
+    service_serializer = ServiceSerializer(services, many=True)
+    chitietdichvu_query = Chitietdichvu.objects.filter(matieccuoi=matieccuoi)
+    chitietdichvu_serializer = ServiceDetailsSerializer(chitietdichvu_query, many=True)
+    data={
+        'wedding': serializer.data,
+        'selectedservice': chitietdichvu_serializer.data,
+        'allservices': service_serializer.data,
+    }
+
     
-    service_serializer = ServiceSerializer(all_services, many=True)
-    
-    # Tạo danh sách JSON chứa thông tin món ăn và dịch vụ, đánh dấu các mục đã chọn
-    # food_list = [{'id': food.id, 'name': food.tenmonan, 'checked': food.id in selected_foods} for food in all_foods]
-    # service_list = [{'id': service.id, 'name': service.tendichvu, 'checked': service.id in selected_services} for service in all_services]
-    # print(food_list,service_list)
-    return JsonResponse({'foods': food_serializer.data, 'services': service_serializer.data}) 
-    
+    return render(request, 'addServiceTable.html',data)
+   
+   
 # Thống kê số lượng tiệc trong tháng theo từng ngày
 # @api_view(['GET'])
 # @authentication_classes([SessionAuthentication, TokenAuthentication])

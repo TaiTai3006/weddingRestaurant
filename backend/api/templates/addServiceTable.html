@@ -1,0 +1,52 @@
+{% load humanize %}
+<div class="modal-content" >
+  <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">Thêm dịch vụ</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+    <div class="modal-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Mã dịch vụ </th>
+            <th scope="col">Tên dịch vụ </th>
+            
+            <th scope="col">Đơn giá</th>
+            
+            <th scope="col">Select</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for service in allservices %}
+                <tr class="serviceRow" data-madichvu="{{ service.madichvu }}">
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ service.madichvu }}</td>
+                    <td>{{ service.tendichvu }}</td>
+                    
+                    <td>{{ service.dongia|floatformat|intcomma }}</td>
+                   
+                       
+                    </td>
+                    
+                    <td id="addService">
+                        <input type="checkbox" name="selected_services" value="{{ service.madichvu }}"
+                        {% for selected_service in selectedservice %}
+                            {% if selected_service.madichvu == service.madichvu %}
+                                checked
+                            {% endif %}
+                        {% endfor %}
+                        />
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="addServiceDetailButton" class="btn btn-primary" >Thêm</button>
+      <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Hủy</button>
+    </div>
+
+  </div>

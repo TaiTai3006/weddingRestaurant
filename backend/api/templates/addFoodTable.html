@@ -1,0 +1,85 @@
+{% load humanize %}
+<div class="modal-content" >
+  <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">Thêm món ăn</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+    <div class="modal-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Mã món ăn</th>
+            <th scope="col">Tên món ăn</th>
+            <th scope="col">Đơn giá</th>
+            <th scope="col">Ghi chú</th>
+            <th scope="col">Select</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for food in allfoods %}
+                <tr class="foodRow" data-mamonan="{{ food.mamonan }}">
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ food.mamonan }}</td>
+                    <td>{{ food.tenmonan }}</td>
+                    <td>{{ food.dongia|floatformat|intcomma }}</td>
+                    <td>
+                      {% if selectedfood %}
+                          {% with found=False %}
+                              {% for selected_food in selectedfood %}
+                                  {% if selected_food.mamonan == food.mamonan %}
+                                      <input
+                                          type="text"
+                                          class="ghichuMA_input text-secondary p-1"
+                                          name="ghichumonan"
+                                          placeholder="Ghi chú ..."
+                                          id="ghichu_selected{{ selected_food.mamonan }}"
+                                          value="{{ selected_food.ghichu }}"
+                                      />
+                                      {% with found=True %}
+                                      {% endwith %}
+                                  {% endif %}
+                              {% endfor %}
+                              {% if not found %}
+                                  <input
+                                      type="text"
+                                      class="ghichuMA_input text-secondary p-1"
+                                      name="ghichumonan"
+                                      placeholder="Ghi chú ..."
+                                      id="ghichu_{{food.mamonan}}"
+                                      style="display: none;"
+                                  />
+                              {% endif %}
+                          {% endwith %}
+                      {% else %}
+                          <input
+                              type="text"
+                              class="ghichuMA_input text-secondary p-1"
+                              name="ghichumonan"
+                              placeholder="Ghi chú ..."
+                              id="ghichu_{{food.mamonan}}"
+                              style="display: none;"
+                          />
+                      {% endif %}
+                  </td>
+                    <td id="addFood">
+                        <input type="checkbox" name="selected_foods" value="{{ food.mamonan }}"
+                        {% for selected_food in selectedfood %}
+                            {% if selected_food.mamonan == food.mamonan %}
+                                checked
+                            {% endif %}
+                        {% endfor %}
+                        />
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="addFoodDetailButton" class="btn btn-primary" >Thêm</button>
+      <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Hủy</button>
+    </div>
+
+  </div>

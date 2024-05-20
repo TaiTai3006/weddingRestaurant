@@ -1,5 +1,5 @@
 {% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
-{% load mathfilters %} {% load humanize %}
+{% load mathfilters %} {% load humanize %} {% csrf_token %}
 <form
   className="form-columns"
   id="searchWedding"
@@ -51,9 +51,9 @@
         id="masanh"
         aria-label="Default select example"
       >
-        <option value="">Chọn loại sảnh</option>
-        {% for sanh in lobbyTypes %}
-        <option value="{{sanh.maloaisanh}}">{{sanh.tenloaisanh}}</option>
+        <option value="">Chọn sảnh</option>
+        {% for sanh in lobbies %}
+        <option value="{{sanh.masanh}}">{{sanh.tensanh}}</option>
         {% endfor %}
       </select>
     </div>
@@ -91,53 +91,274 @@
       />
     </div>
     <div class="col mb-3">
-      <label for="soluongbandutru" class="form-label"
-        >Số lượng bàn dự trữ</label
-      >
-      <input
-        type="number"
-        class="form-control"
-        id="soluongbandutru"
-        name="soluongbandutru"
-        placeholder="Số lượng bàn dự trữ"
-      />
+      <div class="d-flex" style="margin-top: 2rem">
+        <button type="button" id="clearButton" class="btn btn-outline-primary">
+          Nhập lại
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="d-flex justify-content-end my-3">
-    <button type="submit" id="searchButton" class="btn btn-outline-primary">
-      Tìm kiếm
-    </button>
-    <button type="button" class="btn btn-outline-primary">Nhập lại</button>
   </div>
 </form>
 
-<div id="searchResult"></div>
+<div class="mt-3" id="searchResult"></div>
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-  console.log(document.getElementById("searchResult"));
-
-  function readFoodServiceDetailChecked(matieccuoi) {
-    console.log("Mã tiệc cưới:", matieccuoi);
+  document.getElementById("clearButton").addEventListener("click", function () {
+    document
+      .querySelectorAll("#searchWedding input, #searchWedding select")
+      .forEach((input) => {
+        input.value = "";
+      });
+    readSearchResult();
+  });
+  function addFoodDetail(matieccuoi, danhsachmonan) {
+    console.log(matieccuoi, danhsachmonan);
     const xhttp = new XMLHttpRequest();
 
     xhttp.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var responseData = JSON.parse(this.responseText);
-        console.log(responseData);
-     
-        
+        alert("Thêm thông tin món ăn thành công");
+        window.location.reload();
+      } else {
+        console.error(
+          "Yêu cầu không thành công. Mã lỗi:",
+          this.status,
+          this.responseText
+        );
+      }
+    };
+
+    xhttp.onerror = function () {
+      console.error("Yêu cầu không thành công. Xảy ra lỗi kết nối.");
+    };
+
+    xhttp.open("POST", "/addFoodDetails/");
+    xhttp.setRequestHeader("Content-type", "application/json");
+
+    var csrf_token_input = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+
+    var data = {
+      matieccuoi: matieccuoi,
+      danhsachmonan: danhsachmonan,
+    };
+
+    if (csrf_token) {
+      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+    }
+
+    console.log("Sending data:", JSON.stringify(data));
+    xhttp.send(JSON.stringify(data));
+  }
+  function addServiceDetail(matieccuoi, danhsachdichvu) {
+    console.log(matieccuoi, danhsachdichvu);
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        alert("Thêm thông tin dịch vụ thành công");
+      } else {
+        console.error(
+          "Yêu cầu không thành công. Mã lỗi:",
+          this.status,
+          this.responseText
+        );
+      }
+    };
+
+    xhttp.onerror = function () {
+      console.error("Yêu cầu không thành công. Xảy ra lỗi kết nối.");
+    };
+
+    xhttp.open("POST", "/addServiceDetails/");
+    xhttp.setRequestHeader("Content-type", "application/json");
+
+    var csrf_token_input = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+
+    var data = {
+      matieccuoi: matieccuoi,
+      danhsachdichvu: danhsachdichvu,
+    };
+
+    if (csrf_token) {
+      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+    }
+
+    console.log("Sending data:", JSON.stringify(data));
+    xhttp.send(JSON.stringify(data));
+  }
+
+
+  function readServiceDetailChecked(matieccuoi) {
+    console.log("Mã tiệc cưới:", matieccuoi);
+    const xhttp = new XMLHttpRequest();
+    let serviceDetailList = [];
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        document.getElementById("serviceDetailTable").innerHTML =
+          this.responseText;
+        document
+          .querySelectorAll("#addService input ")
+          .forEach((service_checkbox) => {
+            if (service_checkbox.checked) {
+              serviceDetailList.push(service_checkbox.value);
+            }
+
+            service_checkbox.addEventListener("change", function () {
+              if (service_checkbox.checked) {
+                serviceDetailList.push(service_checkbox.value);
+              } else {
+                serviceDetailList = serviceDetailList.filter(
+                  (item) => item !== service_checkbox.value
+                );
+              }
+
+              // Hiển thị danh sách dịch vụ được chọn trong console
+              console.log("Danh sách dịch vụ:", serviceDetailList);
+            });
+          });
+
+        document
+          .getElementById("addServiceDetailButton")
+          .addEventListener("click", function (e) {
+            addServiceDetail(matieccuoi, serviceDetailList);
+          });
       } else {
         console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
       }
     };
 
-    const url = `searchFoodService/?matieccuoi=${matieccuoi}`;
+    const url = `searchService/?matieccuoi=${matieccuoi}`;
 
     xhttp.open("GET", url);
     xhttp.setRequestHeader("Content-type", "application/json");
     xhttp.send();
   }
+
+  function readFoodDetailChecked(matieccuoi) {
+    console.log("Mã tiệc cưới:", matieccuoi);
+    const xhttp = new XMLHttpRequest();
+    let foodDetailList = []; // Danh sách món ăn được chọn
+
+    // Hàm xử lý khi có dữ liệu trả về từ server
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        document.getElementById("foodDetailTable").innerHTML =
+          this.responseText;
+        document
+          .querySelectorAll("#addFood input ")
+          .forEach((food_checkbox) => {
+            let ghichuElement = document.getElementById(
+              `ghichu_${food_checkbox.value}`
+            );
+            let ghichuSelectedElement = document.getElementById(
+              `ghichu_selected${food_checkbox.value}`
+            );
+
+            if (food_checkbox.checked) {
+              if (ghichuSelectedElement) {
+                let ghichuValue =
+                  ghichuSelectedElement.value.trim() !== ""
+                    ? ghichuSelectedElement.value
+                    : null;
+                let foodDetail = {
+                  mamonan: food_checkbox.value,
+                  ghichu: ghichuValue,
+                };
+                foodDetailList.push(foodDetail);
+                ghichuSelectedElement.addEventListener("input", function () {
+                  let foodDetail = foodDetailList.find(
+                    (item) => item.mamonan === food_checkbox.value
+                  );
+                  if (foodDetail) {
+                    foodDetail.ghichu = this.value;
+                  } else if (food_checkbox.checked) {
+                    foodDetail = {
+                      mamonan: food_checkbox.value,
+                      ghichu: this.value,
+                    };
+                    foodDetailList.push(foodDetail);
+                  }
+                  console.log("danh sách món ăn:", foodDetailList);
+                });
+
+              }
+
+              console.log(foodDetailList);
+            }
+            food_checkbox.addEventListener("change", function () {
+              if (food_checkbox.checked) {
+                console.log(food_checkbox.value);
+                let foodDetail = {
+                  mamonan: food_checkbox.value,
+                };
+                foodDetailList.push(foodDetail);
+                console.log(foodDetailList);
+
+                ghichuElement.style = "display: block;";
+
+                ghichuElement.addEventListener("input", function () {
+                  let foodDetail = foodDetailList.find(
+                    (item) => item.mamonan === food_checkbox.value
+                  );
+                  if (foodDetail) {
+                    foodDetail.ghichu = this.value;
+                  } else if (food_checkbox.checked) {
+                    foodDetail = {
+                      mamonan: food_checkbox.value,
+                      ghichu: this.value,
+                    };
+                    foodDetailList.push(foodDetail);
+                  }
+                  console.log("danh sách món ăn:", foodDetailList);
+                });
+              
+                if (ghichuSelectedElement != null) {
+                  ghichuSelectedElement.style = "display: none;";
+                }
+              } else {
+                console.log("bo chon", food_checkbox.value);
+                foodDetailList = foodDetailList.filter(
+                  (item) => item.mamonan !== food_checkbox.value
+                );
+                console.log("danh sach mon an:", foodDetailList);
+
+                ghichuElement.style = "display: none";
+                if (ghichuSelectedElement != null) {
+                  ghichuSelectedElement.style = "display: none;";
+                }
+              }
+            });
+          });
+
+        document
+          .getElementById("addFoodDetailButton")
+          .addEventListener("click", function (e) {
+           
+            // Loại bỏ những món ăn không được chọn trong selected foods
+            addFoodDetail(matieccuoi, foodDetailList);
+            
+          });
+      } else {
+        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+      }
+    };
+
+    // Tạo URL yêu cầu dữ liệu từ server
+    const url = `searchFood/?matieccuoi=${matieccuoi}`;
+
+    // Gửi yêu cầu GET đến server
+    xhttp.open("GET", url);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send();
+  }
+
   function readSearchResult() {
     const xhttp = new XMLHttpRequest();
 
@@ -149,19 +370,70 @@
         document
           .getElementById("modal-add-food")
           .addEventListener("click", function () {
-            console.log("hellooo");
+            var wedding_id = this.getAttribute("data-wedding-id");
+            readFoodDetailChecked(wedding_id);
+          });
+        document
+          .getElementById("modal-add-service")
+          .addEventListener("click", function () {
+            console.log("hellooo service");
             var wedding_id = this.getAttribute("data-wedding-id");
             console.log(wedding_id);
-            readFoodServiceDetailChecked(wedding_id);
+            readServiceDetailChecked(wedding_id);
           });
+        const editButtons = document.querySelectorAll("#editButton");
+        const saveButtons = document.querySelectorAll("#saveButton");
+        
+        function enableEditing(button) {
+          const formFields = button
+            .closest(".wedding_info")
+            .querySelectorAll("input[type='text'], input[type='date'], select");
 
-        // Xử lý dữ liệu nếu cần
+          formFields.forEach(function (inputField) {
+            inputField.disabled = false;
+          });
+          document.getElementById("modal-add-food").style.display = "block";
+          document.getElementById("modal-add-service").style.display = "block";
+
+          button.style.display = "none";
+          button.nextElementSibling.style.display = "block";
+        }
+        function disableEditing(button) {
+          const formFields = button
+            .closest(".wedding_info")
+            .querySelectorAll("input[type='text'], input[type='date']");
+
+          formFields.forEach(function (inputField) {
+            inputField.disabled = true;
+          });
+          document.getElementById("modal-add-food").style.display = "none";
+          document.getElementById("modal-add-service").style.display = "none";
+          button.style.display = "none";
+          button.previousElementSibling.style.display = "block";
+        }
+
+        editButtons.forEach(function (editButton) {
+          editButton.addEventListener("click", function () {
+            enableEditing(this);
+          });
+        });
+
+        saveButtons.forEach(function (saveButton) {
+          saveButton.addEventListener("click", function () {
+            const form = this.closest(".wedding_info");
+                    form.querySelectorAll("input[type='text'], input[type='date']").forEach(function(inputField) {
+                        inputField.disabled = false;
+                    });
+
+                    form.submit(); 
+            disableEditing(this);
+          });
+        });
       } else {
         console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
       }
     };
 
-    // Lấy các giá trị từ các trường nhập liệu
     var tenchure = document.getElementById("tenchure").value || null;
     var tencodau = document.getElementById("tencodau").value || null;
     var maca = document.getElementById("maca").value || null;
@@ -169,8 +441,7 @@
     var ngaydattiec = document.getElementById("ngaydattiec").value || null;
     var ngaydaitiec = document.getElementById("ngaydaitiec").value || null;
     var soluongban = document.getElementById("soluongban").value || null;
-    var soluongbandutru =
-      document.getElementById("soluongbandutru").value || null;
+
     var url = "searchParty/?";
     if (tenchure) {
       url += "tenchure=" + encodeURIComponent(tenchure) + "&";
@@ -194,9 +465,6 @@
     if (soluongban) {
       url += "soluongban=" + encodeURIComponent(soluongban) + "&";
     }
-    if (soluongbandutru) {
-      url += "soluongbandutru=" + encodeURIComponent(soluongbandutru) + "&";
-    }
 
     // Loại bỏ dấu & cuối cùng nếu có
     url = url.replace(/&$/, "");
@@ -215,106 +483,16 @@
         readSearchResult();
       });
     });
-  const apiUrlFoods = "http://127.0.0.1:8000/foods/";
-  const apiUrlServices = "http://127.0.0.1:8000/services/";
-  const fetchFoods = async () => {
-    try {
-      const response = await axios.get(apiUrlFoods);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching wedding foods:", error);
-      throw error;
-    }
-  };
-  const fetchServices = async () => {
-    try {
-      const response = await axios.get(apiUrlServices);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching wedding services:", error);
-      throw error;
-    }
-  };
+
   window.onload = async () => {
     try {
       readSearchResult();
-      const weddingFoods = await fetchFoods();
-      const weddingServices = await fetchServices();
-
-      const chitiet_mamonan = document.querySelectorAll("#chitiet_mamonan");
-      chitiet_mamonan.forEach(async (element) => {
-        const mamonan = element.textContent.trim();
-
-        const matchingFood = weddingFoods.find(
-          (food) => food.mamonan === mamonan
-        );
-
-        if (matchingFood) {
-          element.textContent = matchingFood.tenmonan;
-        }
-        const chitiet_madichvu = document.querySelectorAll("#chitiet_madichvu");
-        chitiet_madichvu.forEach(async (element) => {
-          const madichvu = element.textContent.trim();
-
-          const matchingService = weddingServices.find(
-            (dichvu) => (dichvu.madichvu = madichvu)
-          );
-
-          if (matchingService) {
-            element.textContent = matchingService.tendichvu;
-          }
-        });
-      });
+     
+     
     } catch (error) {
       console.error("Error handling hall types:", error);
     }
   };
-
-  const editButtons = document.querySelectorAll("#editButton");
-  const saveButtons = document.querySelectorAll("#saveButton");
-
-  // Function to enable form fields for editing
-  function enableEditing(button) {
-    const formFields = button
-      .closest(".wedding_info")
-      .querySelectorAll("input[type='text']");
-
-    formFields.forEach(function (inputField) {
-      inputField.disabled = false;
-    });
-    document.getElementById("modal-add-food").style.display = "block";
-    document.getElementById("modal-add-service").style.display = "block";
-
-    button.style.display = "none";
-    button.nextElementSibling.style.display = "block";
-  }
-
-  // Function to disable form fields after editing
-  function disableEditing(button) {
-    const formFields = button
-      .closest(".wedding_info")
-      .querySelectorAll("input[type='text']");
-
-    formFields.forEach(function (inputField) {
-      inputField.disabled = true;
-    });
-    document.getElementById("modal-add-food").style.display = "none";
-    document.getElementById("modal-add-service").style.display = "none";
-    button.style.display = "none";
-    button.previousElementSibling.style.display = "block";
-  }
-
-  editButtons.forEach(function (editButton) {
-    editButton.addEventListener("click", function () {
-      enableEditing(this);
-    });
-  });
-
-  saveButtons.forEach(function (saveButton) {
-    saveButton.addEventListener("click", function () {
-      disableEditing(this);
-    });
-  });
 </script>
 
 {% endblock %}
