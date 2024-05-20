@@ -858,7 +858,7 @@ def bookingPartyWeddingAPI(request):
             else: serviceDetail.save()
 
         cache.delete('searchPartyBooking')
-        return redirect('/create')
+        return JsonResponse({'matieccuoi': matieccuoi})
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
 # Hiển thị thông tin các món ăn và dịch vụ đã chọn

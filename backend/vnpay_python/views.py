@@ -6,15 +6,16 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import random
+from django.http import JsonResponse
 
-@api_view(['POST'])
 def payment(request):
-    order_type = request.data.get('order_type')
-    order_id = request.data.get('order_id')
-    amount =request.data.get('amount')
-    order_desc = request.data.get('order_desc')
+    print(request.POST)
+    order_type = "billpayment"
+    order_id = request.POST.get('order_id')
+    amount =int(request.POST.get('amount'))
+    order_desc = f"Thanh toán hoá đơn ${order_id}"
     bank_code = 'VNPAYQR'
-    language = request.data.get('language')
+    language = "vn"
     ipaddr = get_client_ip(request)
     # Build URL Payment
     vnp = vnpay()
@@ -40,7 +41,7 @@ def payment(request):
     vnp.requestData['vnp_ReturnUrl'] = VNPAY_RETURN_URL
     vnpay_payment_url = vnp.get_payment_url(VNPAY_PAYMENT_URL, VNPAY_HASH_SECRET_KEY)
     print(vnpay_payment_url)   
-    return Response(vnpay_payment_url)
+    return JsonResponse({'payment_url': vnpay_payment_url})
     
 
 def get_client_ip(request):
