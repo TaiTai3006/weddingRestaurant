@@ -519,10 +519,13 @@ document.getElementById("sdt_input").addEventListener("input", function (e) {
   localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
 });
 
+
 document
   .getElementById("totalBill_button")
   .addEventListener("click", function (e) {
     e.preventDefault();
+    console.log("Total Bill")
+    document.getElementById("totalBill_result").style.display = "block";
     dataCreateWedding.dongiaban = dataCreateWedding.danhsachmonan.reduce(
       (accumulator, currentValue) => accumulator + currentValue.dongiamonan,
       0
@@ -535,21 +538,18 @@ document
     );
     dataCreateWedding.tongtiendattiec =
       dataCreateWedding.tongtienban + dataCreateWedding.tongtiendichvu;
+      console.log(dataCreateWedding.tongtiendattiec)
     dataCreateWedding.tiendatcoc =
       (parameter.tiledatcoc / 100) * dataCreateWedding.tongtiendattiec;
     dataCreateWedding.conlai =
       dataCreateWedding.tongtiendattiec - dataCreateWedding.tiendatcoc;
-
+console.log(document.getElementById("totalBill_result"))
     document.getElementById("totalBill_result").innerHTML =
-      `<p>Tổng tiền bàn: ${formatCurrency(dataCreateWedding.tongtienban)}</p>` +
-      `<p>Tổng tiền đặt tiệc: ${formatCurrency(
-        dataCreateWedding.tongtiendattiec
-      )}</p>` +
-      `<p>Tiền đặt cọc (${parameter.tiledatcoc}%): ${formatCurrency(
-        dataCreateWedding.tiendatcoc
-      )}</p>` +
-      `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
-      console.log(dataCreateWedding)
+    `<p class="mx-1 p-1 border-end">Tổng tiền bàn: ${formatCurrency(dataCreateWedding.tongtienban)}</p>` +
+    `<p class="mx-1 p-1 border-end">Tổng tiền đặt tiệc: ${formatCurrency(dataCreateWedding.tongtiendattiec)}</p>` +
+    `<p class="mx-1  p-1">Tiền đặt cọc (${parameter.tiledatcoc}%): ${formatCurrency(dataCreateWedding.tiendatcoc)}</p>`;
+      // `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
+      document.getElementById("totalAmount").innerText =  `${formatCurrency(dataCreateWedding.tiendatcoc)}`
   });
 
 document

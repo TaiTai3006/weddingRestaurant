@@ -15,13 +15,8 @@
   </thead>
   <tbody id="accordion">
     {% for wedding in weddings %}
-    <tr
-      data-toggle="collapse"
-      data-target="#collapse{{ wedding.matieccuoi }}"
-      aria-expanded="true"
-      aria-controls="collapse{{ wedding.matieccuoi }}"
-      class="accordion-toggle"
-    >
+    <tr data-toggle="collapse" data-target="#collapse{{ wedding.matieccuoi }}" aria-expanded="true"
+      aria-controls="collapse{{ wedding.matieccuoi }}" class="accordion-toggle">
       <td>{{forloop.counter }}</td>
       <td>{{ wedding.matieccuoi }}</td>
       <td>{{ wedding.tencodau }}</td>
@@ -34,114 +29,63 @@
     </tr>
     <tr>
       <td colspan="9" class="hiddenRow">
-        <div
-          id="collapse{{ wedding.matieccuoi }}"
-          class="collapse p-3 accordion-content"
-          aria-labelledby="heading{{ wedding.matieccuoi }}"
-          data-parent="#accordion"
-        >
-          <form
-            class="wedding_info"
-            method="POST"
-            action="{% url 'update_wedding_info' wedding.matieccuoi %}"
-          >
+        <div id="collapse{{ wedding.matieccuoi }}" class="collapse p-3 accordion-content"
+          aria-labelledby="heading{{ wedding.matieccuoi }}" data-parent="#accordion">
+          <form class="wedding_info" method="POST" action="{% url 'update_wedding_info' wedding.matieccuoi %}">
             {% csrf_token %}
             <div class="row">
               <div class="col mb-3">
                 <label for="tencodau" class="form-label">Tên cô dâu:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="tencodau"
-                  name="tencodau"
-                  value="{{ wedding.tencodau }}"
-                  disabled
-                />
+                <input type="text" class="form-control" id="tencodau" name="tencodau" value="{{ wedding.tencodau }}"
+                  disabled />
               </div>
               <div class="col mb-3">
                 <label for="tenchure" class="form-label">Tên chú rể:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="tenchure"
-                  name="tenchure"
-                  value="{{ wedding.tenchure }}"
-                  disabled
-                />
+                <input type="text" class="form-control" id="tenchure" name="tenchure" value="{{ wedding.tenchure }}"
+                  disabled />
               </div>
               <div class="col mb-3">
                 <label for="maca" class="form-label">Ca</label>
-                <select
-                  class="form-select"
-                  name="maca"
-                  id="maca"
-                  aria-label="Default select example"
-                  disabled
-                >
+                <select class="form-select" name="maca" id="maca" aria-label="Default select example" disabled>
                   <option value="{{ wedding.maca }}" selected>{{ wedding.tenca }}</option>
                   {% for ca in shifts %}
-          
-                  <option value="{{ ca.maca }}" {% if ca.maca == wedding.maca %} selected {% endif %}>{{ ca.tenca }}</option>
+
+                  <option value="{{ ca.maca }}" {% if ca.maca == wedding.maca %} selected {% endif %}>{{ ca.tenca }}
+                  </option>
                   {% endfor %}
                 </select>
               </div>
               <div class="col mb-3">
                 <label for="masanh" class="form-label">Sảnh</label>
-                <select
-                  class="form-select"
-                  name="masanh"
-                  id="masanh"
-                  aria-label="Default select example"
-                  disabled
-                  
-                >
-                
+                <select class="form-select" name="masanh" id="masanh" aria-label="Default select example" disabled>
+
                   {% for sanh in lobbies %}
-                  <option value="{{ sanh.masanh }}" {% if sanh.masanh == wedding.masanh %} selected {% endif %}>{{ sanh.tensanh }}</option>
+                  <option value="{{ sanh.masanh }}" {% if sanh.masanh == wedding.masanh %} selected {% endif %}>{{
+                    sanh.tensanh }}</option>
                   {% endfor %}
                 </select>
               </div>
-              
+
               <div class="col mb-3">
-                <label for="ngaydaitiec" class="form-label"
-                  >Ngày đãi tiệc:</label
-                >
-                <input
-                  type="date"
-                  class="form-control"
-                  id="ngaydaitiec"
-                  name="ngaydaitiec"
-                  value="{{ wedding.ngaydaitiec }}"
-                  disabled
-                />
+                <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc:</label>
+                <input type="date" class="form-control" id="ngaydaitiec" name="ngaydaitiec"
+                  value="{{ wedding.ngaydaitiec }}" disabled />
               </div>
               <div class="d-flex justify-content-end">
                 <div class="btn-group" role="group">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    id="editButton"
-                  >
+                  <button type="button" class="btn btn-outline-secondary" id="editButton">
                     Chỉnh sửa
                   </button>
 
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    id="saveButton"
-                    style="display: none"
-                  >
+                  <button type="button" class="btn btn-outline-secondary" id="saveButton" style="display: none">
                     Lưu
                   </button>
+                      <a href="{% url 'paymentConfirm' wedding.matieccuoi %}"><button type="button" class="btn btn-primary launch" 
+                        > Thanh toán
+                      </button></a>
+                  
 
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    id="saveButton"
-                    style="display: none"
-                  >
-                    Lưu
-                  </button>
+                
                 </div>
               </div>
             </div>
@@ -165,9 +109,9 @@
                   <td>{{ forloop.counter }}</td>
                   <td>
                     {% for food_item in foods %} {% if food_item.mamonan == food.mamonan %}
-                    {{ food_item.tenmonan }} 
-                    {% endif %} 
-                    {%  endfor %}
+                    {{ food_item.tenmonan }}
+                    {% endif %}
+                    {% endfor %}
                   </td>
 
                   <td>{{ food.soluong }}</td>
@@ -180,14 +124,8 @@
                 {% endfor %}
               </tbody>
             </table>
-            <button
-              type="button"
-              id="modal-add-food"
-              class="btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#myModal"
-              data-wedding-id="{{ wedding.matieccuoi }}"
-            >
+            <button type="button" id="modal-add-food" class="btn btn-primary" data-bs-toggle="modal"
+              data-bs-target="#myModal" data-wedding-id="{{ wedding.matieccuoi }}">
               Thêm món ăn
             </button>
           </div>
@@ -208,10 +146,10 @@
                 <tr>
                   <td>{{ forloop.counter }}</td>
                   <td>
-                    {% for service_item in services %} 
-                    {% if service_item.madichvu == service.madichvu %} 
-                    {{service_item.tendichvu }} 
-                    {% endif %} 
+                    {% for service_item in services %}
+                    {% if service_item.madichvu == service.madichvu %}
+                    {{service_item.tendichvu }}
+                    {% endif %}
                     {% endfor %}
                   </td>
                   <td>{{ service.soluong }}</td>
@@ -223,14 +161,8 @@
                 {% endfor %}
               </tbody>
             </table>
-            <button
-              type="button"
-              id="modal-add-service"
-              class="btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#myModalService"
-              data-wedding-id="{{ wedding.matieccuoi }}"
-            >
+            <button type="button" id="modal-add-service" class="btn btn-primary" data-bs-toggle="modal"
+              data-bs-target="#myModalService" data-wedding-id="{{ wedding.matieccuoi }}">
               Thêm dịch vụ
             </button>
           </div>
@@ -240,20 +172,35 @@
     {% endfor %}
   </tbody>
 </table>
+
+<div class="modal" id="myModalPayment">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="min-width: 800px">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Chọn phương thức thanh toán </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">Thanh toán
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
 <div class="modal" id="myModal">
-  <div
-    class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-    style="min-width: 800px"
-  >
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="min-width: 800px">
     <div id="foodDetailTable" class="modal-content"></div>
   </div>
 </div>
 
 <div class="modal" id="myModalService">
-  <div
-    class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-    style="min-width: 800px"
-  >
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="min-width: 800px">
     <div id="serviceDetailTable" class="modal-content"></div>
   </div>
 </div>

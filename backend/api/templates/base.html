@@ -1,80 +1,217 @@
-{% extends 'layout.html' %} {% block title %} Home {% endblock %}
-{% block content %}
-{% load static %}
-<div class="row">
-  <form class="col-9" method="POST" action="" id="weddingForm">
-    {% csrf_token %}
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button
-          class="nav-link active"
-          id="home-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#home-tab-pane"
-          type="button"
-          role="tab"
-          aria-controls="home-tab-pane"
-          aria-selected="true"
-        >
-          Thông tin tiệc cưới
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button
-          class="nav-link"
-          id="profile-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#profile-tab-pane"
-          type="button"
-          role="tab"
-          aria-controls="profile-tab-pane"
-          aria-selected="false"
-        >
-          Thông tin món ăn
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button
-          class="nav-link"
-          id="contact-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#contact-tab-pane"
-          type="button"
-          role="tab"
-          aria-controls="contact-tab-pane"
-          aria-selected="false"
-        >
-          Thông tin dịch vụ
-        </button>
-      </li>
-    </ul>
-    <div class="tab-content" id="myTabContent">
-      <div
-        class="tab-pane fade show active"
-        id="home-tab-pane"
-        role="tabpanel"
-        aria-labelledby="home-tab"
-        tabindex="0"
-      >
-        <div id="khachhang"></div>
+{% extends 'layout.html' %} {% block title %} Home {% endblock %} 
+{% block content %} {% load static %}
+<style>
+  .base-container {
+    height: 570px;
+  }
+  #weddingForm {
+    overflow: scroll;
+    max-height: 100vh;
+  }
+  #weddingForm::-webkit-scrollbar {
+    display: none;
+  }
+  .wedding-info {
+    height: 100vh;
+  }
+  #wedding_info {
+    overflow: scroll;
+    height: 520px;
+    min-width: 390px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+  }
+  #wedding_info::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-content {
+    max-height: 500px;
+    overflow: scroll;
+  }
+  .tab-content::-webkit-scrollbar {
+    display: none;
+  }
+  .equal-width {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+</style>
+<div class="base-container">
+  <div class="row p-3">
+    <form class="col-8" method="POST" action="" id="weddingForm">
+      {% csrf_token %}
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="food-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#food-tab-pane"
+            type="button"
+            role="tab"
+            aria-controls="food-tab-pane"
+            aria-selected="true"
+          >
+            Thông tin món ăn
+          </button>
+        </li>
 
-        <h4>Thông tin tiệc cưới</h4>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="service-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#service-tab-pane"
+            type="button"
+            role="tab"
+            aria-controls="service-tab-pane"
+            aria-selected="false"
+          >
+            Thông tin dịch vụ
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div
+          class="tab-pane fade show active"
+          id="food-tab-pane"
+          role="tabpanel"
+          aria-labelledby="food-tab"
+          tabindex="0"
+        >
+          <div id="notification_result"></div>
+          <select
+            id="foodTypeSelect"
+            class="form-select form-select-sm outline-none"
+            aria-label="Small select example"
+          >
+            <option value="all">Tất cả</option>
+            {% for foodType in foodTypes %}
+
+            <option value="{{foodType.maloaimonan}}">
+              {{foodType.tenloaimonan}}
+            </option>
+
+            {% endfor %}
+          </select>
+          <div id="foodlist"></div>
+        </div>
+
+        <div
+          class="tab-pane fade"
+          id="service-tab-pane"
+          role="tabpanel"
+          aria-labelledby="service-tab"
+          tabindex="0"
+        >
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tên dịch vụ</th>
+                <th scope="col">Số lượng</th>
+                <th scope="col">Đơn giá</th>
+                <th scope="col">Ghi chú</th>
+                <th scope="col">Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% load humanize %} {% for service in services %}
+              <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ service.tendichvu }}</td>
+                <td>
+                  <input
+                    type="number"
+                    class="soluongDV_input"
+                    min="1"
+                    name="soluongdichvu"
+                    placeholder="Số lượng"
+                    id="soluong_{{service.madichvu}}"
+                    style="display: none"
+                  />
+                </td>
+
+                <td id="dongia_{{service.madichvu}}">
+                  {{ service.dongia|floatformat|intcomma }}
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="ghichuDV_input"
+                    name="ghichudichvu"
+                    placeholder="Ghi chú ..."
+                    id="ghichu_{{service.madichvu}}"
+                    style="display: none"
+                  />
+                </td>
+                <td id="weddingInfo">
+                  <input
+                    id="service_checkbox"
+                    type="checkbox"
+                    name="selected_services"
+                    value="{{ service.madichvu }}"
+                  />
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </form>
+    <div class="col-3 wedding-info ms-3 p-2">
+      <div id="wedding_info" class="p-2">
         <div class="row">
           <div class="col mb-3" id="weddingInfo">
-            <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc </label>
+            <label for="tenchure" class="form-label">Tên chú rể</label>
+            <input
+              type="text"
+              class="form-control"
+              id="tenchure_input"
+              name="tenchure"
+              placeholder="Tên chú rể"
+            />
+          </div>
+          <div class="col mb-3" id="weddingInfo">
+            <label for="tencodau" class="form-label">Tên cô dâu</label>
+            <input
+              type="text"
+              class="form-control"
+              id="tencodau_input"
+              name="tencodau"
+              placeholder="Tên cô dâu"
+            />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="sdt" class="form-label">Số điện thoại</label>
+          <input
+            type="text"
+            class="form-control"
+            id="sdt_input"
+            name="sdt"
+            placeholder="Số điện thoại"
+          />
+        </div>
+        <div id="khachhang"></div>
+
+        <div class="row">
+          <div class="col mb-3" id="weddingInfo">
+            <label for="ngaydaitiec" class="form-label">Ngày đãi tiệc</label>
             <input
               type="date"
               class="form-control"
               id="ngaydaitiec_input"
               name="ngaydaitiec"
-              placeholder="Ngày đãi tiệc "
+              placeholder="Ngày đãi tiệc"
             />
           </div>
         </div>
         <div class="row">
           <div class="col mb-3" id="weddingInfo">
             <label for="maca" class="form-label">Ca</label>
-
             <select
               class="form-select"
               name="maca_select"
@@ -83,201 +220,329 @@
             >
               <option value="">Chọn ca</option>
               {% for shift in shifts %}
-              <option value={{shift.maca}}>
+              <option value="{{shift.maca}}">
                 {{shift.tenca}} ({{shift.giobatdau}}-{{shift.gioketthuc}})
               </option>
-              {%endfor%}
+              {% endfor %}
             </select>
           </div>
-          <div  class="col mb-3" id="selectLobbies">
-          </div>
+          <div class="col mb-3" id="selectLobbies"></div>
         </div>
         <div class="row">
           <div class="col mb-3" id="weddingInfo">
-            <label for="soluongban" class="form-label" id="soluongban_lable">Số lượng bàn</label>
+            <label for="soluongban" class="form-label" id="soluongban_lable"
+              >Số lượng bàn</label
+            >
             <input
               type="number"
               class="form-control"
               id="soluongban_input"
-              min=1
+              min="1"
               name="soluongban"
               placeholder="Số lượng bàn"
             />
           </div>
         </div>
+        <div id="foodInfoDisplay">
+          <table class="table" id="food_table_comfirm">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tên món ăn</th>
+                <th scope="col">Đơn giá</th>
+                <th scope="col">Ghi chú</th>
+                <th scope="col">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="text-align: right">
+                  Tổng tiền đơn giá bàn:
+                </td>
+                <td id="result_tdgb">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="serviceInfoDisplay">
+          <table class="table" id="service_table_comfirm">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Mã dịch vụ</th>
+                <th scope="col">Số lượng</th>
+                <th scope="col">Đơn giá</th>
+                <th scope="col">Ghi chú</th>
+                <th scope="col">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5" style="text-align: right">
+                  Tổng tiền dịch vụ:
+                </td>
+                <td id="result_ttdd">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
-      
-      <div
-        class="tab-pane fade"
-        id="profile-tab-pane"
-        role="tabpanel"
-        aria-labelledby="profile-tab"
-        tabindex="0"
-      >
-      <div id="notification_result"></div>
-        <select
-          id="foodTypeSelect"
-          class="form-select form-select-sm outline-none"
-          aria-label="Small select example"
-        >
-         <option value="all">Tất cả</option>
-          {% for foodType in foodTypes %}
-
-          <option value="{{foodType.maloaimonan}}">
-            {{foodType.tenloaimonan}}
-          </option>
-
-          {% endfor %}
-        </select>
-        <div id="foodlist"></div>
-      </div>
-      <div
-        class="tab-pane fade"
-        id="contact-tab-pane"
-        role="tabpanel"
-        aria-labelledby="contact-tab"
-        tabindex="0"
-      >
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Tên dịch vụ</th>
-              <th scope="col">Số lượng</th>
-              <th scope="col">Đơn giá</th>
-              <th scope="col">Ghi chú</th>
-              <th scope="col">Select</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% load humanize %}
-            {% for service in services %}
-            <tr>
-              <th scope="row">{{ forloop.counter }}</th>
-              <td>{{ service.tendichvu }}</td>
-              <td> <input
-                type="number"
-                class="soluongDV_input"
-                min=1
-                name="soluongdichvu"
-                placeholder="Số lượng"
-                id="soluong_{{service.madichvu}}"
-                style="display: none;"
-              /></td>
-
-              <td id="dongia_{{service.madichvu}}">{{ service.dongia|floatformat|intcomma }}</td>
-              <td><input
-                type="text"
-                class="ghichuDV_input"
-                name="ghichudichvu"
-                placeholder="Ghi chú ..."
-                id="ghichu_{{service.madichvu}}"
-                style="display: none;"
-              /></td>
-              <td id="weddingInfo">
-                <input
-                  id="service_checkbox"
-                  type="checkbox"
-                  name="selected_services"
-                  value="{{ service.madichvu }}"
-                />
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <button type="submit" id="payment_button" class="btn btn-primary">Thanh toán</button>
-    <button id='totalBill_button' class="btn btn-primary">Tính hoá đơn</button>
-  </form>
-  <div class="col-3 wedding-info p-2">
-    <h4>Thông tin khách hàng</h4>
-    <div class="row">
-      <div class="col mb-3" id="weddingInfo">
-        <label for="tenchure" class="form-label">Tên chú rể</label>
-        <input
-          type="text"
-          class="form-control"
-          id="tenchure_input"
-          name="tenchure"
-          placeholder="Tên chú rể"
-        />
-      </div>
-      <div class="col mb-3" id="weddingInfo">
-        <label for="tencodau" class="form-label">Tên cô dâu</label>
-        <input
-          type="text"
-          class="form-control"
-          id="tencodau_input"
-          name="tencodau"
-          placeholder="Tên cô dâu"
-        />
-      </div>
-    </div>
-    <div class="mb-3">
-      <label for="sdt" class="form-label">Số điện thoại</label>
-      <input
-        type="text"
-        class="form-control"
-        id="sdt_input"
-        name="sdt"
-        placeholder="Số điện thoại"
-      />
-    </div>
-
-    <div id="weddingInfoDisplay">
-      <table class="table" id="food_table_comfirm">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Tên món ăn</th>
-            <th scope="col">Đơn giá</th>
-            <th scope="col">Ghi chú</th>
-            <th scope="col">Thành tiền</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <tr>
-            <td colSpan="4" style="textAlign:right">
-              Tổng tiền đơn giá bàn:
-            </td>
-            <td id="result_tdgb">
-              0
-            </td>
-          </tr>
-        </tfoot>
     </div>
   </div>
-  <div id="weddingInfoDisplay">
-    <table class="table" id="service_table_comfirm">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Mã dịch vụ</th>
-          <th scope="col">Số lượng</th>
-          <th scope="col">Đơn giá</th>
-          <th scope="col">Ghi chú</th>
-          <th scope="col">Thành tiền</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <td colSpan="5" style="textAlign: right">
-            Tổng tiền dịch vụ:
-          </td>
-          <td id="result_ttdd">
-            0
-          </td>
-        </tr>
-      </tfoot>
-      <div id="totalBill_result"></div>
-  </div>
-  
 </div>
 
+<div class="footer d-flex align-items-center justify-content-between">
+  <p>Phương thức thanh toán:</p>
+  <select id="paymentMethod">
+    <option value="">Chọn phương thức thanh toán</option>
+    <option value="cash">Tiền mặt</option>
+
+    <option value="bank">Chuyển khoản</option>
+  </select>
+  <div class="button-gr">
+    <button type="submit" id="payment_button" class="btn btn-primary me-2">
+      Thanh toán
+    </button>
+    <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
+  </div>
+  <!-- Payment Details Modal -->
+  <div
+    class="modal fade"
+    id="paymentDetailsModal"
+    tabindex="-1"
+    aria-labelledby="paymentDetailsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentDetailsModalLabel">
+            Nhập số tiền thanh toán
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label for="totalAmount">Số tiền cọc :</label>
+            <span id="totalAmount">100000</span>
+          </div>
+          <div class="amountReceived form-row">
+            <label for="amountReceived">Số tiền đã nhận:</label>
+            <input
+              type="number"
+              id="amountReceived"
+              class="p-1 text-secondary"
+              value="0"
+              placeholder="Nhập số tiền đã nhận"
+            />
+          </div>
+          <div class="form-row">
+            <label for="remainingAmount">Tiền còn lại phải trả :</label>
+            <span id="remainingAmount">0</span>
+          </div>
+          <div class="quick-amount">
+            <div class="col">
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(10000000)"
+                >
+                  10000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(20000000)"
+                >
+                  20000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(50000000)"
+                >
+                  50000000
+                </button>
+              </div>
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(100000000)"
+                >
+                  100000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(200000000)"
+                >
+                  200000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(300000000)"
+                >
+                  300000000
+                </button>
+              </div>
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(400000000)"
+                >
+                  400000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(500000000)"
+                >
+                  500000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleClearAmount()"
+                  style="width: 103px"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button id="confirmPayment" type="button" class="btn btn-primary">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div
+    class="modal fade"
+    id="qrCodeModal"
+    tabindex="-1"
+    aria-labelledby="qrCodeModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="qrCodeModalLabel">
+            Quét mã QR để thanh toán
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <iframe
+            src="https://www.google.com/url?sa=i&url=https%3A%2F%2Ffree-qr.com%2F&psig=AOvVaw1Fy5ZCNGtdIRHHV8XrObGw&ust=1716313520736000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJC11p_knIYDFQAAAAAdAAAAABAE"
+            width="100%"
+            height="400px"
+            frameborder="0"
+          ></iframe>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button id="confirmQRPayment" type="button" class="btn btn-primary">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="totalBill_result"
+    class="mt-1 d-flex"
+    style="font-weight: bold; font-size: 14px"
+  ></div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    const paymentDetailsModal = new bootstrap.Modal(
+      document.getElementById("paymentDetailsModal")
+    );
+    const qrCodeModal = new bootstrap.Modal(
+      document.getElementById("qrCodeModal")
+    );
+
+    paymentMethodSelect.addEventListener("change", function () {
+      const selectedMethod = paymentMethodSelect.value;
+      if (selectedMethod === "cash") {
+        paymentDetailsModal.show();
+      } else if (selectedMethod === "bank") {
+        qrCodeModal.show();
+      }
+    });
+
+    // Add event listeners for payment confirmation buttons in modals
+    document
+      .getElementById("confirmPayment")
+      .addEventListener("click", function () {
+        // Handle cash payment confirmation
+        paymentDetailsModal.hide();
+        // Add your payment confirmation logic here
+      });
+
+    document
+      .getElementById("confirmQRPayment")
+      .addEventListener("click", function () {
+        // Handle QR code payment confirmation
+        qrCodeModal.hide();
+        // Add your QR code payment confirmation logic here
+      });
+  });
+  function handleQuickAmountClick(amount) {
+    document.getElementById("amountReceived").value = amount;
+    updateRemainingAmount();
+  }
+
+  function handleClearAmount() {
+    document.getElementById("amountReceived").value = "";
+    updateRemainingAmount();
+  }
+
+  function updateRemainingAmount() {
+    const amountReceived =
+      parseInt(document.getElementById("amountReceived").value) || 0;
+    const tiencoc =
+      parseInt(document.getElementById("totalAmount").innerText) || 0;
+    const remainingAmount = amountReceived - tiencoc;
+    document.getElementById("remainingAmount").innerText = remainingAmount;
+  }
+</script>
 <script src="{% static 'js/script.js' %}" defer></script>
 {% endblock %}

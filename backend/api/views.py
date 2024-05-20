@@ -19,6 +19,8 @@ from django.db.models import Count
 from django.db.models.functions import ExtractDay
 from django.http import JsonResponse
 from datetime import datetime
+from django.utils.timezone import now
+from django.db import transaction
 
 import json
 
@@ -328,7 +330,7 @@ def createRevenueReport(date_string, tongtienhoadon):
     chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
     list(map(lambda x: x.setTiLe(), chi_tiet_bao_cao_all))
         
-
+ 
 
 def report(request):
     return render(request, 'report.html')
@@ -381,6 +383,80 @@ def search(request):
     
     
     return render(request, 'search.html',serialized_data)
+def paymentConfirm(request, wedding_id):
+    wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
+    ngaythanhtoan = now()
+    print(ngaythanhtoan.strftime('%Y-%m-%d'))
+    
+    serializer = PartyBookingFormSerializer(wedding)
+    serialized_wedding_data = serializer.data
+    serialized_wedding_data['ngaythanhtoan'] = ngaythanhtoan.strftime('%Y-%m-%d')
+    
+    ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
+    services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
+    
+    # Iterate through each service data and add the service name
+    for service_data in services_serializer:
+        service_id = service_data['madichvu']
+        service_name = Dichvu.objects.get(pk=service_id).tendichvu
+        service_data['tendichvu'] = service_name
+
+    return render(request, 'paymentConfirm.html', {'wedding':  serialized_wedding_data,'services': services_serializer})
+
+
+# Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
+@api_view(['POST'])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+def paymentInvoiceAPI(request):
+    """
+    API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
+
+    Parameters: request.data là một dictionary gồm:
+        - mahoadon (str): ID của hoá đơn.
+        - ngaythanhtoan (str): Ngày thanh toán.
+        - tongtiendichvu (float): Tổng chi phí dịch vụ.
+        - tienphat (float): Số tiền phạt.
+        - tongtienhoadon (float): Tổng số tiền của hoá đơn.
+        - conlai (float): Số tiền còn lại.
+        - matieccuoi (str): ID của tiệc cưới.
+        - username (str): Tên người dùng thực hiện thanh toán.
+        - danhsachdichvu (list): Danh sách chi tiết dịch vụ gồm nhiều dictionary chứa thông tin bên dưới.
+            + madichvu (str): ID của dịch vụ.
+            + soluong (int): Số lượng.
+            + giatien (float): Giá tiền.
+
+    Returns:
+        - Response: Status code.
+    """
+    with transaction.atomic():
+        mahoadon = getNextID(Hoadon, 'mahoadon')
+        request.data['mahoadon'] = mahoadon
+
+        invoice = InvoiceSerializer(data=request.data)
+        service_list = request.data.get('danhsachdichvu')
+
+        # Validate invoice data
+        if not invoice.is_valid():
+            return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        validated_invoice_data = invoice.validated_data
+
+        # Save invoice
+        invoice.save()
+
+        # Validate and save all service data
+        for service in service_list:
+            service['mahoadon'] = mahoadon
+            detail_service_payment = DetailServicePaymentSerializer(data=service)
+
+            if not detail_service_payment.is_valid():
+                Hoadon.objects.filter(mahoadon=mahoadon).delete()
+                return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            detail_service_payment.save()
+
+    return Response(status=status.HTTP_201_CREATED)
 
 def update_wedding_info(request, wedding_id):
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
@@ -1020,56 +1096,6 @@ def assignTaskAPI(request):
     with connection.cursor() as cursor:
         cursor.execute("UPDATE PhieuDatTiecCuoi SET tinhtrangphancong = 1 WHERE maTiecCuoi = %s", [task_assignment_list[0].get('matieccuoi')])
 
-    return Response(status=status.HTTP_201_CREATED)
-
-# Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
-@api_view(['POST'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def paymentInvoiceAPI(request):
-    """
-    API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
-
-    Parameters: request.data là một dictionary gồm:
-        - mahoadon (str): ID của hoá đơn.
-        - ngayThanhtoan (str): Ngày thanh toán.
-        - tongtiendichvu (float): Tổng chi phí dịch vụ.
-        - tienphat (float): Số tiền phạt.
-        - tongtienhoadon (float): Tổng số tiền của hoá đơn.
-        - conlai (float): Số tiền còn lại.
-        - matieccuoi (str): ID của tiệc cưới.
-        - username (str): Tên người dùng thực hiện thanh toán.
-        - danhsachdichvu (list): Danh sách chi tiết dịch vụ gồm nhiều dictionary chứa thông tin bên dưới.
-            + madichvu (str): ID của dịch vụ.
-            + soluong (int): Số lượng.
-            + giatien (float): Giá tiền.
-
-    Returns:
-        - Response: Status code.
-    """
-    mahoadon = getNextID(Hoadon, 'mahoadon')
-    request.data['mahoadon'] = mahoadon
-
-    invoice = InvoiceSerializer(data = request.data)
-
-    if not invoice.is_valid():
-        return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    invoice.save()
-
-    service_list = request.data.get('danhsachdichvu')
-
-    for service in service_list:
-        service['mahoadon'] = mahoadon
-        detail_service_payment = DetailServicePaymentSerializer(data=service)
-
-        if not detail_service_payment.is_valid():
-            ChitietDvThanhtoan.objects.get(mahoadon = mahoadon).delete()
-            Hoadon.objects.get(mahoadon = mahoadon).delete()
-            return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        detail_service_payment.save()
-    
     return Response(status=status.HTTP_201_CREATED)
 
 

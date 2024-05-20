@@ -9,6 +9,8 @@ urlpatterns = [
   path('report/', revenueReport, name='report'),
   path('invoice/', invoice),
   path('search/', search),
+  path('paymentConfirm/<str:wedding_id>/', paymentConfirm, name = 'paymentConfirm'),
+  path('paymentInvoiceAPI', paymentInvoiceAPI, name="paymentInvoiceAPI"),
   path('search/searchParty/', searchPartyBookingFormAPI, name='search_party'),
   path('wedding/update/<str:wedding_id>/', update_wedding_info, name='update_wedding_info'),
   path('search/searchFood/', displayFoodDetailChecked),
