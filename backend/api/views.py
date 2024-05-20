@@ -21,6 +21,8 @@ from django.http import JsonResponse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from .pdf import *
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 import io
 
 import json
@@ -36,6 +38,51 @@ model_serializer_map = {
         'parameter': (Thamso, ParameterSerializer, 'id'),
         'shifts': (Ca, ShiftSerializer, 'maca')
     }
+
+def login(request):
+    """
+    Xử lý yêu cầu đăng nhập của người dùng.
+
+    Nếu yêu cầu là phương thức POST, hàm này sẽ kiểm tra thông tin đăng nhập của người dùng,
+    xác minh và đăng nhập họ nếu thông tin hợp lệ. Sau đó, chuyển hướng người dùng đến trang chính.
+
+    url: "/login/" method="POST"
+
+    Tham số:
+        -request (HttpRequest): Đối tượng request chứa thông tin yêu cầu.
+        +request.POST['username'] (str): Tên đăng nhập.
+        +request.POST['password'] (str): Mật khẩu để nhập vào hệ thống.
+
+    Trả về:
+        HttpResponseRedirect: Chuyển hướng người dùng đến trang chính nếu đăng nhập thành công.
+        HttpResponse: Hiển thị trang đăng nhập nếu thông tin đăng nhập không chính xác hoặc nếu yêu cầu không phải là phương thức POST.
+    """
+    if request.method == 'POST':
+        user = get_object_or_404(User, username = request.POST['username'])
+        password_input = request.POST['password'].encode('utf-8')
+
+        if not bcrypt.checkpw(password_input, user.password.encode('utf-8')) :
+            return render(request, 'login.html', {"error": "Tài khoản hoặc mật khẩu không chính xác. Vui lòng thử lại!"})
+        auth_login(request, user)
+        return redirect('/', {"username": user.username})
+    
+    return render(request, 'login.html')
+
+
+def logout(request):
+    """
+    Xử lý yêu cầu đăng xuất của người dùng.
+
+    Hàm này đăng xuất người dùng hiện tại khỏi hệ thống và chuyển hướng họ đến trang chính.
+
+    Tham số:
+        request (HttpRequest): Đối tượng request chứa thông tin yêu cầu.
+
+    Returns:
+        HttpResponseRedirect: Chuyển hướng người dùng đến trang chính sau khi đăng xuất.
+    """
+    auth_logout(request)
+    return redirect("/")
 
 def documentPdfView(request, type, id):
     """
@@ -74,6 +121,8 @@ def documentPdfView(request, type, id):
     return renderPdfView(template_path, context)
 
 # Trang dashboard
+
+# @login_required(login_url='/login/')
 def getindex(request):
     """
     Trang dashboard hiển thị thông tin thống kê về sự kiện cưới và biểu đồ tương ứng.
@@ -554,15 +603,8 @@ def LobbyView(request, model_name=None, id=None):
         cache.delete(model_name)
         return Response("Delete successfuly",status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['POST'])
-def login(request):
-    user = get_object_or_404(User, username = request.data['username'])
-    password_input = request.data['password'].encode('utf-8')
-    print(type(user.password), user.password, user.username)
-    if not bcrypt.checkpw(password_input, user.password.encode('utf-8')) :
-        return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
-    token, created = Token.objects.create(user=user)
-    return Response({"token": token.key, "user": user.username}, status=status.HTTP_200_OK)
+
+
 
 @api_view(['POST'])
 def signup(request):
@@ -578,13 +620,7 @@ def signup(request):
         return Response(status = status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def logout(request):
-    user = get_object_or_404(User, username = request.data['username'])
-    Token.objects.filter(user=user).delete()
-    return Response({"message": "Logged out successfully"},status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 # @authentication_classes([SessionAuthentication, TokenAuthentication])
