@@ -5,6 +5,7 @@ from api.serializers import *
 
 urlpatterns = [
   path('', getindex, name='index'),
+  path('create/pdf/<type>/<id>', documentPdfView ),
   path('create/', create),
   path('report/', revenueReport, name='report'),
   path('invoice/', invoice),
