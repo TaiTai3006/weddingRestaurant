@@ -154,8 +154,9 @@ class Chitietbaocao(models.Model):
         self.doanhthu = self.doanhthu + tongtienhoadon
         self.save()
     
-    def setTiLe(self):
-        tongdoanhthu = Baocaodoanhthu.objects.get(mabacao=self.mabacao)['tongdoanhthu']
+    def setTiLe(self,mabaocao):
+        tongdoanhthu = Baocaodoanhthu.objects.get(mabaocao=mabaocao).tongdoanhthu
+        
         self.tile = self.doanhthu / tongdoanhthu
         self.save()
 

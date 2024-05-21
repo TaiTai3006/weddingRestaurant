@@ -26,6 +26,7 @@ from .pdf import *
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 import io
+from decimal import Decimal,ROUND_HALF_UP
 
 import json
 
@@ -396,7 +397,7 @@ def createRevenueReport(date_string, tongtienhoadon):
     date =  date_string.split('-')
     year, month = date[0], date[1]
 
-    bao_cao_doanh_thu = Baocaodoanhthu.objects.get(year=year, month=month)
+    bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
     chi_tiet_bao_cao = Chitietbaocao.objects.get(ngay=date_string)
 
     if bao_cao_doanh_thu:
@@ -410,17 +411,18 @@ def createRevenueReport(date_string, tongtienhoadon):
 
     if chi_tiet_bao_cao:
         chi_tiet_bao_cao.updateBaoCao(tongtienhoadon)
+        chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
+        list(map(lambda x: x.setTiLe(chi_tiet_bao_cao.mabaocao), chi_tiet_bao_cao_all))
     else:
-        data = {"mabaocao": chi_tiet_bao_cao.mabaocao, "ngay": date_string, "soluongtiec": 1, "doanhthu": tongtienhoadon, "tile": 0}
+        bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
+        data = {"mabaocao":bao_cao_doanh_thu.mabaocao, "ngay": date_string, "soluongtiec": 1, "doanhthu": tongtienhoadon, "tile": 0}
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
         if reportDetailserializer.is_valid():
             reportDetailserializer.save()
+            chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
+            list(map(lambda x: x.setTiLe(data.mabaocao), chi_tiet_bao_cao_all))
     
-    chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
-    list(map(lambda x: x.setTiLe(), chi_tiet_bao_cao_all))
-        
- 
-
+    
 def report(request):
     return render(request, 'report.html')
 def invoice(request):
@@ -475,22 +477,50 @@ def search(request):
 def paymentConfirm(request, wedding_id):
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
     ngaythanhtoan = now()
-    print(ngaythanhtoan.strftime('%Y-%m-%d'))
+    
     
     serializer = PartyBookingFormSerializer(wedding)
     serialized_wedding_data = serializer.data
     serialized_wedding_data['ngaythanhtoan'] = ngaythanhtoan.strftime('%Y-%m-%d')
+    serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+    songaytre = (ngaythanhtoan.date() - wedding.ngaydaitiec).days
+    thamso = get_object_or_404(Thamso)
+    tilephat = thamso.tilephat
     
+    tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
+    serialized_wedding_data['tienphat'] = round(tienphat, 2)
+
+    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec)
+    serialized_wedding_data['tongtienhoadon'] = round(tongtienhoadon, 2)
     ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
     services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
     
-    # Iterate through each service data and add the service name
     for service_data in services_serializer:
         service_id = service_data['madichvu']
         service_name = Dichvu.objects.get(pk=service_id).tendichvu
         service_data['tendichvu'] = service_name
+    createRevenueReport(serialized_wedding_data['ngaythanhtoan'], serialized_wedding_data['tongtienhoadon'])
 
     return render(request, 'paymentConfirm.html', {'wedding':  serialized_wedding_data,'services': services_serializer})
+
+def cancelConfirm(request, wedding_id):
+    wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
+    ngayhuy = now()
+    print(ngayhuy.strftime('%Y-%m-%d'))
+    
+    serializer = PartyBookingFormSerializer(wedding)
+    serialized_wedding_data = serializer.data
+    serialized_wedding_data['ngayhuy'] = ngayhuy.strftime('%Y-%m-%d')
+    serialized_wedding_data['tongtien'] = wedding.tiendatcoc
+    ngaydaitiec = wedding.ngaydaitiec
+    songayhuysom = (ngayhuy.date() - ngaydaitiec).days
+    
+    # Add the number of days to the serialized data
+    serialized_wedding_data['songayhuysom'] = songayhuysom
+    
+    
+
+    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data})
 
 
 # Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
@@ -519,35 +549,40 @@ def paymentInvoiceAPI(request):
         - Response: Status code.
     """
     with transaction.atomic():
+       
         mahoadon = getNextID(Hoadon, 'mahoadon')
         request.data['mahoadon'] = mahoadon
-
         invoice = InvoiceSerializer(data=request.data)
-        service_list = request.data.get('danhsachdichvu')
-
-        # Validate invoice data
-        if not invoice.is_valid():
-            return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
+        service_list = request.data.get('danhsachdichvu', [])
+        if not service_list:
+            return Response({"message": "Danh sách dịch vụ rỗng"}, status=status.HTTP_201_CREATED)
         
-        validated_invoice_data = invoice.validated_data
+        else:
+            
+            if not invoice.is_valid():
+                return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            validated_invoice_data = invoice.validated_data
 
-        # Save invoice
-        invoice.save()
+            # Lưu trữ hoá đơn
+            invoice.save()
 
-        # Validate and save all service data
-        for service in service_list:
-            service['mahoadon'] = mahoadon
-            detail_service_payment = DetailServicePaymentSerializer(data=service)
+            for service in service_list:
+                service['mahoadon'] = mahoadon
+                detail_service_payment = DetailServicePaymentSerializer(data=service)
 
-            if not detail_service_payment.is_valid():
-                Hoadon.objects.filter(mahoadon=mahoadon).delete()
-                return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
+                if not detail_service_payment.is_valid():
+                    
+                    Hoadon.objects.filter(mahoadon=mahoadon).delete()
+                    return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            detail_service_payment.save()
+                
+                detail_service_payment.save()
 
-    return Response(status=status.HTTP_201_CREATED)
+            
+            return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
 
-def update_wedding_info(request, wedding_id):
+def updateWeddingInfo(request, wedding_id):
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
     
     if request.method == 'POST':
@@ -571,11 +606,6 @@ def update_wedding_info(request, wedding_id):
 
 
 
-def management(request):
-    data = searchPartyBookingFormAPI(request)
-
-    print(data)
-    return render(request, 'management.html',{'data': data})
 def create(request):
     
     lobbies = Sanh.objects.all()
@@ -877,8 +907,10 @@ def addFoodDetail(request):
 
         soluongban = phieudattieccuoi.soluongban
 
-        # Xóa những chi tiết món ăn có mã tiệc cưới
+        # Delete existing food details for the wedding party
         Chitietmonan.objects.filter(matieccuoi=matieccuoi_id).delete()
+
+        tongdongiaban = Decimal('0.00')
 
         for food in danhsachmonan:
             food['matieccuoi'] = matieccuoi_id
@@ -900,54 +932,70 @@ def addFoodDetail(request):
 
             foodDetail.save()
 
+            
+            tongdongiaban += monan_obj.dongia
+            print("Total", tongdongiaban)
+
+        
+        phieudattieccuoi.dongiaban = tongdongiaban
+        phieudattieccuoi.tongtienban = tongdongiaban * soluongban
+
+        
+        phieudattieccuoi.save()
+
         return redirect('/search')
 
     except Exception as e:
-        
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)      
-
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 @api_view(['POST'])
 def addServiceDetail(request):
     try:
         matieccuoi_id = request.data.get('matieccuoi')
         danhsachdichvu = request.data.get('danhsachdichvu')
-        
 
         try:
             phieudattieccuoi = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi_id)
         except Phieudattieccuoi.DoesNotExist:
             return Response({"error": "Phieudattieccuoi does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
+        
         Chitietdichvu.objects.filter(matieccuoi=matieccuoi_id).delete()
 
-        for service_id in danhsachdichvu:  
+        tongtiendichvu = Decimal('0.00')
+
+        for service_id in danhsachdichvu:
             service = {
-            'matieccuoi': matieccuoi_id, 
-            'madichvu': service_id,
-            'soluong':1,
-            } 
+                'matieccuoi': matieccuoi_id,
+                'madichvu': service_id,
+                'soluong': 1,
+            }
 
             try:
-                dichvu_obj = Dichvu.objects.get(madichvu=service_id)  
+                dichvu_obj = Dichvu.objects.get(madichvu=service_id)
             except Dichvu.DoesNotExist:
                 return Response({"error": f"Dichvu with madichvu {service_id} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
             service['dongiadichvu'] = dichvu_obj.dongia
             service['soluong'] = 1
 
-            serviceDetail = ServiceDetailsSerializer(data=service) 
+            serviceDetail = ServiceDetailsSerializer(data=service)
 
             if not serviceDetail.is_valid():
                 return Response(serviceDetail.errors, status=status.HTTP_400_BAD_REQUEST)
 
             serviceDetail.save()
 
+            
+            tongtiendichvu += dichvu_obj.dongia
+
+        
+        phieudattieccuoi.tongtiendichvu = tongtiendichvu
+        phieudattieccuoi.save()
+
         return redirect('/search')
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 # Hiển thị thông tin toàn bộ món ăn và món ăn đã chọn
 @api_view(['GET'])

@@ -3,17 +3,17 @@
 
 {% load mathfilters %} {% load humanize %}
     <style>
-        .payment-container{
+        .cancel-container{
             overflow: scroll;
             height: 600px;
         }
-        .payment-container::-webkit-scrollbar{
+        .cancel-container::-webkit-scrollbar{
             display: none;
         }
-        .info, .payment {
+        .info, .cancel {
             margin-bottom: 20px;
         }
-        .info p, .payment p {
+        .info p, .cancel p {
             margin: 5px 0;
         }
         table {
@@ -54,34 +54,29 @@
         }
     </style>
 
-    <div class="payment-container p-2">
-        <form id="paymentForm">
+    <div class="cancel-container p-2">
+        <form id="cancelForm">
             <input type="hidden" name="mahoadon" id="mahoadon">
             <input type="hidden" name="ngaythanhtoan" id="ngaythanhtoan" value="{{ wedding.ngaythanhtoan }}">
             <input type="hidden" name="matieccuoi" id="matieccuoi" value="{{ wedding.matieccuoi }}">
-            <input type="hidden" name="username" id="username" value="{{ wedding.username }}"> <!-- Assuming the username is admin -->
+            <input type="hidden" name="username" id="username" value="{{ wedding.username }}"> 
             <input type="hidden" name="tongtiendichvu" id="tongtiendichvu" value="{{ wedding.tongtiendichvu }}">
-            <input type="hidden" name="tienphat" id="tienphat" value="{{ wedding.tienphat }}"> <!-- Assuming no penalty -->
-            <input type="hidden" name="tongtienhoadon" id="tongtienhoadon" value="{{ wedding.tongtienhoadon }}">
-            <input type="hidden" name="conlai" id="conlai" value="{{ wedding.conlai }}"> <!-- Replace with the actual remaining amount -->
+            <input type="hidden" name="tienphat" id="tienphat" value="0"> 
+            <input type="hidden" name="tongtienhoadon" id="tongtienhoadon" value="{{ wedding.tongtiendattiec }}">
+            <input type="hidden" name="conlai" id="conlai" value="{{ wedding.conlai }}"> 
         
-            <!-- Add service details fields as hidden inputs -->
-            {% for service in services %}
-            <input type="hidden" name="danhsachdichvu[{{ forloop.counter }}][madichvu]" value="{{ service.madichvu }}">
-            <input type="hidden" name="danhsachdichvu[{{ forloop.counter }}][soluong]" value="{{ service.soluong }}">
-            <input type="hidden" name="danhsachdichvu[{{ forloop.counter }}][giatien]" value="{{ service.dongiadichvu }}">
-            {% endfor %}
+           
             
-            <div class="payment-container p-2">
+            <div class="cancel-container p-2">
                 <h2 class="text-center py-3">XÁC NHẬN THÔNG TIN HOÁ ĐƠN</h2>
                 <div class="info row justify-content-between">
                     <div class="col-3">
-                        <p>Ngày thanh toán: {{wedding.ngaythanhtoan}}</p>
+                        <p>Ngày hủy: {{wedding.ngayhuy}}</p>
                         <p>Tên cô dâu: {{wedding.tencodau}}</p>
                         <p>Tên chú rể: {{wedding.tenchure}}</p>
                     </div>
                     <div class="col-3">
-                        <p>Ngày đãi tiệc: {{wedding.ngaydaitiec}}</p>
+                        <p>Số ngày hủy sớm : {{wedding.songayhuysom}}</p>
                         <p>Số lượng bàn: {{wedding.soluongban}}</p>
                         <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
                     </div>
@@ -89,43 +84,13 @@
                         <p>Tổng tiền bàn: {{wedding.tongtienban|intcomma}}</p>
                     </div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã dịch vụ</th>
-                            <th>Tên dịch vụ</th>
-                            <th>Số lượng</th>
-                            <th>Đơn giá</th>
-                            <th>Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for service in services %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ service.madichvu }}</td>
-                            <td>{{ service.tendichvu }}</td>
-                            <td>{{ service.soluong }}</td>
-                            <td>{{ service.dongiadichvu }} đ</td>
-                            <td>{{ service.dongiadichvu|floatformat|mul:service.soluong|intcomma }} đ</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
                 <table class="totals">
                     <tbody>
-                        <tr>
-                            <td>Tổng tiền dịch vụ:</td>
-                            <td>{{wedding.tongtiendichvu|intcomma}}</td>
-                        </tr>
-                        <tr>
-                            <td>Tiền phạt (%)</td>
-                            <td>{{wedding.tienphat|intcomma}}</td>
-                        </tr>
+                        
+                       
                         <tr>
                             <td>Tổng tiền hoá đơn:</td>
-                            <td>{{wedding.tongtienhoadon|intcomma }}</td>
+                            <td>{{wedding.tongtien|intcomma }}</td>
                         </tr>
                         <tr>
                             <td>Tiền cọc (50%):</td>
@@ -133,13 +98,13 @@
                         </tr>
                         <tr>
                             <td>Số tiền cần thanh toán:</td>
-                            <td>{{wedding.tongtienhoadon|sub:wedding.tiendatcoc|intcomma}}</td>
+                            <td>0 đ</td>
                         </tr>
                     </tbody>
                 </table>
-                <div class="payment d-flex justify-content-start">
+                <div class="cancel d-flex justify-content-start">
                     <p>Phương thức thanh toán:</p>
-                    <select id="paymentMethod">
+                    <select id="cancelMethod">
                         <option value="cash">Tiền mặt</option>
                         <option value="credit">Thẻ tín dụng</option>
                         <option value="bank">Chuyển khoản</option>
@@ -153,7 +118,7 @@
         </form>
     </div>
     <script>
-      document.getElementById('paymentForm').addEventListener('submit', function(event) {
+      document.getElementById('cancelForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const form = event.target;
 
@@ -169,20 +134,9 @@
     };
 
     const services = {};
-    form.querySelectorAll('[name^="danhsachdichvu"]').forEach(input => {
-        const match = input.name.match(/danhsachdichvu\[(\d+)\]\[(\w+)\]/);
-        if (match) {
-            const index = match[1];
-            const field = match[2];
-            if (!services[index]) {
-                services[index] = {};
-            }
-            services[index][field] = input.value;
-        }
-    });
+    
 
-    invoiceData.danhsachdichvu = Object.values(services);
-
+    
     axios.post('/paymentInvoice/', invoiceData)
         .then(response => {
             alert('Invoice created successfully!');
