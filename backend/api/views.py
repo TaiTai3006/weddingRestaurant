@@ -394,33 +394,44 @@ def createRevenueReport(date_string, tongtienhoadon):
     date_string (str): Ngày cần tạo hoặc cập nhật báo cáo, định dạng 'YYYY-MM-DD'.
     tongtienhoadon (float): Tổng tiền hóa đơn cần thêm vào báo cáo doanh thu.
     """
-    date =  date_string.split('-')
+    date = date_string.split('-')
     year, month = date[0], date[1]
 
-    bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
-    chi_tiet_bao_cao = Chitietbaocao.objects.get(ngay=date_string)
-
-    if bao_cao_doanh_thu:
+    try:
+        bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
         bao_cao_doanh_thu.updateDoanhThu(tongtienhoadon)
-
-    else:
-        data = {"mabaocao": getNextID(Baocaodoanhthu, "mabaocao"), "thang": month, "nam": year, "tongdoanhthu": tongtienhoadon}
+    except Baocaodoanhthu.DoesNotExist:
+        data = {
+            "mabaocao": getNextID(Baocaodoanhthu, "mabaocao"),
+            "thang": month,
+            "nam": year,
+            "tongdoanhthu": tongtienhoadon
+        }
         reportSerializer = RevenueReportSerializer(data=data)
         if reportSerializer.is_valid():
             reportSerializer.save()
+            bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
 
-    if chi_tiet_bao_cao:
+    try:
+        chi_tiet_bao_cao = Chitietbaocao.objects.get(ngay=date_string)
         chi_tiet_bao_cao.updateBaoCao(tongtienhoadon)
-        chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
-        list(map(lambda x: x.setTiLe(chi_tiet_bao_cao.mabaocao), chi_tiet_bao_cao_all))
-    else:
-        bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
-        data = {"mabaocao":bao_cao_doanh_thu.mabaocao, "ngay": date_string, "soluongtiec": 1, "doanhthu": tongtienhoadon, "tile": 0}
+    except Chitietbaocao.DoesNotExist:
+        data = {
+            "mabaocao": bao_cao_doanh_thu.mabaocao,
+            "ngay": date_string,
+            "soluongtiec": 1,
+            "doanhthu": tongtienhoadon,
+            "tile": 0
+        }
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
         if reportDetailserializer.is_valid():
             reportDetailserializer.save()
-            chi_tiet_bao_cao_all = Chitietbaocao.objects.all()
-            list(map(lambda x: x.setTiLe(data.mabaocao), chi_tiet_bao_cao_all))
+
+    # Update revenue percentage for all Chitietbaocao records
+    chi_tiet_bao_cao_all = Chitietbaocao.objects.filter(mabaocao=bao_cao_doanh_thu.mabaocao)
+    for detail in chi_tiet_bao_cao_all:
+        detail.setTiLe(bao_cao_doanh_thu.tongdoanhthu)
+
     
     
 def report(request):
