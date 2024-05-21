@@ -296,13 +296,12 @@
 <div class="footer d-flex align-items-center justify-content-between">
   <p>Phương thức thanh toán:</p>
   <select id="paymentMethod">
-    <option value="">Chọn phương thức thanh toán</option>
     <option value="cash">Tiền mặt</option>
 
     <option value="bank">Chuyển khoản</option>
   </select>
   <div class="button-gr">
-    <button type="submit" id="payment_button" class="btn btn-primary me-2">
+    <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
       Thanh toán
     </button>
     <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
@@ -464,6 +463,7 @@
             src="https://www.google.com/url?sa=i&url=https%3A%2F%2Ffree-qr.com%2F&psig=AOvVaw1Fy5ZCNGtdIRHHV8XrObGw&ust=1716313520736000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJC11p_knIYDFQAAAAAdAAAAABAE"
             width="100%"
             height="400px"
+            id="payment-view"
             frameborder="0"
           ></iframe>
         </div>
@@ -490,7 +490,6 @@
   ></div>
 </div>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
     const paymentMethodSelect = document.getElementById("paymentMethod");
     const paymentDetailsModal = new bootstrap.Modal(
       document.getElementById("paymentDetailsModal")
@@ -498,15 +497,6 @@
     const qrCodeModal = new bootstrap.Modal(
       document.getElementById("qrCodeModal")
     );
-
-    paymentMethodSelect.addEventListener("change", function () {
-      const selectedMethod = paymentMethodSelect.value;
-      if (selectedMethod === "cash") {
-        paymentDetailsModal.show();
-      } else if (selectedMethod === "bank") {
-        qrCodeModal.show();
-      }
-    });
 
     // Add event listeners for payment confirmation buttons in modals
     document
@@ -520,11 +510,30 @@
     document
       .getElementById("confirmQRPayment")
       .addEventListener("click", function () {
-        // Handle QR code payment confirmation
+      const xhttp = new XMLHttpRequest();
+      xhttp.onload = function () {
+        const response = JSON.parse(xhttp.responseText);
+        const url = `/create/pdf/bookingPayment/${response.matieccuoi}`;
+        window.open(url, '_blank');  
         qrCodeModal.hide();
-        // Add your QR code payment confirmation logic here
-      });
-  });
+        localStorage.removeItem("dataWedding");
+        window.location.reload();
+      };
+      xhttp.open("POST", "bookingParty/");
+      xhttp.setRequestHeader("Content-type", "application/json");
+
+      var csrf_token_input = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+      );
+      var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+
+      if (csrf_token) {
+        xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+      }
+
+      xhttp.send(JSON.stringify(dataCreateWedding));
+      }); 
+
   function handleQuickAmountClick(amount) {
     document.getElementById("amountReceived").value = amount;
     updateRemainingAmount();
@@ -543,6 +552,34 @@
     const remainingAmount = amountReceived - tiencoc;
     document.getElementById("remainingAmount").innerText = remainingAmount;
   }
+
+  function payment() {
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    const selectedMethod = paymentMethodSelect.value;
+      if (selectedMethod === "cash") {
+        paymentDetailsModal.show();
+      } else if (selectedMethod === "bank") {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function () {
+            if (xhttp.status === 200) {
+              const response = JSON.parse(xhttp.responseText);
+              window.open(response.payment_url, '_blank'); 
+            } else {
+                console.error('An error occurred:', xhttp.statusText);
+            }
+        };
+        xhttp.open("POST", "/payment/");
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        const data = "order_id=TC0067&amount=" + dataCreateWedding.tiendatcoc + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
+        xhttp.send(data);
+        qrCodeModal.show();
+      }
+    
+     
+}
+  
+
 </script>
 <script src="{% static 'js/script.js' %}" defer></script>
 {% endblock %}

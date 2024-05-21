@@ -555,23 +555,7 @@ console.log(document.getElementById("totalBill_result"))
 document
   .getElementById("payment_button")
   .addEventListener("click", function (e) {
-    e.preventDefault();
-    const xhttp = new XMLHttpRequest();
-    xhttp.onload = function () {
-      localStorage.removeItem("dataWedding");
-      window.location.reload();
-    };
-    xhttp.open("POST", "bookingParty/");
-    xhttp.setRequestHeader("Content-type", "application/json");
-
-    var csrf_token_input = document.querySelector(
-      'input[name="csrfmiddlewaretoken"]'
-    );
-    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
-
-    if (csrf_token) {
-      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
-    }
-
-    xhttp.send(JSON.stringify(dataCreateWedding));
+    
+    // e.preventDefault();
+    
   });
