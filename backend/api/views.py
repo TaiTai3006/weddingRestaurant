@@ -61,9 +61,10 @@ def login(request):
         HttpResponse: Hiển thị trang đăng nhập nếu thông tin đăng nhập không chính xác hoặc nếu yêu cầu không phải là phương thức POST.
     """
     if request.method == 'POST':
+        print(request.POST['username'])
         user = get_object_or_404(User, username = request.POST['username'])
         password_input = request.POST['password'].encode('utf-8')
-
+        
         if not bcrypt.checkpw(password_input, user.password.encode('utf-8')) :
             return render(request, 'login.html', {"error": "Tài khoản hoặc mật khẩu không chính xác. Vui lòng thử lại!"})
         auth_login(request, user)
@@ -394,8 +395,10 @@ def createRevenueReport(date_string, tongtienhoadon):
     date_string (str): Ngày cần tạo hoặc cập nhật báo cáo, định dạng 'YYYY-MM-DD'.
     tongtienhoadon (float): Tổng tiền hóa đơn cần thêm vào báo cáo doanh thu.
     """
-    date = date_string.split('-')
-    year, month = date[0], date[1]
+    print(date_string)
+    date = datetime.strptime(date_string, '%Y-%m-%d')
+    year = date.year
+    month = date.month
 
     try:
         bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
@@ -423,7 +426,9 @@ def createRevenueReport(date_string, tongtienhoadon):
             "doanhthu": tongtienhoadon,
             "tile": 0
         }
+        print(data)
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
+        
         if reportDetailserializer.is_valid():
             reportDetailserializer.save()
 
@@ -492,16 +497,25 @@ def paymentConfirm(request, wedding_id):
     
     serializer = PartyBookingFormSerializer(wedding)
     serialized_wedding_data = serializer.data
+
     serialized_wedding_data['ngaythanhtoan'] = ngaythanhtoan.strftime('%Y-%m-%d')
-    serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+    serialized_wedding_data['conlai'] = Decimal(wedding.tongtiendattiec) - Decimal(wedding.tiendatcoc)
+
     songaytre = (ngaythanhtoan.date() - wedding.ngaydaitiec).days
+    print("tre",songaytre)
     thamso = get_object_or_404(Thamso)
     tilephat = thamso.tilephat
+    if songaytre > 0:
+        # B7: Tính số tiền phạt
+        tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
+    else:
+        # B8: Số tiền phạt = 0
+        tienphat = Decimal(0)
     
-    tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
     serialized_wedding_data['tienphat'] = round(tienphat, 2)
 
-    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec)
+    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec) + Decimal(wedding.tongtiendichvu)
+    
     serialized_wedding_data['tongtienhoadon'] = round(tongtienhoadon, 2)
     ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
     services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
@@ -510,7 +524,7 @@ def paymentConfirm(request, wedding_id):
         service_id = service_data['madichvu']
         service_name = Dichvu.objects.get(pk=service_id).tendichvu
         service_data['tendichvu'] = service_name
-    createRevenueReport(serialized_wedding_data['ngaythanhtoan'], serialized_wedding_data['tongtienhoadon'])
+    
 
     return render(request, 'paymentConfirm.html', {'wedding':  serialized_wedding_data,'services': services_serializer})
 
@@ -524,14 +538,23 @@ def cancelConfirm(request, wedding_id):
     serialized_wedding_data['ngayhuy'] = ngayhuy.strftime('%Y-%m-%d')
     serialized_wedding_data['tongtien'] = wedding.tiendatcoc
     ngaydaitiec = wedding.ngaydaitiec
-    songayhuysom = (ngayhuy.date() - ngaydaitiec).days
+    songayhuysom = (ngaydaitiec- ngayhuy.date()).days
+   
+    if songayhuysom < 7:
+        #  Tổng tiền hoá đơn = Tổng tiền bàn, Số tiền còn lại = Tiền bàn - tiền cọc.
+        serialized_wedding_data['tongtien'] = wedding.tongtiendattiec
+        serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+    else:
+        #  Tổng tiền hoá đơn = Tiền cọc, Số tiền còn lại = 0.
+        serialized_wedding_data['tongtien'] = wedding.tiendatcoc
+        serialized_wedding_data['conlai'] = 0
     
-    # Add the number of days to the serialized data
-    serialized_wedding_data['songayhuysom'] = songayhuysom
+
+
     
     
 
-    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data})
+    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data,'songayhuysom':songayhuysom})
 
 
 # Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
@@ -565,6 +588,7 @@ def paymentInvoiceAPI(request):
         request.data['mahoadon'] = mahoadon
         invoice = InvoiceSerializer(data=request.data)
         service_list = request.data.get('danhsachdichvu', [])
+        print(request)
         if not service_list:
             return Response({"message": "Danh sách dịch vụ rỗng"}, status=status.HTTP_201_CREATED)
         
@@ -574,7 +598,12 @@ def paymentInvoiceAPI(request):
                 return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
             
             validated_invoice_data = invoice.validated_data
+            ngaythanhtoan = validated_invoice_data['ngaythanhtoan']
+            tongtienhoadon = validated_invoice_data['tongtienhoadon']
+            ngaythanhtoan_str = str(ngaythanhtoan)
 
+            print(type(tongtienhoadon))
+            print(ngaythanhtoan_str, tongtienhoadon)
             # Lưu trữ hoá đơn
             invoice.save()
 
@@ -589,9 +618,12 @@ def paymentInvoiceAPI(request):
 
                 
                 detail_service_payment.save()
+           
+            createRevenueReport(ngaythanhtoan_str, tongtienhoadon)
+            return redirect('/report')
+            # return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
 
-            
-            return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
+
 
 def updateWeddingInfo(request, wedding_id):
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
@@ -788,7 +820,7 @@ def searchPartyBookingFormAPI(request):
     if conditions:
         query += " AND " + " AND ".join(conditions)
 
-    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC"
+    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec DESC"
 
     query_f = Phieudattieccuoi.objects.raw(query)     
     
