@@ -206,6 +206,7 @@
               id="ngaydaitiec_input"
               name="ngaydaitiec"
               placeholder="Ngày đãi tiệc"
+              onchange="ngaydaitiecInput()"
             />
           </div>
         </div>
@@ -508,13 +509,16 @@
       .addEventListener("click", function () {
         // Handle cash payment confirmation
         paymentDetailsModal.hide();
-        // Add your payment confirmation logic here
       });
 
     document
       .getElementById("confirmQRPayment")
       .addEventListener("click", function () {
-      const xhttp = new XMLHttpRequest();
+      bookingWedding()
+      }); 
+  
+  function bookingWedding(){
+    const xhttp = new XMLHttpRequest();
       xhttp.onload = function () {
         const response = JSON.parse(xhttp.responseText);
         const url = `/create/pdf/bookingPayment/${response.matieccuoi}`;
@@ -536,8 +540,7 @@
       }
 
       xhttp.send(JSON.stringify(dataCreateWedding));
-      }); 
-
+  }
   function handleQuickAmountClick(amount) {
     document.getElementById("amountReceived").value = amount;
     updateRemainingAmount();
@@ -561,24 +564,28 @@
     const paymentMethodSelect = document.getElementById("paymentMethod");
     const selectedMethod = paymentMethodSelect.value;
       if (selectedMethod === "cash") {
-        paymentDetailsModal.show();
+        bookingWedding()
       } else if (selectedMethod === "bank") {
-        const xhttp = new XMLHttpRequest();
-        xhttp.onload = function () {
-            if (xhttp.status === 200) {
-              const response = JSON.parse(xhttp.responseText);
-              window.open(response.payment_url, '_blank'); 
-            } else {
-                console.error('An error occurred:', xhttp.statusText);
-            }
-        };
-        xhttp.open("POST", "/payment/");
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-        const data = "order_id=TC0067&amount=" + dataCreateWedding.tiendatcoc + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
-        xhttp.send(data);
+        showQRcode()
         qrCodeModal.show();
       }
+  
+    function showQRcode(){
+      const xhttp = new XMLHttpRequest();
+      xhttp.onload = function () {
+          if (xhttp.status === 200) {
+            const response = JSON.parse(xhttp.responseText);
+            window.open(response.payment_url, '_blank'); 
+          } else {
+              console.error('An error occurred:', xhttp.statusText);
+          }
+      };
+      xhttp.open("POST", "/payment/");
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      const data = "order_id=TC0067&amount=" + dataCreateWedding.tiendatcoc + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
+      xhttp.send(data);
+    }
     
      
 }
