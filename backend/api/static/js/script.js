@@ -134,19 +134,15 @@ function convertDateFormat(dateString) {
   var dateParts = dateString.split("-");
   return dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
 }
+function ngaydaitiecInput() {
+  const ngaydaitiec = this.value;
+  dataCreateWedding.ngaydaitiec = ngaydaitiec;
+  localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
 
-document
-  .getElementById("ngaydaitiec_input")
-  .addEventListener("input", function () {
-    const ngaydaitiec = this.value;
-    dataCreateWedding.ngaydaitiec = ngaydaitiec;
-    localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
-
-    if (dataCreateWedding.maca) {
-      readAvailablelobbies();
-    }
-  });
-
+  if (dataCreateWedding.maca) {
+    readAvailablelobbies();
+  }
+}
 document.getElementById("maca_select").addEventListener("change", function () {
   const maca = this.value;
 
