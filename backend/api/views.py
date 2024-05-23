@@ -18,7 +18,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Count
 from django.db.models.functions import ExtractDay
 from django.http import JsonResponse
-from datetime import datetime
+from datetime import datetime,timedelta
 from django.utils.timezone import now
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
@@ -492,16 +492,25 @@ def paymentConfirm(request, wedding_id):
     
     serializer = PartyBookingFormSerializer(wedding)
     serialized_wedding_data = serializer.data
+
     serialized_wedding_data['ngaythanhtoan'] = ngaythanhtoan.strftime('%Y-%m-%d')
-    serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+    serialized_wedding_data['conlai'] = Decimal(wedding.tongtiendattiec) - Decimal(wedding.tiendatcoc)
+
     songaytre = (ngaythanhtoan.date() - wedding.ngaydaitiec).days
+    print("tre",songaytre)
     thamso = get_object_or_404(Thamso)
     tilephat = thamso.tilephat
+    if songaytre > 0:
+        # B7: Tính số tiền phạt
+        tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
+    else:
+        # B8: Số tiền phạt = 0
+        tienphat = Decimal(0)
     
-    tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
     serialized_wedding_data['tienphat'] = round(tienphat, 2)
 
-    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec)
+    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec) + Decimal(wedding.tongtiendichvu)
+    
     serialized_wedding_data['tongtienhoadon'] = round(tongtienhoadon, 2)
     ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
     services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
@@ -510,7 +519,7 @@ def paymentConfirm(request, wedding_id):
         service_id = service_data['madichvu']
         service_name = Dichvu.objects.get(pk=service_id).tendichvu
         service_data['tendichvu'] = service_name
-    createRevenueReport(serialized_wedding_data['ngaythanhtoan'], serialized_wedding_data['tongtienhoadon'])
+    
 
     return render(request, 'paymentConfirm.html', {'wedding':  serialized_wedding_data,'services': services_serializer})
 
@@ -524,14 +533,23 @@ def cancelConfirm(request, wedding_id):
     serialized_wedding_data['ngayhuy'] = ngayhuy.strftime('%Y-%m-%d')
     serialized_wedding_data['tongtien'] = wedding.tiendatcoc
     ngaydaitiec = wedding.ngaydaitiec
-    songayhuysom = (ngayhuy.date() - ngaydaitiec).days
+    songayhuysom = (ngaydaitiec- ngayhuy.date()).days
+   
+    if songayhuysom < 7:
+        #  Tổng tiền hoá đơn = Tổng tiền bàn, Số tiền còn lại = Tiền bàn - tiền cọc.
+        serialized_wedding_data['tongtien'] = wedding.tongtiendattiec
+        serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+    else:
+        #  Tổng tiền hoá đơn = Tiền cọc, Số tiền còn lại = 0.
+        serialized_wedding_data['tongtien'] = wedding.tiendatcoc
+        serialized_wedding_data['conlai'] = 0
     
-    # Add the number of days to the serialized data
-    serialized_wedding_data['songayhuysom'] = songayhuysom
+
+
     
     
 
-    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data})
+    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data,'songayhuysom':songayhuysom})
 
 
 # Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
@@ -574,7 +592,12 @@ def paymentInvoiceAPI(request):
                 return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
             
             validated_invoice_data = invoice.validated_data
+            ngaythanhtoan = validated_invoice_data['ngaythanhtoan']
+            tongtienhoadon = validated_invoice_data['tongtienhoadon']
+            ngaythanhtoan_str = str(ngaythanhtoan)
 
+            print(type(tongtienhoadon))
+            print(ngaythanhtoan_str, tongtienhoadon)
             # Lưu trữ hoá đơn
             invoice.save()
 
@@ -589,9 +612,12 @@ def paymentInvoiceAPI(request):
 
                 
                 detail_service_payment.save()
+           
+            createRevenueReport(ngaythanhtoan_str, tongtienhoadon)
+            return redirect('/report')
+            # return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
 
-            
-            return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
+
 
 def updateWeddingInfo(request, wedding_id):
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
@@ -788,7 +814,7 @@ def searchPartyBookingFormAPI(request):
     if conditions:
         query += " AND " + " AND ".join(conditions)
 
-    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC"
+    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec DESC"
 
     query_f = Phieudattieccuoi.objects.raw(query)     
     
@@ -797,6 +823,8 @@ def searchPartyBookingFormAPI(request):
     shift_serializer = ShiftSerializer(shifts, many = True)
     lobby_serializer = LobbySerializer(lobbies, many=True)
     serializer = PartyBookingFormSerializer(query_f, many = True)
+
+    today = datetime.today().date()
     
     for item in serializer.data:
         query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
@@ -807,6 +835,7 @@ def searchPartyBookingFormAPI(request):
         item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
         item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        item['within_7_days'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() <= today + timedelta(days=7)
         
     serialized_data = {
         
