@@ -76,7 +76,7 @@
                         <p>Tên chú rể: {{wedding.tenchure}}</p>
                     </div>
                     <div class="col-3">
-                        <p>Số ngày hủy sớm : {{songayhuysom}}</p>
+                        <p>Số ngày hủy sớm : {{wedding.songayhuysom}}</p>
                         <p>Số lượng bàn: {{wedding.soluongban}}</p>
                         <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
                     </div>
@@ -98,7 +98,7 @@
                         </tr>
                         <tr>
                             <td>Số tiền cần thanh toán:</td>
-                            <td>{{wedding.conlai|intcomma}}</td>
+                            <td>0 đ</td>
                         </tr>
                     </tbody>
                 </table>
@@ -139,8 +139,8 @@
     
     axios.post('/paymentInvoice/', invoiceData)
         .then(response => {
-            alert('Wedding cancel successfully!');
-            window.location.href = '/report/';
+            alert('Invoice created successfully!');
+            // Optionally redirect or clear form
         })
         .catch(error => {
             console.error('There was an error!', error);

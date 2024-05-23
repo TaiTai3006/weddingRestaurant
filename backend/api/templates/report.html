@@ -1,16 +1,7 @@
 {% extends 'layout.html' %} {% block title %}THỐNG KÊ DOANH THU{% endblock %} {% block content %}
-<style>
-  .report-container{
-    height: 600px;
-    overflow: scroll;
-  }
-  .report-container::-webkit-scrollbar{
-    display: none;
-  }
-</style>
-<div class="container-lg report-container">
+<div class="container-lg">
   <div class="row">
-    <div class="col-12 ">
+    <div class="col-12">
       <h2 class="text-center">THỐNG KÊ DOANH THU</h2>
       <div class="card">
         <div class="card-body d-flex justify-content-between">
@@ -53,7 +44,7 @@
           </div>
         </div>
         {%if requestData.type == 'daily'%}
-        <table class="table table-bordered mt-4 ">
+        <table class="table table-bordered mt-4">
           <thead>
             <tr>
               <th>STT</th>

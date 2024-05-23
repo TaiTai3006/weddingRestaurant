@@ -15,22 +15,21 @@
 
         .sidebar {
             height: 100vh;
-            width: 160px;
+            width: 180px;
            
             background-color: #f8f9fa;
             padding-top: 20px;
         }
 
-        .sidebar-link {
+        .sidebar a {
             padding: 10px 15px;
             text-decoration: none;
             font-size: 18px;
             color: #333;
             display: block;
-            
         }
 
-        .sidebar-link:hover {
+        .sidebar a:hover {
             background-color: #ddd;
         }
 
@@ -91,8 +90,9 @@
 </head>
 
 <body>
-    <div class="header" style="max-height: 80px;">
+    <div class="header">
         <div class="d-flex align-items-center">
+            
             <img src="../static/image/logo.png" alt="profile" class="img-fluid logo-img me-2" style="max-width: 50px;">
             <div class="primary-text">
                 <h4 class="text-primary pb-0">UIT</h4>
@@ -112,14 +112,14 @@
     <div class="d-flex justify-content-between">
         <nav class="d-flex flex-direction-column sidebar" >
            
-                <a class="sidebar-link" href="/">Trang chủ</a>
-                <a class="sidebar-link" href="/create/">Đặt tiệc cưới</a>
-                <a class="sidebar-link" href="/search/">Tra cứu tiệc</a>
-                
-                <a class="sidebar-link" href="/report/">Thống kê</a>
-                
-                
-                <a href="/logout/"><button class="btn btn-danger">Đăng xuất</button></a>
+                <a href="/">Trang chủ</a>
+                <a href="/create/">Đặt tiệc cưới</a>
+                <a href="/search/">Tra cứu tiệc</a>
+                <a href="#">Danh mục</a>
+                <a href="/report/">Thống kê</a>
+                <a href="#">Nhân viên</a>
+                <a href="#">Tài khoản</a>
+                <a href="/logout/"><button>Đăng xuất</button></a>
                 
            
         </nav>

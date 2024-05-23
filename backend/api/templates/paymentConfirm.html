@@ -186,7 +186,7 @@
     axios.post('/paymentInvoice/', invoiceData)
         .then(response => {
             alert('Invoice created successfully!');
-            window.location.href = '/report/';
+            // Optionally redirect or clear form
         })
         .catch(error => {
             console.error('There was an error!', error);

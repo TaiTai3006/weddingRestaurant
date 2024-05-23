@@ -1,15 +1,6 @@
 {% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
 {% csrf_token %}
-<style>
-  .dashboard-container{
-    height: 600px;
-    overflow: scroll;
-  }
-  .dashboard-container::-webkit-scrollbar{
-    display: none;
-  }
-</style>
-<div class="dashboard-container " >
+<div class="row">
   <div class="col-12">
     <div class="card mb-4">
       <div class="card-body text-center">
