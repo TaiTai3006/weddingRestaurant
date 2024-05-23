@@ -2,11 +2,11 @@
 {% block content %} {% load static %}
 <style>
   .base-container {
-    height: 520px;
+    height: 570px;
   }
   #weddingForm {
     overflow: scroll;
-    max-height: 500px;
+    max-height: 100vh;
   }
   #weddingForm::-webkit-scrollbar {
     display: none;
@@ -294,23 +294,19 @@
   </div>
 </div>
 
-<div class=" d-flex align-items-center justify-content-between">
-  <div>
-    <div class="d-flex align-items-center">  <p>Phương thức thanh toán:</p>
-      <select id="paymentMethod" class="ms-2">
-        <option value="cash">Tiền mặt</option>
-    
-        <option value="bank">Chuyển khoản</option>
-      </select></div>
-   
-    <div class="button-gr">
-      <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
-        Thanh toán
-      </button>
-      <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
-    </div>
+<div class="footer d-flex align-items-center justify-content-between">
+  <p>Phương thức thanh toán:</p>
+  <select id="paymentMethod">
+    <option value="cash">Tiền mặt</option>
+
+    <option value="bank">Chuyển khoản</option>
+  </select>
+  <div class="button-gr">
+    <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
+      Thanh toán
+    </button>
+    <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
   </div>
-  
   <!-- Payment Details Modal -->
   <div
     class="modal fade"

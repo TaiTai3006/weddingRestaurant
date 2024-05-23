@@ -18,7 +18,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Count
 from django.db.models.functions import ExtractDay
 from django.http import JsonResponse
-from datetime import datetime
+from datetime import datetime,timedelta
 from django.utils.timezone import now
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
@@ -61,10 +61,9 @@ def login(request):
         HttpResponse: Hiển thị trang đăng nhập nếu thông tin đăng nhập không chính xác hoặc nếu yêu cầu không phải là phương thức POST.
     """
     if request.method == 'POST':
-        print(request.POST['username'])
         user = get_object_or_404(User, username = request.POST['username'])
         password_input = request.POST['password'].encode('utf-8')
-        
+
         if not bcrypt.checkpw(password_input, user.password.encode('utf-8')) :
             return render(request, 'login.html', {"error": "Tài khoản hoặc mật khẩu không chính xác. Vui lòng thử lại!"})
         auth_login(request, user)
@@ -395,10 +394,8 @@ def createRevenueReport(date_string, tongtienhoadon):
     date_string (str): Ngày cần tạo hoặc cập nhật báo cáo, định dạng 'YYYY-MM-DD'.
     tongtienhoadon (float): Tổng tiền hóa đơn cần thêm vào báo cáo doanh thu.
     """
-    print(date_string)
-    date = datetime.strptime(date_string, '%Y-%m-%d')
-    year = date.year
-    month = date.month
+    date = date_string.split('-')
+    year, month = date[0], date[1]
 
     try:
         bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
@@ -426,9 +423,7 @@ def createRevenueReport(date_string, tongtienhoadon):
             "doanhthu": tongtienhoadon,
             "tile": 0
         }
-        print(data)
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
-        
         if reportDetailserializer.is_valid():
             reportDetailserializer.save()
 
@@ -588,7 +583,6 @@ def paymentInvoiceAPI(request):
         request.data['mahoadon'] = mahoadon
         invoice = InvoiceSerializer(data=request.data)
         service_list = request.data.get('danhsachdichvu', [])
-        print(request)
         if not service_list:
             return Response({"message": "Danh sách dịch vụ rỗng"}, status=status.HTTP_201_CREATED)
         
@@ -829,6 +823,8 @@ def searchPartyBookingFormAPI(request):
     shift_serializer = ShiftSerializer(shifts, many = True)
     lobby_serializer = LobbySerializer(lobbies, many=True)
     serializer = PartyBookingFormSerializer(query_f, many = True)
+
+    today = datetime.today().date()
     
     for item in serializer.data:
         query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
@@ -839,6 +835,7 @@ def searchPartyBookingFormAPI(request):
         item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
         item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        item['within_7_days'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() <= today + timedelta(days=7)
         
     serialized_data = {
         
