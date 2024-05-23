@@ -134,15 +134,27 @@ function convertDateFormat(dateString) {
   var dateParts = dateString.split("-");
   return dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
 }
-function ngaydaitiecInput() {
-  const ngaydaitiec = this.value;
-  dataCreateWedding.ngaydaitiec = ngaydaitiec;
-  localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
+// function ngaydaitiecInput() {
+//   const ngaydaitiec = this.value;
+//   dataCreateWedding.ngaydaitiec = ngaydaitiec;
+//   localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
 
-  if (dataCreateWedding.maca) {
-    readAvailablelobbies();
-  }
-}
+//   if (dataCreateWedding.maca) {
+//     readAvailablelobbies();
+//   }
+// }
+
+document
+  .getElementById("ngaydaitiec_input")
+  .addEventListener("change", function () {
+    const ngaydaitiec = this.value;
+    dataCreateWedding.ngaydaitiec = ngaydaitiec;
+    localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
+
+    if (dataCreateWedding.maca) {
+      readAvailablelobbies();
+    }
+  });
 document.getElementById("maca_select").addEventListener("change", function () {
   const maca = this.value;
 
@@ -238,10 +250,10 @@ function readFoodTable() {
           ? dataCreateWedding.danhsachmonan
           : [];
         let ghichuElement = document.getElementById(`ghichu_${this.value}`);
-        console.log(ghichuElement)
-        console.log(`ghichu_${this.value}`)
+        console.log(ghichuElement);
+        console.log(`ghichu_${this.value}`);
         if (this.checked) {
-          console.log(ghichuElement)
+          console.log(ghichuElement);
           ghichuElement.style = "display: block;";
           foodList.push({
             mamonan: this.value,
@@ -261,7 +273,7 @@ function readFoodTable() {
           );
         } else {
           ghichuElement.style = "display: none;";
-          ghichuElement.value = ""
+          ghichuElement.value = "";
           dataCreateWedding.danhsachmonan = foodList.filter(
             (food) => food.mamonan !== this.value
           );
@@ -279,10 +291,11 @@ function readFoodTable() {
     //Hien thi cac mon an đã chọn
     document.querySelectorAll("#food_checkbox").forEach((food_checkbox) => {
       if (dataCreateWedding.danhsachmonan) {
-       
         dataCreateWedding.danhsachmonan.map((food) => {
           if (food.mamonan === food_checkbox.value) {
-            let ghichuElement = document.getElementById(`ghichu_${food.mamonan}`);
+            let ghichuElement = document.getElementById(
+              `ghichu_${food.mamonan}`
+            );
             food_checkbox.checked = true;
             ghichuElement.style = "display: block;";
             ghichuElement.value = food.ghichu;
@@ -515,12 +528,11 @@ document.getElementById("sdt_input").addEventListener("input", function (e) {
   localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
 });
 
-
 document
   .getElementById("totalBill_button")
   .addEventListener("click", function (e) {
     e.preventDefault();
-    console.log("Total Bill")
+    console.log("Total Bill");
     document.getElementById("totalBill_result").style.display = "block";
     dataCreateWedding.dongiaban = dataCreateWedding.danhsachmonan.reduce(
       (accumulator, currentValue) => accumulator + currentValue.dongiamonan,
@@ -534,24 +546,30 @@ document
     );
     dataCreateWedding.tongtiendattiec =
       dataCreateWedding.tongtienban + dataCreateWedding.tongtiendichvu;
-      console.log(dataCreateWedding.tongtiendattiec)
+    console.log(dataCreateWedding.tongtiendattiec);
     dataCreateWedding.tiendatcoc =
       (parameter.tiledatcoc / 100) * dataCreateWedding.tongtiendattiec;
     dataCreateWedding.conlai =
       dataCreateWedding.tongtiendattiec - dataCreateWedding.tiendatcoc;
-console.log(document.getElementById("totalBill_result"))
+    console.log(document.getElementById("totalBill_result"));
     document.getElementById("totalBill_result").innerHTML =
-    `<p class="mx-1 p-1 border-end">Tổng tiền bàn: ${formatCurrency(dataCreateWedding.tongtienban)}</p>` +
-    `<p class="mx-1 p-1 border-end">Tổng tiền đặt tiệc: ${formatCurrency(dataCreateWedding.tongtiendattiec)}</p>` +
-    `<p class="mx-1  p-1">Tiền đặt cọc (${parameter.tiledatcoc}%): ${formatCurrency(dataCreateWedding.tiendatcoc)}</p>`;
-      // `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
-      document.getElementById("totalAmount").innerText =  `${formatCurrency(dataCreateWedding.tiendatcoc)}`
+      `<p class="mx-1 p-1 border-end">Tổng tiền bàn: ${formatCurrency(
+        dataCreateWedding.tongtienban
+      )}</p>` +
+      `<p class="mx-1 p-1 border-end">Tổng tiền đặt tiệc: ${formatCurrency(
+        dataCreateWedding.tongtiendattiec
+      )}</p>` +
+      `<p class="mx-1  p-1">Tiền đặt cọc (${
+        parameter.tiledatcoc
+      }%): ${formatCurrency(dataCreateWedding.tiendatcoc)}</p>`;
+    // `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;
+    document.getElementById("totalAmount").innerText = `${formatCurrency(
+      dataCreateWedding.tiendatcoc
+    )}`;
   });
 
 document
   .getElementById("payment_button")
   .addEventListener("click", function (e) {
-    
     // e.preventDefault();
-    
   });
