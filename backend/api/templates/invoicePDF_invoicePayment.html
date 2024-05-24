@@ -10,7 +10,7 @@
     />
     <style>
       body {
-        font-family: DejaVu Sans, sans-serif;
+        /* font-family: DejaVu Sans, sans-serif; */
       }
       .invoice-box {
         max-width: 800px;
@@ -77,7 +77,9 @@
           </td>
         </tr>
       </table>
+     
       <table class="table">
+        {% if serviceDetails %}
         <thead>
             <tr class="heading">
                 <th>Mã dịch vụ</th>
@@ -86,6 +88,7 @@
                 <th>Thành tiền</th>
             </tr>
         </thead>
+        {% endif %}
         <tbody>
             {% for serviceDetail in serviceDetails %}
             <tr class="item">
@@ -96,59 +99,39 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Tổng tiền dịch vụ:</strong>
                 </td>
                 <td>{{ invoiceDetails.tongtiendichvu|floatformat:2|intcomma }}</td>
             </tr> 
              <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Tiền phạt:</strong>
                 </td>
                 <td>{{ invoiceDetails.tienphat|floatformat:2|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Tổng tiền bàn:</strong>
                 </td>
                 <td>{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Tổng hóa đơn:</strong>
                 </td>
                 <td>{{ invoiceDetails.tongtienhoadon|floatformat:2|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Tiền cọc:</strong>
                 </td>
                 <td>-{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="3" class="text-right">
+                <td colspan="4" class="text-right">
                     <strong>Còn lại:</strong>
                 </td>
                 <td>{{ invoiceDetails.conlai|floatformat:2|intcomma }}</td>
             </tr>
-            <!-- Uncomment if needed in the future -->
-            <!-- <tr>
-                <td colspan="3" class="text-right">
-                    <strong>Tiền khách trả:</strong>
-                </td>
-                <td>₫ 30.875.000</td>
-            </tr>
-            <tr>
-                <td colspan="3" class="text-right">
-                    <strong>Tiền thừa:</strong>
-                </td>
-                <td>₫ 0</td>
-            </tr> 
-        </tbody>
-    </table>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
-</html>
+            

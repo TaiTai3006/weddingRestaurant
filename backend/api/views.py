@@ -581,11 +581,13 @@ def paymentInvoiceAPI(request):
        
         mahoadon = getNextID(Hoadon, 'mahoadon')
         request.data['mahoadon'] = mahoadon
+
         invoice = InvoiceSerializer(data=request.data)
+        print(invoice)
         service_list = request.data.get('danhsachdichvu', [])
-        if not service_list:
-            return Response({"message": "Danh sách dịch vụ rỗng"}, status=status.HTTP_201_CREATED)
-        
+        if not invoice.is_valid():
+            print("Invoice validation errors:", invoice.errors)  # Print validation errors
+            return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             
             if not invoice.is_valid():
@@ -614,8 +616,8 @@ def paymentInvoiceAPI(request):
                 detail_service_payment.save()
            
             createRevenueReport(ngaythanhtoan_str, tongtienhoadon)
-            return redirect('/report')
-            # return Response({"message": "Hoá đơn được tạo thành công"}, status=status.HTTP_201_CREATED)
+            
+            return Response({"message": "Hoá đơn được tạo thành công","mahoadon": mahoadon  }, status=status.HTTP_201_CREATED)
 
 
 
@@ -1062,7 +1064,6 @@ def displayFoodDetailChecked(request):
     
     
     return render(request, 'addFoodTable.html',data)
-    # return JsonResponse(result_list, safe=False)
     
 
 @api_view(['GET'])
@@ -1088,93 +1089,6 @@ def displayServiceDetailChecked(request):
     
     return render(request, 'addServiceTable.html',data)
    
-   
-# Thống kê số lượng tiệc trong tháng theo từng ngày
-# @api_view(['GET'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def countWeddingEventsPerDayInMonthAPI(request):
-#     month = request.GET.get('month')
-#     year = request.GET.get('year')
-#     print(month, year)
-#     query = Phieudattieccuoi.objects.raw(f"""
-#         SELECT maTiecCuoi, DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count 
-#         FROM `PhieuDatTiecCuoi` 
-#         WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} 
-#         GROUP BY DAY(`ngayDaiTiec`)
-#     """)
-    
-#     result_list = []
-#     for item in query:
-#         day = item.Day
-#         count = item.Count
-#         result_list.append({'day': day, 'count': count})
-#     print(result_list)
-#     return JsonResponse(result_list, safe=False)
-# @api_view(['GET'])
-# def countWeddingEventsPerMonthAPI(request):
-#     year = request.GET.get('year')
-#     print( year)
-#     query = Phieudattieccuoi.objects.raw(f"""
-#         SELECT maTiecCuoi, MONTH(`ngayDaiTiec`) as Month, COUNT(*) as Count 
-#         FROM `PhieuDatTiecCuoi` 
-#         WHERE YEAR(`ngayDaiTiec`) = {year} 
-#         GROUP BY MONTH(`ngayDaiTiec`)
-#     """)
-    
-#     result_list = []
-#     for item in query:
-#         month = item.Month
-#         count = item.Count
-#         result_list.append({'month': month, 'count': count})
-#     print(result_list)
-#     return JsonResponse(result_list, safe=False)
-
-# def countWeddingEventsPerDayInMonthAPI(request):
-#     # model_cache = cache.get('countWeddingEventsPerDayInMonth')
-
-#     # if model_cache:
-#     #     return Response(model_cache, status=status.HTTP_200_OK) 
-    
-#     month = request.GET.get('month')
-#     year = request.GET.get('year')
-#     print(month,year)
-    
-  
-#     # if not month or not year:
-#     #     return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-#     # query = Phieudattieccuoi.objects.raw(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
-#     # with connection.cursor() as cursor:
-#     #     cursor.execute(f"SELECT DAY(`ngayDaiTiec`) as Day, COUNT(*) as Count FROM `PhieuDatTiecCuoi` WHERE YEAR(`ngayDaiTiec`) = {year} AND MONTH(`ngayDaiTiec`) = {month} GROUP BY DAY(`ngayDaiTiec`)")
-#     #     data = cursor.fetchall()
-    
-#     # cache.set('countWeddingEventsPerDayInMonth', data, timeout=60*30)
-    
-#     # return Response(data, status=status.HTTP_200_OK)
-#     return render(request, 'workScheduleChart.html', {"result_list" : result_list})
-
-#Thống kê số lượng tiệc cưới trong ngày theo từng ca
-# @api_view(['GET'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def countWeddingEventsPerDayAPI(request):
-#     date = request.GET.get('date')
-#     print(request,date)
-
-#     if not date:
-#         return Response({"error": "date query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-#     query = Phieudattieccuoi.objects.raw(
-#         f"SELECT maTiecCuoi, Ca.tenCa, COUNT(*) AS event_count "
-#         f"FROM `PhieuDatTiecCuoi`, Ca "
-#         f"WHERE PhieuDatTiecCuoi.maCa = Ca.maCa AND PhieuDatTiecCuoi.ngayDaiTiec = '{date}' "
-#         f"GROUP BY Ca.tenCa"
-#     )
-#     results = [{"ca": item.tenCa, "event_count": item.event_count} for item in query]
-#     print(results)
-#     return JsonResponse(results, safe=False)
-
-
-
 
 
 # Thống kê số lượng mon an được đặt theo tháng, năm

@@ -9,7 +9,7 @@ import random
 from django.http import JsonResponse
 
 def payment(request):
-    print(request.POST)
+    print("request.POST")
     order_type = "billpayment"
     order_id = request.POST.get('order_id')
     amount =int(request.POST.get('amount'))

@@ -1,128 +1,414 @@
-{% extends 'layout.html' %} {% block title %} {% endblock %} 
-{% block content %}
-
+{% extends 'layout.html' %} {% block title %} {% endblock %} {% block content %}
 {% load mathfilters %} {% load humanize %}
-    <style>
-        .cancel-container{
-            overflow: scroll;
-            height: 600px;
-        }
-        .cancel-container::-webkit-scrollbar{
-            display: none;
-        }
-        .info, .cancel {
-            margin-bottom: 20px;
-        }
-        .info p, .cancel p {
-            margin: 5px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-        th, td {
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .totals {
-            text-align: right;
-        }
-        .totals td {
-            border: none;
-        }
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-        }
-        .btn-container button, .btn-container select {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        .btn-container button:hover, .btn-container select:hover {
-            background-color: #0056b3;
-        }
-    </style>
+<style>
+  .cancel-container {
+    overflow: scroll;
+    height: 600px;
+  }
+  .cancel-container::-webkit-scrollbar {
+    display: none;
+  }
+  .info,
+  .cancel {
+    margin-bottom: 20px;
+  }
+  .info p,
+  .cancel p {
+    margin: 5px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid #ccc;
+  }
+  th,
+  td {
+    padding: 5px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  .totals {
+    text-align: right;
+  }
+  .totals td {
+    border: none;
+  }
+  .btn-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  .btn-container button,
+  .btn-container select {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+  .btn-container button:hover,
+  .btn-container select:hover {
+    background-color: #0056b3;
+  }
+</style>
+
+<div class="cancel-container p-2">
+  <form id="cancelForm">
+    {% csrf_token %}
+    <input type="hidden" name="mahoadon" id="mahoadon" />
+    <input
+      type="hidden"
+      name="ngaythanhtoan"
+      id="ngaythanhtoan"
+      value="{{ wedding.ngayhuy }}"
+    />
+    <input
+      type="hidden"
+      name="matieccuoi"
+      id="matieccuoi"
+      value="{{ wedding.matieccuoi }}"
+    />
+    <input
+      type="hidden"
+      name="username"
+      id="username"
+      value="{{ wedding.username }}"
+    />
+    <input
+      type="hidden"
+      name="tongtiendichvu"
+      id="tongtiendichvu"
+      value="{{ wedding.tongtiendichvu }}"
+    />
+    <input type="hidden" name="tienphat" id="tienphat" value="0" />
+    <input
+      type="hidden"
+      name="tongtienhoadon"
+      id="tongtienhoadon"
+      value="{{ wedding.tongtiendattiec }}"
+    />
+    <input
+      type="hidden"
+      name="conlai"
+      id="conlai"
+      value="{{ wedding.conlai }}"
+    />
 
     <div class="cancel-container p-2">
-        <form id="cancelForm">
-            <input type="hidden" name="mahoadon" id="mahoadon">
-            <input type="hidden" name="ngaythanhtoan" id="ngaythanhtoan" value="{{ wedding.ngaythanhtoan }}">
-            <input type="hidden" name="matieccuoi" id="matieccuoi" value="{{ wedding.matieccuoi }}">
-            <input type="hidden" name="username" id="username" value="{{ wedding.username }}"> 
-            <input type="hidden" name="tongtiendichvu" id="tongtiendichvu" value="{{ wedding.tongtiendichvu }}">
-            <input type="hidden" name="tienphat" id="tienphat" value="0"> 
-            <input type="hidden" name="tongtienhoadon" id="tongtienhoadon" value="{{ wedding.tongtiendattiec }}">
-            <input type="hidden" name="conlai" id="conlai" value="{{ wedding.conlai }}"> 
-        
-           
-            
-            <div class="cancel-container p-2">
-                <h2 class="text-center py-3">XÁC NHẬN HỦY</h2>
-                <div class="info row justify-content-between">
-                    <div class="col-3">
-                        <p>Ngày hủy: {{wedding.ngayhuy}}</p>
-                        <p>Tên cô dâu: {{wedding.tencodau}}</p>
-                        <p>Tên chú rể: {{wedding.tenchure}}</p>
-                    </div>
-                    <div class="col-3">
-                        <p>Số ngày hủy sớm : {{songayhuysom}}</p>
-                        <p>Số lượng bàn: {{wedding.soluongban}}</p>
-                        <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
-                    </div>
-                    <div class="col-3">
-                        <p>Tổng tiền bàn: {{wedding.tongtienban|intcomma}}</p>
-                    </div>
-                </div>
-                <table class="totals">
-                    <tbody>
-                        
-                       
-                        <tr>
-                            <td>Tổng tiền hoá đơn:</td>
-                            <td>{{wedding.tongtien|intcomma }}</td>
-                        </tr>
-                        <tr>
-                            <td>Tiền cọc (50%):</td>
-                            <td>{{wedding.tiendatcoc|intcomma}}</td>
-                        </tr>
-                        <tr>
-                            <td>Số tiền cần thanh toán:</td>
-                            <td>{{wedding.conlai|intcomma}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="cancel d-flex justify-content-start">
-                    <p>Phương thức thanh toán:</p>
-                    <select id="cancelMethod">
-                        <option value="cash">Tiền mặt</option>
-                        <option value="credit">Thẻ tín dụng</option>
-                        <option value="bank">Chuyển khoản</option>
-                    </select>
-                </div>
-                <div class="btn-container">
-                    <button type="button" onclick="history.back()">Quay lại</button>
-                    <button type="submit">Tiếp tục</button>
-                </div>
-            </div>
-        </form>
+      <h2 class="text-center py-3">XÁC NHẬN HỦY</h2>
+      <div class="info row justify-content-between">
+        <div class="col-3">
+          <p>Ngày hủy: {{wedding.ngayhuy}}</p>
+          <p>Tên cô dâu: {{wedding.tencodau}}</p>
+          <p>Tên chú rể: {{wedding.tenchure}}</p>
+        </div>
+        <div class="col-3">
+          <p>Số ngày hủy sớm : {{songayhuysom}}</p>
+          <p>Số lượng bàn: {{wedding.soluongban}}</p>
+          <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
+        </div>
+        <div class="col-3">
+          <p>Tổng tiền bàn: {{wedding.tongtienban|intcomma}}</p>
+        </div>
+      </div>
+      <table class="totals">
+        <tbody>
+          <tr>
+            <td>Tổng tiền hoá đơn:</td>
+            <td>{{wedding.tongtien|intcomma }}</td>
+          </tr>
+          <tr>
+            <td>Tiền cọc (50%):</td>
+            <td>{{wedding.tiendatcoc|intcomma}}</td>
+          </tr>
+          <tr>
+            <td>Số tiền cần thanh toán:</td>
+            <td
+              id="totalPayment"
+              data-total="{{wedding.conlai}}"
+            >
+              {{wedding.conlai|intcomma}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="payment d-flex justify-content-start">
+        <p>Phương thức thanh toán:</p>
+        <select id="paymentMethod">
+          <option value="">Chọn phương thức thanh toán</option>
+          <option value="cash">Tiền mặt</option>
+          <option value="bank">Chuyển khoản</option>
+        </select>
+      </div>
+      <div class="btn-container">
+        <button type="button" onclick="history.back()">Quay lại</button>
+        <button type="submit">Tiếp tục</button>
+      </div>
     </div>
-    <script>
-      document.getElementById('cancelForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const form = event.target;
+  </form>
+  <div
+    class="modal fade"
+    id="qrCodeModal"
+    tabindex="-1"
+    aria-labelledby="qrCodeModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="qrCodeModalLabel">
+            Quét mã QR để thanh toán
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <iframe
+            src="https://www.google.com/url?sa=i&url=https%3A%2F%2Ffree-qr.com%2F&psig=AOvVaw1Fy5ZCNGtdIRHHV8XrObGw&ust=1716313520736000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCJC11p_knIYDFQAAAAAdAAAAABAE"
+            width="100%"
+            height="400px"
+            id="payment-view"
+            frameborder="0"
+          ></iframe>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button id="confirmQRPayment" type="button" class="btn btn-primary">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="modal fade"
+    id="paymentDetailsModal"
+    tabindex="-1"
+    aria-labelledby="paymentDetailsModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentDetailsModalLabel">
+            Nhập số tiền thanh toán
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label for="totalAmount">Số tiền cọc :</label>
+            <span id="totalAmount">100000</span>
+          </div>
+          <div class="amountReceived form-row">
+            <label for="amountReceived">Số tiền đã nhận:</label>
+            <input
+              type="number"
+              id="amountReceived"
+              class="p-1 text-secondary"
+              value="0"
+              placeholder="Nhập số tiền đã nhận"
+            />
+          </div>
+          <div class="form-row">
+            <label for="remainingAmount">Tiền còn lại phải trả :</label>
+            <span id="remainingAmount">0</span>
+          </div>
+          <div class="quick-amount">
+            <div class="col">
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(10000000)"
+                >
+                  10000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(20000000)"
+                >
+                  20000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(50000000)"
+                >
+                  50000000
+                </button>
+              </div>
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(100000000)"
+                >
+                  100000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(200000000)"
+                >
+                  200000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(300000000)"
+                >
+                  300000000
+                </button>
+              </div>
+              <div class="btn-group equal-width">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(400000000)"
+                >
+                  400000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleQuickAmountClick(500000000)"
+                >
+                  500000000
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="handleClearAmount()"
+                  style="width: 103px"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Đóng
+          </button>
+          <button id="confirmPayment" type="button" class="btn btn-primary">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    const qrCodeModal = new bootstrap.Modal(
+      document.getElementById("qrCodeModal")
+    );
+    const cashModal = new bootstrap.Modal(
+      document.getElementById("paymentDetailsModal")
+    );
 
-    const invoiceData = {
+    // Function to handle payment method change
+    function handlePaymentMethodChange() {
+      const selectedMethod = paymentMethodSelect.value;
+      const totalAmountElement = document
+        .getElementById("totalPayment")
+        .getAttribute("data-total");
+
+      const totalAmount = totalAmountElement;
+
+      console.log(totalAmount);
+
+      if (selectedMethod === "cash") {
+        cashModal.show();
+      } else if (selectedMethod === "bank") {
+        qrCodeModal.show();
+        showQRcode();
+      }
+    }
+
+    // Add event listener to the select element
+    paymentMethodSelect.addEventListener("change", handlePaymentMethodChange);
+    document
+      .getElementById("confirmPayment")
+      .addEventListener("click", function () {
+        cashModal.hide();
+      });
+    document
+      .getElementById("confirmQRPayment")
+      .addEventListener("click", function () {
+        qrCodeModal.hide();
+      });
+  });
+  function showQRcode() {
+    console.log("showQRcode");
+    const totalAmountElement = document
+      .getElementById("totalPayment")
+      .getAttribute("data-total");
+    let amount = parseInt(totalAmountElement);
+    const xhttp = new XMLHttpRequest();
+    xhttp.onload = function () {
+      if (xhttp.status === 200) {
+        const response = JSON.parse(xhttp.responseText);
+        window.open(response.payment_url, "_blank");
+      } else {
+        console.error("An error occurred:", xhttp.statusText);
+      }
+    };
+    xhttp.open("POST", "/payment/");
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    const csrfToken = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    ).value;
+
+    const data =
+      "order_id=TC0067&amount=" +
+      amount +
+      "&csrfmiddlewaretoken=" +
+      encodeURIComponent(csrfToken);
+    xhttp.send(data);
+  }
+
+  document
+    .getElementById("cancelForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      const form = event.target;
+      const paymentMethod = form.querySelector("#paymentMethod").value;
+      if (!paymentMethod) {
+        alert("Vui lòng chọn phương thức thanh toán trước khi tiếp tục!");
+        return; 
+      }
+      const invoiceData = {
         ngaythanhtoan: form.ngaythanhtoan.value,
         tongtiendichvu: form.tongtiendichvu.value,
         tienphat: form.tienphat.value,
@@ -130,24 +416,25 @@
         conlai: form.conlai.value,
         matieccuoi: form.matieccuoi.value,
         username: form.username.value,
-        danhsachdichvu: []
-    };
+        
+      };
 
-    const services = {};
-    
+      const services = {};
 
-    
-    axios.post('/paymentInvoice/', invoiceData)
-        .then(response => {
-            alert('Wedding cancel successfully!');
-            window.location.href = '/report/';
+      axios
+        .post("/paymentInvoice/", invoiceData)
+        .then((response) => {
+          alert("Hủy tiệc cưới thành công!");
+          const responseData = response.data;
+          console.log(responseData);
+          const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
+          window.open(url, "_blank");
+          window.location.href = '/report/';
         })
-        .catch(error => {
-            console.error('There was an error!', error);
+        .catch((error) => {
+          console.error("Có lỗi xảy ra!", error);
         });
-});
+    });
+</script>
 
-    
-    </script>
-    
 {% endblock %}
