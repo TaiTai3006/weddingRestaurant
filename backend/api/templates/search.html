@@ -502,6 +502,30 @@
       console.error("Error handling hall types:", error);
     }
   };
+
+  function showQRcode(){
+    //Gia tien
+    let amount = 0 //Đổi giá ở đây
+    const xhttp = new XMLHttpRequest();
+    xhttp.onload = function () {
+        if (xhttp.status === 200) {
+          const response = JSON.parse(xhttp.responseText);
+          window.open(response.payment_url, '_blank'); 
+        } else {
+            console.error('An error occurred:', xhttp.statusText);
+        }
+    };
+    xhttp.open("POST", "/payment/");
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    const data = "order_id=TC0067&amount=" + amount + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
+    xhttp.send(data);
+  }
+
+    //In hoá đơn
+    //const url = `/create/pdf/invoicePayment/${mabaocao}`;
+   // window.open(url, '_blank'); 
+  
 </script>
 
 {% endblock %}
