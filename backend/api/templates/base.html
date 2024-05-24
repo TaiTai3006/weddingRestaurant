@@ -16,7 +16,7 @@
   }
   #wedding_info {
     overflow: scroll;
-    height: 520px;
+    height: 550px;
     min-width: 390px;
     border-radius: 15px;
     border: 1px solid #ccc;
@@ -38,8 +38,8 @@
   }
 </style>
 <div class="base-container">
-  <div class="row p-3">
-    <form class="col-8" method="POST" action="" id="weddingForm">
+  <div class="row p-3 d-flex justify-content-between">
+    <form class="col-7" method="POST" action="" id="weddingForm">
       {% csrf_token %}
       <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -124,12 +124,12 @@
                 <td>
                   <input
                     type="number"
-                    class="soluongDV_input"
+                    class="soluongDV_input px-1 text-secondary"
                     min="1"
                     name="soluongdichvu"
                     placeholder="Số lượng"
                     id="soluong_{{service.madichvu}}"
-                    style="display: none"
+                    style="display: none; max-width: 100px;"
                   />
                 </td>
 
@@ -139,7 +139,7 @@
                 <td>
                   <input
                     type="text"
-                    class="ghichuDV_input"
+                    class="ghichuDV_input px-1 text-secondary"
                     name="ghichudichvu"
                     placeholder="Ghi chú ..."
                     id="ghichu_{{service.madichvu}}"
@@ -161,7 +161,7 @@
         </div>
       </div>
     </form>
-    <div class="col-3 wedding-info ms-3 p-2">
+    <div class="col-5 wedding-info  px-2">
       <div id="wedding_info" class="p-2">
         <div class="row">
           <div class="col mb-3" id="weddingInfo">
@@ -172,6 +172,7 @@
               id="tenchure_input"
               name="tenchure"
               placeholder="Tên chú rể"
+              required
             />
           </div>
           <div class="col mb-3" id="weddingInfo">
@@ -182,6 +183,7 @@
               id="tencodau_input"
               name="tencodau"
               placeholder="Tên cô dâu"
+              required
             />
           </div>
         </div>
@@ -193,6 +195,7 @@
             id="sdt_input"
             name="sdt"
             placeholder="Số điện thoại"
+            required
           />
         </div>
         <div id="khachhang"></div>
@@ -289,24 +292,31 @@
             </tfoot>
           </table>
         </div>
+        <div
+        id="totalBill_result"
+        class="mt-1 text-end"
+        style="font-weight: bold; font-size: 15px"
+      ></div>
+      </div>
+      <div class="button-gr">
+        <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
+          Thanh toán
+        </button>
+        <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
+       
       </div>
     </div>
   </div>
 </div>
 
-<div class="footer d-flex align-items-center justify-content-between">
-  <p>Phương thức thanh toán:</p>
-  <select id="paymentMethod">
+<div class="footer d-flex align-items-center justify-content-start">
+  <span>Phương thức thanh toán:</span>
+  <select id="paymentMethod" class="px-1 text-secondary">
     <option value="cash">Tiền mặt</option>
 
     <option value="bank">Chuyển khoản</option>
   </select>
-  <div class="button-gr">
-    <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
-      Thanh toán
-    </button>
-    <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
-  </div>
+ 
   <!-- Payment Details Modal -->
   <div
     class="modal fade"
@@ -484,11 +494,7 @@
     </div>
   </div>
 
-  <div
-    id="totalBill_result"
-    class="mt-1 d-flex"
-    style="font-weight: bold; font-size: 14px"
-  ></div>
+  
 </div>
 <script>
     const paymentMethodSelect = document.getElementById("paymentMethod");

@@ -2,7 +2,7 @@
 {% csrf_token %}
 <style>
   .dashboard-container{
-    height: 600px;
+    height: 630px;
     overflow: scroll;
   }
   .dashboard-container::-webkit-scrollbar{
@@ -24,7 +24,7 @@
       <div class="col-lg-8">
         <div class="card">
           <div class="row card-body">
-            <h5 class="col card-title">Lịch phân công công việc</h5>
+            <h5 class="col card-title">Thống kê số lượng tiệc cưới</h5>
             <select
               name = "type"
               id="phancongcongviec_select"
@@ -46,7 +46,7 @@
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Lịch tháng</h5>
-            <input id="currentDate" name="date" type="date" value={{dataRequest.date}} readonly/>
+            <input id="currentDate" name="date" type="date" value={{dataRequest.date}} class="p-1 text-secondary" readonly/>
             <div class="calendar">
               <div class="row calendar-controls">
                 <select id="monthSelect" class="col form-control m-2"></select>

@@ -84,6 +84,7 @@ function constructer() {
           );
           checkbox.checked = true;
           soluongElement.style = "display: block;";
+          soluongElement.style = "max-width: 100px;"
           ghichuElement.style = "display: block;";
           soluongElement.value = service.soluong;
           ghichuElement.value = service.ghichu;
@@ -147,8 +148,18 @@ function convertDateFormat(dateString) {
 document
   .getElementById("ngaydaitiec_input")
   .addEventListener("change", function () {
-    const ngaydaitiec = this.value;
-    dataCreateWedding.ngaydaitiec = ngaydaitiec;
+    const ngaydaitiec = new Date(this.value);
+    const today = new Date();
+    const timeDiff = ngaydaitiec.getTime() - today.getTime();
+    const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    if (dayDiff < 30) {
+      alert("Ngày đãi tiệc phải ít nhất 30 ngày so với hôm nay.");
+      this.value = ''; // Clear the input field
+      return;
+    }
+
+    dataCreateWedding.ngaydaitiec = this.value;
     localStorage.setItem("dataWedding", JSON.stringify(dataCreateWedding));
 
     if (dataCreateWedding.maca) {
@@ -405,6 +416,7 @@ document.querySelectorAll("#service_checkbox").forEach((checkbox) => {
     let ghichuElement = document.getElementById(`ghichu_${this.value}`);
     if (this.checked) {
       soluongElement.style = "display: block;";
+      soluongElement.style = "max-width: 100px;"
       ghichuElement.style = "display: block;";
       soluongElement.value = 1;
 

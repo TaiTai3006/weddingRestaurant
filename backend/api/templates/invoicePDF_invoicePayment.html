@@ -79,64 +79,73 @@
       </table>
       <table class="table">
         <thead>
-          <tr class="heading">
-            <th>Ma dich vu</th>
-            <th>So luong</th>
-            <th>Don gia</th>
-            <th>Thanh tien</th>
-          </tr>
+            <tr class="heading">
+                <th>Mã dịch vụ</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
         </thead>
         <tbody>
-          {%for serviceDetail in serviceDetails%}
-          <tr class="item">
-            <td>{{serviceDetail.madichvu}}</td>
-            <td>{{serviceDetail.soluong}}</td>
-            <td>{{serviceDetail.dongiadichvu|floatformat|intcomma }}</td>
-            <td>{{serviceDetail.thanhtien|floatformat|intcomma }}</td>
-          </tr>
-          {%endfor%}
-          <tr>
-            <td colspan="3" class="text-right">
-              <strong>Tong tien dich vu:</strong>
-            </td>
-            <td>{{invoiceDetails.tongtiendichvu|floatformat|intcomma}}</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right">
-              <strong>Tien phat:</strong>
-            </td>
-            <td>{{invoiceDetails.tienphat|floatformat|intcomma}}</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right">
-              <strong>Tong tien ban:</strong>
-            </td>
-            <td>{{bookingDetails.tongtienban|floatformat|intcomma }}</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right"><strong>Tong hoa don:</strong></td>
-            <td>{{invoiceDetails.tongtienhoadon|floatformat|intcomma}}</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right"><strong>Tien coc:</strong></td>
-            <td>-{{bookingDetails.tongtienban|floatformat|intcomma }}</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right"><strong>Con lai:</strong></td>
-            <td>{{invoiceDetails.conlai|floatformat|intcomma }}</td>
-          </tr>
-          {% comment %} <tr>
-            <td colspan="3" class="text-right">
-              <strong>Tien khach tra:</strong>
-            </td>
-            <td>₫ 30.875.000</td>
-          </tr>
-          <tr>
-            <td colspan="3" class="text-right"><strong>Tien thua:</strong></td>
-            <td>₫ 0</td>
-          </tr> {% endcomment %}
+            {% for serviceDetail in serviceDetails %}
+            <tr class="item">
+                <td>{{ serviceDetail.madichvu }}</td>
+                <td>{{ serviceDetail.soluong }}</td>
+                <td>{{ serviceDetail.dongiadichvu|floatformat:2|intcomma }}</td>
+                <td>{{ serviceDetail.thanhtien|floatformat:2|intcomma }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tổng tiền dịch vụ:</strong>
+                </td>
+                <td>{{ invoiceDetails.tongtiendichvu|floatformat:2|intcomma }}</td>
+            </tr> 
+             <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tiền phạt:</strong>
+                </td>
+                <td>{{ invoiceDetails.tienphat|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tổng tiền bàn:</strong>
+                </td>
+                <td>{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tổng hóa đơn:</strong>
+                </td>
+                <td>{{ invoiceDetails.tongtienhoadon|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tiền cọc:</strong>
+                </td>
+                <td>-{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Còn lại:</strong>
+                </td>
+                <td>{{ invoiceDetails.conlai|floatformat:2|intcomma }}</td>
+            </tr>
+            <!-- Uncomment if needed in the future -->
+            <!-- <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tiền khách trả:</strong>
+                </td>
+                <td>₫ 30.875.000</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Tiền thừa:</strong>
+                </td>
+                <td>₫ 0</td>
+            </tr> 
         </tbody>
-      </table>
+    </table>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

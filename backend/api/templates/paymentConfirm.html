@@ -5,7 +5,7 @@
     <style>
         .payment-container{
             overflow: scroll;
-            height: 600px;
+            height: 620px;
         }
         .payment-container::-webkit-scrollbar{
             display: none;
@@ -186,7 +186,7 @@
     axios.post('/paymentInvoice/', invoiceData)
         .then(response => {
             alert('Invoice created successfully!');
-            // Optionally redirect or clear form
+            window.location.href = '/report/';
         })
         .catch(error => {
             console.error('There was an error!', error);

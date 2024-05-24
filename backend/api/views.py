@@ -120,7 +120,7 @@ def documentPdfView(request, type, id):
         shiftInfo = Ca.objects.get(maca=bookingDetails.data['maca'])
         template_path = "invoicePDF_invoicePayment.html"
         context = {'invoiceDetails': invoiceDetails.data, 'bookingDetails': bookingDetails.data, "serviceDetails": serviceDetails, "shiftInfo": shiftInfo}
-    
+
     return renderPdfView(template_path, context)
 
 # Trang dashboard
@@ -637,7 +637,7 @@ def updateWeddingInfo(request, wedding_id):
         wedding.masanh = masanh_instance
         
         wedding.save()
-        return redirect('/search')
+        
     
     return render(request, 'searchResult.html')
 
