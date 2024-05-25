@@ -1,4 +1,6 @@
 from django.db import models
+#Do sử dụng database có sẵn. Nên đã sử dụng câu lệnh "python manage.py inspectdb" để lấy toàn bộ model trong database đã liên kết.
+#Dưới đây là toàn bộ model được inspect từ câu lệnh trên.
 class Loaisanh(models.Model):
     maloaisanh = models.CharField(db_column='maLoaiSanh', primary_key=True, max_length=6)  # Field name made lowercase.
     tenloaisanh = models.CharField(db_column='tenLoaiSanh', max_length=50, blank=True, null=True)  # Field name made lowercase.
@@ -13,7 +15,6 @@ class Sanh(models.Model):
     tensanh = models.CharField(db_column='tenSanh', max_length=50, blank=True, null=True)  # Field name made lowercase.
     soluongbantoida = models.IntegerField(db_column='soLuongBanToiDa', blank=True, null=True)  # Field name made lowercase.
     maloaisanh = models.ForeignKey(Loaisanh, models.DO_NOTHING, db_column='maLoaiSanh') 
-    img = models.ImageField(upload_to='images')
     ghichu = models.TextField(db_column='ghiChu', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -31,7 +32,6 @@ class Chucvu(models.Model):
 class Taikhoan(models.Model):
     username = models.CharField(db_column='userName', primary_key=True, max_length=30)  # Field name made lowercase.
     password = models.CharField(db_column='passWord', max_length=100, blank=True, null=True) 
-    img = models.ImageField(upload_to='images') 
     machucvu = models.ForeignKey(Chucvu, models.DO_NOTHING, db_column='maChucVu')  # Field name made lowercase.
 
     class Meta:
@@ -75,7 +75,6 @@ class Phieudattieccuoi(models.Model):
 class Dichvu(models.Model):
     madichvu = models.CharField(db_column='maDichVu', primary_key=True, max_length=6)  # Field name made lowercase.
     tendichvu = models.CharField(db_column='tenDichVu', max_length=30, blank=True, null=True)  # Field name made lowercase.
-    img = models.CharField(max_length=100, blank=True, null=True)
     dongia = models.DecimalField(db_column='donGia', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -104,7 +103,6 @@ class Monan(models.Model):
     mamonan = models.CharField(db_column='maMonAn', primary_key=True, max_length=6)  # Field name made lowercase.
     tenmonan = models.CharField(db_column='tenMonAn', max_length=30, blank=True, null=True)  # Field name made lowercase.
     dongia = models.DecimalField(db_column='donGia', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
-    img = models.CharField(max_length=100, blank=True, null=True)
     maloaimonan = models.ForeignKey(Loaimonan, models.DO_NOTHING, db_column='maLoaiMonAn')  # Field name made lowercase.
 
     class Meta:
