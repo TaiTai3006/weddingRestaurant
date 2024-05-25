@@ -46,11 +46,8 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "rest_framework",
     "rest_framework.authtoken",
-    # "corsheaders",
     "vnpay_python.apps.VnpayPythonConfig",
     "api.apps.ApiConfig",
-    'cloudinary_storage',
-    'cloudinary',
     'mathfilters'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
@@ -157,20 +154,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME' : 'dz6rjqkfb',
-    'API_KEY' : '471251317634541',
-    'API_SECRET' : 'H9vMluxlYsIbMpRLKaJH3nyrdZo'
-}
-MEDIA_URL = '/media/'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# cloudinary.config( 
-#   cloud_name = "dz6rjqkfb", 
-#   api_key = "471251317634541", 
-#   api_secret = "H9vMluxlYsIbMpRLKaJH3nyrdZo" 
-# )
-# VNPAY CONFIG
 VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
 VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
 VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
