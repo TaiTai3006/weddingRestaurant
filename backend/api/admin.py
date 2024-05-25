@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import Loaisanh, Sanh, Chucvu, Taikhoan, Ca, Phieudattieccuoi, Dichvu, Chitietdichvu, Loaimonan, Monan, Chitietmonan, Baocaodoanhthu, Chitietbaocao, Congviec, Nhanvien, Phancong, Hoadon, ChitietDvThanhtoan, Thamso
 import bcrypt
+
+#Thêm chức năng mã hoá mật khẩu trước khi lưu trữ vào TaiKhoan
 class MyModelAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         password = request.POST.get('password')
@@ -13,11 +15,11 @@ class MyModelAdmin(admin.ModelAdmin):
         # Gọi phương thức lưu mặc định
         super().save_model(request, obj, form, change)
         
-
+#Đăng kí model hiển thị trong trang admin
 admin.site.register(Loaisanh)
 admin.site.register(Sanh)
 admin.site.register(Chucvu)
-admin.site.register(Taikhoan, MyModelAdmin)
+admin.site.register(Taikhoan, MyModelAdmin) #Them vao admin
 admin.site.register(Ca)
 admin.site.register(Phieudattieccuoi)
 admin.site.register(Dichvu)
