@@ -408,6 +408,7 @@ def invoice(request):
 def search(request):
     """
     Hiển thị tất cả tiệc cưới và các lựa chọn để tìm kiếm tiệc cưới.
+    url : 'search/'
 
     Trả về:
     - render: Một trang HTML chứa thông tin về các tiệc cưới, món ăn, dịch vụ, loại sảnh, ca, loại món ăn và sảnh.
@@ -461,7 +462,7 @@ def search(request):
 def paymentConfirm(request, wedding_id):
     """
     Xác nhận thanh toán cho tiệc cưới.
-
+    url : 'paymentConfirm/<str:wedding_id>/'
     Tham số:
     - request: HttpRequest object chứa thông tin yêu cầu.
     - wedding_id: mã tiệc cưới.
@@ -509,7 +510,7 @@ def paymentConfirm(request, wedding_id):
 def cancelConfirm(request, wedding_id):
     """
     Xác nhận hủy tiệc cưới.
-
+    url : 'cancelConfirm/<str:wedding_id>/'
     Tham số:
     - request: HttpRequest object chứa thông tin yêu cầu.
     - wedding_id: mã tiệc cưới.
@@ -549,7 +550,7 @@ def cancelConfirm(request, wedding_id):
 def paymentInvoiceAPI(request):
     """
     API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
-
+    url : 'paymentInvoice/'
     Tham số : HttpRequest object chứa thông tin:
         - mahoadon (str): ID của hoá đơn.
         - ngaythanhtoan (str): Ngày thanh toán.
@@ -614,7 +615,7 @@ def paymentInvoiceAPI(request):
 def updateWeddingInfo(request, wedding_id):
     """
     Cập nhật thông tin tiệc cưới.
-
+    url : 'wedding/update/<str:wedding_id>/'
     Tham số:
     - wedding_id (int): Mã của tiệc cưới cần được cập nhật.
     - request : HttpRequest object chứa thông tin: 
@@ -756,7 +757,7 @@ def apiView(request, model_name=None):
 def searchPartyBookingFormAPI(request):
     """
     Tìm kiếm thông tin tiệc cưới. Chỉnh sửa thông tin tiệc cưới nếu đủ điều kiện. (< 7 ngày trước ngày đãi tiệc )
-    
+    url : 'searchParty/'
     Tham số:HttpRequest object chứa thông tin : 
     - tenchure (str): Tên chú rể để lọc tiệc cưới
     - tencodau (str): Tên cô dâu để lọc tiệc cưới
@@ -972,7 +973,6 @@ def bookingPartyWedding(request):
 def addFoodDetail(request):
     """
     Thêm thông tin các món ăn trong tiệc cưới đã đặt.
-    
     Tham số:
     - request: HttpRequest object chứa thông tin 'matieccuoi' và 'danhsachmonan'
     
@@ -1037,7 +1037,7 @@ def addFoodDetail(request):
 def addServiceDetail(request):
     """
     Thêm thông tin các dịch vụ trong tiệc cưới đã đặt.
-    
+
     Tham số:
     - request: HttpRequest object chứa thông tin 'matieccuoi' và 'danhsachdichvu'
     
