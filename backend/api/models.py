@@ -1,4 +1,6 @@
 from django.db import models
+#Do sử dụng database có sẵn. Nên đã sử dụng câu lệnh "python manage.py inspectdb" để lấy toàn bộ model trong database đã liên kết.
+#Dưới đây là toàn bộ model được inspect từ câu lệnh trên.
 class Loaisanh(models.Model):
     maloaisanh = models.CharField(db_column='maLoaiSanh', primary_key=True, max_length=6)  # Field name made lowercase.
     tenloaisanh = models.CharField(db_column='tenLoaiSanh', max_length=50, blank=True, null=True)  # Field name made lowercase.

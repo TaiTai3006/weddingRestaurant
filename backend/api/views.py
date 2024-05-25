@@ -30,17 +30,6 @@ from decimal import Decimal,ROUND_HALF_UP
 
 import json
 
-model_serializer_map = {
-        'lobbies': (Sanh, LobbySerializer, 'masanh'),
-        'lobbyTypes': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
-        'foods': (Monan, FoodSerializer, 'mamonan'),
-        'foodTypes': (Loaimonan, FoodTypeSerializer, 'maloaimonan'),
-        'services': (Dichvu, ServiceSerializer, 'madichvu'),
-        'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
-        'job': (Congviec, JobSerializer, 'macongviec'),
-        'parameter': (Thamso, ParameterSerializer, 'id'),
-        'shifts': (Ca, ShiftSerializer, 'maca')
-    }
 
 def login(request):
     """
@@ -363,28 +352,6 @@ def revenueReportPerYear():
 
     return data
 
-# Thống kê số lượng sảnh được đặt theo tháng, năm
-def countLobbyBookingAPI(request):
-    month = request.data.get('month')
-    year = request.data.get('year')
-
-    if (not month and not year ) or (month and not year):
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if month and year:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
-            temp = cursor.fetchall()
-    else: 
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT Sanh.tenSanh, COUNT(*)  FROM `PhieuDatTiecCuoi`, Sanh WHERE PhieuDatTiecCuoi.maSanh = Sanh.maSanh AND YEAR(`ngayDaiTiec`) = {year} GROUP BY Sanh.maSanh, Sanh.tenSanh ")
-            temp = cursor.fetchall()
-
-    data = []
-    for item in temp:
-        data.append({'tenSanh': item[0], 'soluongSanh': item[1]})
-
-    return Response(data, status=status.HTTP_200_OK)
 
 def createRevenueReport(date_string, tongtienhoadon):
     """
@@ -554,8 +521,7 @@ def cancelConfirm(request, wedding_id):
 
 # Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
 @api_view(['POST'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
+
 def paymentInvoiceAPI(request):
     """
     API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
@@ -705,71 +671,50 @@ def getNextID(model, id_field):
     next_id = f'{next_id:04}' 
     return header + next_id
 
-@api_view(['GET', 'PUT', 'POST', 'DELETE'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-def LobbyView(request, model_name=None, id=None):
+
+model_serializer_map = {
+        'lobbies': (Sanh, LobbySerializer, 'masanh'),
+        'lobbyTypes': (Loaisanh, LobbyTypeSerializer, 'maloaisanh'),
+        'foods': (Monan, FoodSerializer, 'mamonan'),
+        'foodTypes': (Loaimonan, FoodTypeSerializer, 'maloaimonan'),
+        'services': (Dichvu, ServiceSerializer, 'madichvu'),
+        'employee': (Nhanvien, EmployeeSerializer, 'manhanvien'),
+        'job': (Congviec, JobSerializer, 'macongviec'),
+        'parameter': (Thamso, ParameterSerializer, 'id'),
+        'shifts': (Ca, ShiftSerializer, 'maca')
+    }
+
+
+@api_view(['GET'])
+
+def apiView(request, model_name=None):
+    """
+    Xử lý yêu cầu GET cho một model cụ thể và trả về danh sách các đối tượng của model đó.
+
+    Hàm này sử dụng model_serializer_map để ánh xạ tên model (model_name) tới model, serializer 
+    và khóa chính (key) tương ứng. Nó kiểm tra tính hợp lệ của model_name, truy vấn tất cả các 
+    đối tượng từ model, và serialize chúng trước khi trả về dữ liệu dưới dạng JSON.
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa thông tin về yêu cầu HTTP.
+    - model_name (str, optional): Tên của model cần truy vấn. Đây là tham số động trong URL.
+
+    Trả về:
+    - Response: Phản hồi HTTP chứa dữ liệu JSON của các đối tượng được truy vấn. 
+      Nếu model_name không hợp lệ, trả về phản hồi với lỗi và trạng thái HTTP 400.
+    """
     if not model_serializer_map.get(model_name):
         return Response({'error': 'Invalid model name'}, status=status.HTTP_400_BAD_REQUEST)
     
     model, serializer_class, key = model_serializer_map[model_name]
 
-    if id :
-        try:
-            row = model.objects.get(**{key: id})
-        except model.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    query = model.objects.all()
+    serializer = serializer_class(query, many=True)
+    return Response(serializer.data)
     
-    if request.method == 'GET':
-        model_cache = cache.get(model_name)
-        if model_cache :
-            return Response(model_cache)
-        query = model.objects.all()
-        serializer = serializer_class(query, many=True)
-        cache.set(model_name, serializer.data, timeout= 60 * 30)
-        return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = serializer_class(row, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            cache.delete(model_name)
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'POST':
-        request.data[key] = getNextID(model, key)
-        serializer = serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            cache.delete(model_name)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        row.delete()
-        cache.delete(model_name)
-        return Response("Delete successfuly",status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-@api_view(['POST'])
-def signup(request):
-    serializer = UserSerializer_Signup(data=request.data)
-    if serializer.is_valid():
-        password = request.data['password']
-        bytes = password.encode('utf-8') 
-        salt = bcrypt.gensalt() 
-        hashed_password = bcrypt.hashpw(bytes, salt).decode('utf-8')
-        serializer.save(password = hashed_password)
-        user = User.objects.create(username=request.data['username'], password=hashed_password)
-        # token = Token.objects.create(user=user)
-        return Response(status = status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 @api_view(['GET'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
+
 def searchPartyBookingFormAPI(request):
     # model_cache = cache.get('searchPartyBooking')
     # if model_cache :
@@ -854,11 +799,22 @@ def searchPartyBookingFormAPI(request):
     return render(request, 'searchResult.html',serialized_data)
     # return Response(serializer.data)
 
-# Lấy danh sách các sảnh chưa có khách hàng đặt theo ngày đãi tiệc và ca tương ứng.
-# @api_view(['GET'])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-def availablelobbiesListAPI(request):
+def availablelobbiesList(request):
+    """
+    Xử lý lấy danh sách các sảnh có sẵn cho tiệc cưới dựa trên mã ca và ngày đãi tiệc.
+
+    url: "create/bookingParty/bollies/available/" method: " POST"
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa thông tin về yêu cầu HTTP.
+        + maca (str): mã ca.
+        + ngaydaitiec (str): ngày đãi tiệc.
+
+    Trả về:
+    -  Phản hồi HTTP render template 'selectLobbies.html' với danh sách các sảnh có sẵn 
+      nếu các tham số hợp lệ. Nếu không, render template mà không có dữ liệu sảnh.
+
+    """
     data = json.loads(request.body)
     maca = data.get('maca')
     ngaydaitiec = data.get('ngaydaitiec')
@@ -877,8 +833,39 @@ def availablelobbiesListAPI(request):
 
 
 #Lưu trữ thông tin đặt tiệc cưới của khách hàng
-# @api_view(['POST'])
-def bookingPartyWeddingAPI(request):
+def bookingPartyWedding(request):
+    """
+    Đặt tiệc cưới và lưu trữ thông tin vào cơ sở dữ liệu.
+    url: "create/bookingParty/" method: " POST"
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa thông tin về yêu cầu HTTP.
+
+    Trả về:
+    - JsonResponse: Phản hồi HTTP chứa mã phiếu đặt tiệc cưới mới nếu thành công.
+    - Response: Phản hồi HTTP với lỗi và trạng thái HTTP 400 nếu có lỗi xảy ra.
+
+    Ví dụ:
+    - Yêu cầu POST với dữ liệu JSON:
+      {
+        "ngaydattiec": "2024-05-25",
+        "ngaydaitiec": "2024-06-30",
+        "soluongban": 10,
+        "dongiaban": 500000,
+        "tongtienban": 5000000,
+        "tongtiendichvu": 2000000,
+        "tongtiendattiec": 7000000,
+        "conlai": 2000000,
+        "tiendatcoc": 5000000,
+        "tencodau": "Nguyen Thi A",
+        "tenchure": "Tran Van B",
+        "sdt": "0123456789",
+        "maca": "1",
+        "masanh": "S01",
+        "danhsachmonan": [],
+        "danhsachdichvu": []
+      }
+    """
     data = json.loads(request.body)
     # Tạo mã phiếu đặt tiệc theo định dạng 'TC****' Ví dụ: 'TC0001'
     matieccuoi = getNextID(Phieudattieccuoi, 'matieccuoi')
@@ -1089,91 +1076,4 @@ def displayServiceDetailChecked(request):
     
     return render(request, 'addServiceTable.html',data)
    
-
-
-# Thống kê số lượng mon an được đặt theo tháng, năm
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def countFoodBookingAPI(request):
-    month = request.data.get('month')
-    year = request.data.get('year')
-
-    if (not month and not year ) or (month and not year):
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if month and year:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT MonAn.tenMonAn, COUNT(*) FROM `ChiTietMonAn`, MonAn, PhieuDatTiecCuoi WHERE ChiTietMonAn.maMonAn = MonAn.maMonAn AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietMonAn.maTiecCuoi AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY MonAn.maMonAn, MonAn.tenMonAn")
-            temp = cursor.fetchall()
-    else: 
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT MonAn.tenMonAn, COUNT(*) FROM `ChiTietMonAn`, MonAn, PhieuDatTiecCuoi WHERE ChiTietMonAn.maMonAn = MonAn.maMonAn AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietMonAn.maTiecCuoi AND YEAR(`ngayDaiTiec`) = {year} GROUP BY MonAn.maMonAn, MonAn.tenMonAn")
-            temp = cursor.fetchall()
-
-    data = []
-    for item in temp:
-        data.append({'tenMonAn': item[0], 'soluongMonAn': item[1]})
-
-    return Response(data, status=status.HTTP_200_OK)
-
-# Thống kê số lượng dich vu được đặt theo tháng, năm
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def countServiceBookingAPI(request):
-    month = request.data.get('month')
-    year = request.data.get('year')
-
-    if (not month and not year ) or (month and not year):
-        return Response({"error": "month and year query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if month and year:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT DichVu.tenDichVu, COUNT(*) FROM ChiTietDichVu, DichVu, PhieuDatTiecCuoi WHERE ChiTietDichVu.maDichVu = DichVu.maDichVu AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietDichVu.maTiecCuoi AND MONTH(`ngayDaiTiec`) = {month} AND YEAR(`ngayDaiTiec`) = {year} GROUP BY DichVu.maDichVu, DichVu.tenDichVu")
-            temp = cursor.fetchall()
-    else: 
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT DichVu.tenDichVu, COUNT(*) FROM ChiTietDichVu, DichVu, PhieuDatTiecCuoi WHERE ChiTietDichVu.maDichVu = DichVu.maDichVu AND PhieuDatTiecCuoi.maTiecCuoi = ChiTietDichVu.maTiecCuoi AND YEAR(`ngayDaiTiec`) = {year} GROUP BY DichVu.maDichVu, DichVu.tenDichVu")
-            temp = cursor.fetchall()
-
-    data = []
-    for item in temp:
-        data.append({'tenDichVu': item[0], 'soluongDV': item[1]})
-
-    return Response(data, status=status.HTTP_200_OK)
-
-# Phan cong viec cho nhan vien cho từng tiệc cưới
-@api_view(['POST'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def assignTaskAPI(request):
-    """
-    API để phân công công việc cho nhân viên.
-
-    Parameters:
-    - task_assignment_list (list): Danh sách các công việc cần phân công cho nhân viên. 
-                                  Mỗi công việc được đại diện bởi một dictionary có hai keys: "manhanvien" và "matieccuoi".
-
-    Returns:
-    - Response: status code.
-    """
-    task_assignment_list = request.data
-
-    if not task_assignment_list:
-        return Response({"error": "task assignment list query parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Lưu trữ phân công cho từng nhân viên vào bảng Phân công trong database
-    for task_assignment in task_assignment_list:
-        serializer = AssignmentSerializer(data=task_assignment)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-
-    # Cập nhật trường tình trạng phân công công việc thành 1 trong bảng Phiếu đặt tiệc 
-    with connection.cursor() as cursor:
-        cursor.execute("UPDATE PhieuDatTiecCuoi SET tinhtrangphancong = 1 WHERE maTiecCuoi = %s", [task_assignment_list[0].get('matieccuoi')])
-
-    return Response(status=status.HTTP_201_CREATED)
-
 
