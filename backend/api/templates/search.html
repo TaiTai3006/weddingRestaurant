@@ -113,6 +113,7 @@
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
+  // Bắt sự kiện nút "Nhập lại", reset các giá trị tìm kiếm. Trả về tất cả các tiệc cưới
   document.getElementById("clearButton").addEventListener("click", function () {
     document
       .querySelectorAll("#searchWedding input, #searchWedding select")
@@ -121,8 +122,8 @@
       });
     readSearchResult();
   });
+  // Gửi yêu cầu đến server thêm danh sách món ăn đã chỉnh sửa 
   function addFoodDetail(matieccuoi, danhsachmonan) {
-    console.log(matieccuoi, danhsachmonan);
     const xhttp = new XMLHttpRequest();
 
     xhttp.onload = function () {
@@ -139,7 +140,7 @@
     };
 
     xhttp.onerror = function () {
-      console.error("Yêu cầu không thành công. Xảy ra lỗi kết nối.");
+      console.error("Yêu cầu không thành công.");
     };
 
     xhttp.open("POST", "/addFoodDetails/");
@@ -162,6 +163,7 @@
     console.log("Sending data:", JSON.stringify(data));
     xhttp.send(JSON.stringify(data));
   }
+    // Gửi yêu cầu đến server thêm danh sách dịch vụ đã chỉnh sửa 
   function addServiceDetail(matieccuoi, danhsachdichvu) {
     console.log(matieccuoi, danhsachdichvu);
     const xhttp = new XMLHttpRequest();
@@ -179,7 +181,7 @@
     };
 
     xhttp.onerror = function () {
-      console.error("Yêu cầu không thành công. Xảy ra lỗi kết nối.");
+      console.error("Yêu cầu không thành công.");
     };
 
     xhttp.open("POST", "/addServiceDetails/");
@@ -203,10 +205,11 @@
     xhttp.send(JSON.stringify(data));
   }
 
-
+// Danh sách dịch vụ hiện tại (chưa chỉnh sửa)
   function readServiceDetailChecked(matieccuoi) {
     console.log("Mã tiệc cưới:", matieccuoi);
     const xhttp = new XMLHttpRequest();
+    // Tạo mảng lưu danh sách dịch vụ
     let serviceDetailList = [];
     xhttp.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -216,9 +219,10 @@
           .querySelectorAll("#addService input ")
           .forEach((service_checkbox) => {
             if (service_checkbox.checked) {
+              // Lưu các dịch vụ đã có vào mảng
               serviceDetailList.push(service_checkbox.value);
             }
-
+            // Mỗi khi thêm dịch vụ mới bằng nút checkbox, thêm vào mảng danh sách dịch vụ 
             service_checkbox.addEventListener("change", function () {
               if (service_checkbox.checked) {
                 serviceDetailList.push(service_checkbox.value);
@@ -232,14 +236,14 @@
               console.log("Danh sách dịch vụ:", serviceDetailList);
             });
           });
-
+          // Gọi hàm addServiceDetail bằng button 
         document
           .getElementById("addServiceDetailButton")
           .addEventListener("click", function (e) {
             addServiceDetail(matieccuoi, serviceDetailList);
           });
       } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+        console.error("Yêu cầu không thành công.", this.status);
       }
     };
 
@@ -249,13 +253,12 @@
     xhttp.setRequestHeader("Content-type", "application/json");
     xhttp.send();
   }
-
+// Danh sách món ăn hiện tại 
   function readFoodDetailChecked(matieccuoi) {
     console.log("Mã tiệc cưới:", matieccuoi);
     const xhttp = new XMLHttpRequest();
-    let foodDetailList = []; // Danh sách món ăn được chọn
-
-    // Hàm xử lý khi có dữ liệu trả về từ server
+    // Mảng lưu danh sách món ăn hiện tại 
+    let foodDetailList = []; 
     xhttp.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         document.getElementById("foodDetailTable").innerHTML =
@@ -269,6 +272,7 @@
             let ghichuSelectedElement = document.getElementById(
               `ghichu_selected${food_checkbox.value}`
             );
+          //  Kiểm tra nếu dịch vụ đã có ghi chú trươcs đó thì hiển thị, nếu không thì hiển thị ghi chú mới 
 
             if (food_checkbox.checked) {
               if (ghichuSelectedElement) {
@@ -355,7 +359,7 @@
             
           });
       } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+        console.error("Yêu cầu không thành công.", this.status);
       }
     };
 
@@ -367,7 +371,7 @@
     xhttp.setRequestHeader("Content-type", "application/json");
     xhttp.send();
   }
-
+// Gửi dữ liệu đến server với các thông tin của tiệc cưới : tên cô dâu, tên chú rể, vvv.. 
   function readSearchResult() {
     const xhttp = new XMLHttpRequest();
 
@@ -385,11 +389,12 @@
         document
           .getElementById("modal-add-service")
           .addEventListener("click", function () {
-            console.log("hellooo service");
+            
             var wedding_id = this.getAttribute("data-wedding-id");
             console.log(wedding_id);
             readServiceDetailChecked(wedding_id);
           });
+        // Các button xóa và lưu. Khi thông tin tiệc cưới mới hiện, các trường dữ liệu không thể chỉnh sửa do có thuộc tinh "disable", khi ấn "Chỉnh sửa" mới chỉnh sửa nội dung được
         const editButtons = document.querySelectorAll("#editButton");
         const saveButtons = document.querySelectorAll("#saveButton");
         
@@ -439,7 +444,7 @@
           });
         });
       } else {
-        console.error("Yêu cầu không thành công. Mã lỗi:", this.status);
+        console.error("Yêu cầu không thành công.", this.status);
       }
     };
 
@@ -485,6 +490,7 @@
     // Gửi yêu cầu
     xhttp.send();
   }
+  // Bắt sự kiện của các ô input trong searchWedding, với mỗi sự kiện gửi yêu cầu đến server tìm kiếm tiệc cưới phù hợp 
   document
     .querySelectorAll("#searchWedding input, #searchWedding select")
     .forEach((input) => {
@@ -492,6 +498,7 @@
         readSearchResult();
       });
     });
+// Khi màn hình mới load, gọi hàm tìm kiếm khong có tham số, kết quả trả về tất cả tiệc cưới
 
   window.onload = async () => {
     try {
@@ -499,33 +506,10 @@
      
      
     } catch (error) {
-      console.error("Error handling hall types:", error);
+      console.error("Yêu cầu không thành công:", error);
     }
   };
 
-  function showQRcode(){
-    //Gia tien
-    let amount = 0 //Đổi giá ở đây
-    const xhttp = new XMLHttpRequest();
-    xhttp.onload = function () {
-        if (xhttp.status === 200) {
-          const response = JSON.parse(xhttp.responseText);
-          window.open(response.payment_url, '_blank'); 
-        } else {
-            console.error('An error occurred:', xhttp.statusText);
-        }
-    };
-    xhttp.open("POST", "/payment/");
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-    const data = "order_id=TC0067&amount=" + amount + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
-    xhttp.send(data);
-  }
-
-    //In hoá đơn
-    //const url = `/create/pdf/invoicePayment/${mabaocao}`;
-   // window.open(url, '_blank'); 
-  
 </script>
 
 {% endblock %}

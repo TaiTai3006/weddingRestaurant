@@ -8,7 +8,7 @@ urlpatterns = [
   path('create/pdf/<type>/<id>', documentPdfView ),
   path('create/', create),
   path('report/', revenueReport, name='report'),
-  path('invoice/', invoice),
+ 
   path('search/', search),
   path('paymentConfirm/<str:wedding_id>/', paymentConfirm, name = 'paymentConfirm'),
   path('cancelConfirm/<str:wedding_id>/', cancelConfirm, name = 'cancelConfirm'),

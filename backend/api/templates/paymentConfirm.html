@@ -504,7 +504,7 @@
         const responseData = response.data;
         const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
         window.open(url, '_blank'); 
-        window.location.href = '/report/';
+        window.location.href = '/';
         })
         .catch((error) => {
           console.error("Có lỗi xảy ra!", error);

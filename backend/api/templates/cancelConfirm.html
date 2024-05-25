@@ -153,6 +153,7 @@
       </div>
     </div>
   </form>
+  <!-- Modal Thanh toán QR  -->
   <div
     class="modal fade"
     id="qrCodeModal"
@@ -197,6 +198,7 @@
       </div>
     </div>
   </div>
+  <!-- Modal thanh toán tiền mặt -->
   <div
     class="modal fade"
     id="paymentDetailsModal"
@@ -337,7 +339,7 @@
       document.getElementById("paymentDetailsModal")
     );
 
-    // Function to handle payment method change
+    // Hàm bắt sự kiện chọn phương thức thanh toán
     function handlePaymentMethodChange() {
       const selectedMethod = paymentMethodSelect.value;
       const totalAmountElement = document
@@ -356,7 +358,7 @@
       }
     }
 
-    // Add event listener to the select element
+    // Đóng modal
     paymentMethodSelect.addEventListener("change", handlePaymentMethodChange);
     document
       .getElementById("confirmPayment")
@@ -369,6 +371,7 @@
         qrCodeModal.hide();
       });
   });
+  // Hiển thị QR code 
   function showQRcode() {
     console.log("showQRcode");
     const totalAmountElement = document
@@ -381,7 +384,7 @@
         const response = JSON.parse(xhttp.responseText);
         window.open(response.payment_url, "_blank");
       } else {
-        console.error("An error occurred:", xhttp.statusText);
+        console.error("Có lỗi xảy ra:", xhttp.statusText);
       }
     };
     xhttp.open("POST", "/payment/");
@@ -408,6 +411,7 @@
         alert("Vui lòng chọn phương thức thanh toán trước khi tiếp tục!");
         return; 
       }
+      // Thông tin hóa đơn trước khi gửi cho server
       const invoiceData = {
         ngaythanhtoan: form.ngaythanhtoan.value,
         tongtiendichvu: form.tongtiendichvu.value,
@@ -427,9 +431,10 @@
           alert("Hủy tiệc cưới thành công!");
           const responseData = response.data;
           console.log(responseData);
+          // In hóa đơn 
           const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
           window.open(url, "_blank");
-          window.location.href = '/report/';
+          window.location.href = '/';
         })
         .catch((error) => {
           console.error("Có lỗi xảy ra!", error);

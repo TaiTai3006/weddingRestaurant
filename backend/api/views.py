@@ -439,6 +439,13 @@ def report(request):
 def invoice(request):
     return render(request, 'invoice.html')
 def search(request):
+    """
+    Hiển thị tất cả tiệc cưới và các lựa chọn để tìm kiếm tiệc cưới.
+
+    Trả về:
+    - render: Một trang HTML chứa thông tin về các tiệc cưới, món ăn, dịch vụ, loại sảnh, ca, loại món ăn và sảnh.
+    """
+    # Lấy tất cả các món ăn, dịch vụ, loại sảnh, ca, loại món ăn và sảnh
     foods = Monan.objects.all()
     food_serializer = FoodSerializer(foods, many=True)
     services = Dichvu.objects.all()
@@ -447,7 +454,7 @@ def search(request):
     shifts = Ca.objects.all()
     food_types = Loaimonan.objects.all()
     lobbies = Sanh.objects.all()
-    
+    # Serialize dữ liệu
     food_serializer = FoodSerializer(foods, many=True)
     food_type_serializer = FoodTypeSerializer(food_types, many=True)
     service_serializer = ServiceSerializer(services, many=True)
@@ -455,7 +462,7 @@ def search(request):
     shift_serializer = ShiftSerializer(shifts, many = True)
     lobby_serializer = LobbySerializer(lobbies, many=True)
 
-
+    # Truy vấn tiệc cưới chưa có hóa đơn
     query = Phieudattieccuoi.objects.raw('SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi not in (SELECT maTiecCuoi FROM HoaDon) ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC')
     serializer = PartyBookingFormSerializer(query, many = True)
     serialized_data = {
@@ -469,7 +476,7 @@ def search(request):
 
     }
     
-   
+    # Thêm thông tin chi tiết dịch vụ và món ăn vào từng tiệc cưới
     for item in serializer.data:
         query1 = Chitietdichvu.objects.filter(matieccuoi=item['matieccuoi'])
         query2 = Chitietmonan.objects.filter(matieccuoi=item['matieccuoi'])
@@ -480,12 +487,22 @@ def search(request):
         item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
         
-   
- 
-    
     
     return render(request, 'search.html',serialized_data)
+
+
 def paymentConfirm(request, wedding_id):
+    """
+    Xác nhận thanh toán cho tiệc cưới.
+
+    Tham số:
+    - request: HttpRequest object chứa thông tin yêu cầu.
+    - wedding_id: mã tiệc cưới.
+
+    Trả về:
+    - render: Trả về trang HTML xác nhận thanh toán với thông tin chi tiết về tiệc cưới và các dịch vụ đã chọn.
+    """
+
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
     ngaythanhtoan = now()
     
@@ -497,24 +514,23 @@ def paymentConfirm(request, wedding_id):
     serialized_wedding_data['conlai'] = Decimal(wedding.tongtiendattiec) - Decimal(wedding.tiendatcoc)
 
     songaytre = (ngaythanhtoan.date() - wedding.ngaydaitiec).days
-    print("tre",songaytre)
+    # Lấy thông tin tỉ lệ phạt từ ThamSo 
     thamso = get_object_or_404(Thamso)
     tilephat = thamso.tilephat
+    # Kiểm tra nếu bị trễ, tính tiền phạt theo quy định, nếu không tiền phạt = 0
     if songaytre > 0:
-        # B7: Tính số tiền phạt
         tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
     else:
-        # B8: Số tiền phạt = 0
         tienphat = Decimal(0)
     
     serialized_wedding_data['tienphat'] = round(tienphat, 2)
-
+    # Tính tổng tiền hóa đơn 
     tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec) + Decimal(wedding.tongtiendichvu)
-    
     serialized_wedding_data['tongtienhoadon'] = round(tongtienhoadon, 2)
+    # Lấy danh sách chi tiết dịch vụ đã chọn
     ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
     services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
-    
+    # Thêm tên dịch vụ vào dữ liệu dịch vụ
     for service_data in services_serializer:
         service_id = service_data['madichvu']
         service_name = Dichvu.objects.get(pk=service_id).tendichvu
@@ -524,29 +540,37 @@ def paymentConfirm(request, wedding_id):
     return render(request, 'paymentConfirm.html', {'wedding':  serialized_wedding_data,'services': services_serializer})
 
 def cancelConfirm(request, wedding_id):
+    """
+    Xác nhận hủy tiệc cưới.
+
+    Tham số:
+    - request: HttpRequest object chứa thông tin yêu cầu.
+    - wedding_id: mã tiệc cưới.
+
+    Trả về:
+    - render: Trả về trang HTML xác nhận hủy tiệc cưới với thông tin chi tiết về tiệc cưới và số ngày hủy sớm.
+    """
+    # Lấy thông tin phiếu đặt tiệc cưới
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
     ngayhuy = now()
     print(ngayhuy.strftime('%Y-%m-%d'))
-    
+    # Serialize dữ liệu tiệc cưới
     serializer = PartyBookingFormSerializer(wedding)
     serialized_wedding_data = serializer.data
     serialized_wedding_data['ngayhuy'] = ngayhuy.strftime('%Y-%m-%d')
     serialized_wedding_data['tongtien'] = wedding.tiendatcoc
     ngaydaitiec = wedding.ngaydaitiec
+    # Tính số ngày hủy sớm
     songayhuysom = (ngaydaitiec- ngayhuy.date()).days
    
     if songayhuysom < 7:
-        #  Tổng tiền hoá đơn = Tổng tiền bàn, Số tiền còn lại = Tiền bàn - tiền cọc.
+        #  Tổng tiền hoá đơn = tổng tiền bàn, tiền còn lại = tiền bàn - tiền cọc.
         serialized_wedding_data['tongtien'] = wedding.tongtiendattiec
         serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
     else:
-        #  Tổng tiền hoá đơn = Tiền cọc, Số tiền còn lại = 0.
+        #  Tổng tiền hoá đơn = tiền cọc, tiền còn lại = 0.
         serialized_wedding_data['tongtien'] = wedding.tiendatcoc
         serialized_wedding_data['conlai'] = 0
-    
-
-
-    
     
 
     return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data,'songayhuysom':songayhuysom})
@@ -560,7 +584,7 @@ def paymentInvoiceAPI(request):
     """
     API để tạo mới hoá đơn thanh toán và lưu trữ các dịch vụ đã sử dụng.
 
-    Parameters: request.data là một dictionary gồm:
+    Tham số : HttpRequest object chứa thông tin:
         - mahoadon (str): ID của hoá đơn.
         - ngaythanhtoan (str): Ngày thanh toán.
         - tongtiendichvu (float): Tổng chi phí dịch vụ.
@@ -574,8 +598,8 @@ def paymentInvoiceAPI(request):
             + soluong (int): Số lượng.
             + giatien (float): Giá tiền.
 
-    Returns:
-        - Response: Status code.
+    Trả về: 
+        - HttpResponse:: Status code.
     """
     with transaction.atomic():
        
@@ -586,7 +610,7 @@ def paymentInvoiceAPI(request):
         print(invoice)
         service_list = request.data.get('danhsachdichvu', [])
         if not invoice.is_valid():
-            print("Invoice validation errors:", invoice.errors)  # Print validation errors
+            print("Invoice validation errors:", invoice.errors)  
             return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             
@@ -614,7 +638,7 @@ def paymentInvoiceAPI(request):
 
                 
                 detail_service_payment.save()
-           
+            # Gọi hàm thống kê doanh thu với ngày thanh toán và tổng tiền hóa đơn của hóa đơn vừa tạo 
             createRevenueReport(ngaythanhtoan_str, tongtienhoadon)
             
             return Response({"message": "Hoá đơn được tạo thành công","mahoadon": mahoadon  }, status=status.HTTP_201_CREATED)
@@ -622,8 +646,24 @@ def paymentInvoiceAPI(request):
 
 
 def updateWeddingInfo(request, wedding_id):
+    """
+    Cập nhật thông tin tiệc cưới.
+
+    Tham số:
+    - wedding_id (int): Mã của tiệc cưới cần được cập nhật.
+    - request : HttpRequest object chứa thông tin: 
+        - tencodau (str): Tên của cô dâu.
+        - tenchure (str): Tên của chú rể.
+        - ngaydattiec (str): Ngày đặt tiệc.
+        - ngaydaitiec (str): Ngày đãi tiệc.
+        - maca (int): Mã của ca tiệc.
+        - masanh (int): Mã của sảnh tiệc.
+
+    Trả về:
+        - Nếu cập nhật thành công: Chuyển hướng đến trang '/search'.
+    """
     wedding = get_object_or_404(Phieudattieccuoi, matieccuoi=wedding_id)
-    
+    # Cập nhật thông tin từ dữ liệu POST
     if request.method == 'POST':
         wedding.tencodau = request.POST.get('tencodau')
         wedding.tenchure = request.POST.get('tenchure')
@@ -631,17 +671,15 @@ def updateWeddingInfo(request, wedding_id):
         wedding.ngaydaitiec = request.POST.get('ngaydaitiec')
         maca_id = request.POST.get('maca')
         maca_instance = get_object_or_404(Ca, maca=maca_id)
-
-       
         wedding.maca = maca_instance
         masanh_id = request.POST.get('masanh')
         masanh_instance = get_object_or_404(Sanh, masanh=masanh_id)
         wedding.masanh = masanh_instance
         
         wedding.save()
-        
+        return redirect('/search')
     
-    return render(request, 'searchResult.html')
+    # return render(request, 'searchResult.html')
 
 
 
@@ -771,15 +809,22 @@ def signup(request):
 # @authentication_classes([SessionAuthentication, TokenAuthentication])
 # @permission_classes([IsAuthenticated])
 def searchPartyBookingFormAPI(request):
-    # model_cache = cache.get('searchPartyBooking')
-    # if model_cache :
-        # return Response(model_cache, status=status.HTTP_200_OK)
-    #     return render(request, 'search.html', {"data": model_cache})
-   
-    foods = Monan.objects.all()
-    food_serializer = FoodSerializer(foods, many=True)
-    services = Dichvu.objects.all()
-    service_serializer = ServiceSerializer(services, many=True)
+    """
+    Tìm kiếm thông tin tiệc cưới. Chỉnh sửa thông tin tiệc cưới nếu đủ điều kiện. (< 7 ngày trước ngày đãi tiệc )
+    
+    Tham số:HttpRequest object chứa thông tin : 
+    - tenchure (str): Tên chú rể để lọc tiệc cưới
+    - tencodau (str): Tên cô dâu để lọc tiệc cưới
+    - maca (str): Mã ca để lọc tiệc cưới
+    - masanh (str): Mã sảnh để lọc tiệc cưới
+    - ngaydattiec (date): Ngày đặt tiệc để lọc tiệc cưới
+    - ngaydaitiec (date): Ngày đãi tiệc để lọc tiệc cưới
+    - soluongban (number): Số lượng bàn để lọc tiệc cưới
+    
+    Trả về:
+    - render: Một trang HTML chứa thông tin về các tiệc cưới, món ăn, dịch vụ, ca, sảnh.
+    """
+
     tenchure = request.GET.get('tenchure', '')
     tencodau = request.GET.get('tencodau', '')
     maca = request.GET.get('maca', '')
@@ -787,7 +832,7 @@ def searchPartyBookingFormAPI(request):
     ngaydattiec = request.GET.get('ngaydattiec', '')
     ngaydaitiec = request.GET.get('ngaydaitiec', '')
     soluongban = request.GET.get('soluongban', '')
-    soluongbandutru = request.GET.get('soluongbandutru', '')
+    
 
     query = "SELECT * FROM PhieuDatTiecCuoi WHERE PhieuDatTiecCuoi.maTiecCuoi NOT IN (SELECT maTiecCuoi FROM HoaDon)"
 
@@ -809,23 +854,27 @@ def searchPartyBookingFormAPI(request):
         conditions.append(f"PhieuDatTiecCuoi.ngayDaiTiec = '{ngaydaitiec}'")
     if soluongban:
         conditions.append(f"PhieuDatTiecCuoi.soLuongBan = '{soluongban}'")
-    if soluongbandutru:
-        conditions.append(f"PhieuDatTiecCuoi.soLuongBanDuTru = '{soluongbandutru}'")
+    
 
     # Ghép các điều kiện vào câu truy vấn nếu có điều kiện nào
     if conditions:
         query += " AND " + " AND ".join(conditions)
 
     query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec DESC"
-
-    query_f = Phieudattieccuoi.objects.raw(query)     
-    
+    # Tìm kiêm tiệc cưới với câu truy vấn 
+    query_f = Phieudattieccuoi.objects.raw(query) 
+    serializer = PartyBookingFormSerializer(query_f, many = True)    
+    #   Thông tin tất cả món ăn, dịch vụ, ca, sảnh 
+    foods = Monan.objects.all()
+    food_serializer = FoodSerializer(foods, many=True)
+    services = Dichvu.objects.all()
+    service_serializer = ServiceSerializer(services, many=True)
     shifts = Ca.objects.all()
     lobbies = Sanh.objects.all()
     shift_serializer = ShiftSerializer(shifts, many = True)
     lobby_serializer = LobbySerializer(lobbies, many=True)
-    serializer = PartyBookingFormSerializer(query_f, many = True)
-
+    
+    # Giá trị ngày hôm nay 
     today = datetime.today().date()
     
     for item in serializer.data:
@@ -837,10 +886,11 @@ def searchPartyBookingFormAPI(request):
         item['danhsachmonan'] = FoodDetailsSerializer(query2, many=True).data
         item['thongtinsanh'] = LobbySerializer(query3, many = True).data[0]
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
+        # Kiểm tra điều kiện nếu còn 7 ngày đến ngày đãi tiệc không cho phép chỉnh sửa thông tin tiệc cưới 
         item['within_7_days'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() <= today + timedelta(days=7)
         
     serialized_data = {
-        
+    
         'weddings': serializer.data,
         'foods': food_serializer.data,
         'services': service_serializer.data,
@@ -848,11 +898,8 @@ def searchPartyBookingFormAPI(request):
         'lobbies': lobby_serializer.data,
         
     }
-    # cache.set('searchPartyBooking', serializer.data, timeout=60*30)
-    
-    # return serializer.data
     return render(request, 'searchResult.html',serialized_data)
-    # return Response(serializer.data)
+
 
 # Lấy danh sách các sảnh chưa có khách hàng đặt theo ngày đãi tiệc và ca tương ứng.
 # @api_view(['GET'])
@@ -933,25 +980,34 @@ def bookingPartyWeddingAPI(request):
         return JsonResponse({'matieccuoi': matieccuoi})
         
     return Response(partyBookingForm.errors, status=status.HTTP_400_BAD_REQUEST)
-# Hiển thị thông tin các món ăn và dịch vụ đã chọn
+
 @api_view(['POST'])
 def addFoodDetail(request):
+    """
+    Thêm thông tin các món ăn trong tiệc cưới đã đặt.
+    
+    Tham số:
+    - request: HttpRequest object chứa thông tin 'matieccuoi' và 'danhsachmonan'
+    
+    Trả về:
+    - redirect: Chuyển hướng đến trang tìm kiếm nếu thành công
+    - Response: Trả về lỗi nếu có bất kỳ vấn đề nào xảy ra
+    """
     try:
-        # Retrieve 'matieccuoi' and 'danhsachmonan' from the request data
         matieccuoi_id = request.data.get('matieccuoi')
         danhsachmonan = request.data.get('danhsachmonan')
-        print(danhsachmonan)
 
         try:
             phieudattieccuoi = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi_id)
         except Phieudattieccuoi.DoesNotExist:
-            return Response({"error": "Phieudattieccuoi does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Phieudattieccuoi không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        soluongban = phieudattieccuoi.soluongban
+        
 
-        # Delete existing food details for the wedding party
+        # Xóa danh sách món ăn trước đó, sau đó thêm lại với danh sách mới đã chỉnh sửa 
         Chitietmonan.objects.filter(matieccuoi=matieccuoi_id).delete()
 
+        soluongban = phieudattieccuoi.soluongban
         tongdongiaban = Decimal('0.00')
 
         for food in danhsachmonan:
@@ -962,7 +1018,7 @@ def addFoodDetail(request):
             try:
                 monan_obj = Monan.objects.get(mamonan=food['mamonan'])
             except Monan.DoesNotExist:
-                return Response({"error": f"Monan with mamonan {food['mamonan']} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": f" Mã món ăn không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
 
             food['dongiamonan'] = monan_obj.dongia
             food['soluong'] = soluongban
@@ -976,9 +1032,8 @@ def addFoodDetail(request):
 
             
             tongdongiaban += monan_obj.dongia
-            print("Total", tongdongiaban)
 
-        
+        # Cập nhật lại đơn giá bàn và tổng tiền bàn trong Phieudattieccuoi khi món ăn thay đổi 
         phieudattieccuoi.dongiaban = tongdongiaban
         phieudattieccuoi.tongtienban = tongdongiaban * soluongban
 
@@ -989,8 +1044,20 @@ def addFoodDetail(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 def addServiceDetail(request):
+    """
+    Thêm thông tin các dịch vụ trong tiệc cưới đã đặt.
+    
+    Tham số:
+    - request: HttpRequest object chứa thông tin 'matieccuoi' và 'danhsachdichvu'
+    
+    Trả về:
+    - redirect: Chuyển hướng đến trang tìm kiếm nếu thành công
+    - Response: Trả về lỗi nếu có bất kỳ vấn đề nào xảy ra
+    """
     try:
         matieccuoi_id = request.data.get('matieccuoi')
         danhsachdichvu = request.data.get('danhsachdichvu')
@@ -998,9 +1065,9 @@ def addServiceDetail(request):
         try:
             phieudattieccuoi = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi_id)
         except Phieudattieccuoi.DoesNotExist:
-            return Response({"error": "Phieudattieccuoi does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Phieudattieccuoi không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
 
-        
+        # Xóa thông tin dịch vụ đã có trước đó. Sau đó thêm lại bằng dịch vụ mới 
         Chitietdichvu.objects.filter(matieccuoi=matieccuoi_id).delete()
 
         tongtiendichvu = Decimal('0.00')
@@ -1015,7 +1082,7 @@ def addServiceDetail(request):
             try:
                 dichvu_obj = Dichvu.objects.get(madichvu=service_id)
             except Dichvu.DoesNotExist:
-                return Response({"error": f"Dichvu with madichvu {service_id} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": f"Mã dịch vụ không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
 
             service['dongiadichvu'] = dichvu_obj.dongia
             service['soluong'] = 1
@@ -1039,58 +1106,80 @@ def addServiceDetail(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Hiển thị thông tin toàn bộ món ăn và món ăn đã chọn
+
 @api_view(['GET'])
 def displayFoodDetailChecked(request):
+    """
+    Hiển thị thông tin các món ăn đã chọn và tất cả các món ăn.
+
+    Tham số:
+    - request: HttpRequest object chứa thông tin 'matieccuoi'
+
+    Trả về:
+    - render: Trả về trang HTML chứa thông tin về tiệc cưới, các món ăn đã chọn và tất cả các món ăn
+    """
     matieccuoi = request.GET.get('matieccuoi')
-    
+
     try:
+        # Lấy thông tin phiếu đặt tiệc cưới theo mã tiệc cưới
         wedding = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi)
     except Phieudattieccuoi.DoesNotExist:
         return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
-    
+
+    # Serialize dữ liệu tiệc cưới
     serializer = PartyBookingFormSerializer(wedding)
+    # Lấy tất cả các món ăn
     foods = Monan.objects.all()
     food_serializer = FoodSerializer(foods, many=True)
+    # Lấy các món ăn đã chọn cho tiệc cưới
     chitietmonan_query = Chitietmonan.objects.filter(matieccuoi=matieccuoi)
     chitietmonan_serializer = FoodDetailsSerializer(chitietmonan_query, many=True)
-    data={
+
+    data = {
         'wedding': serializer.data,
         'selectedfood': chitietmonan_serializer.data,
         'allfoods': food_serializer.data,
     }
     serializer.data['danhsachmonan'] = chitietmonan_serializer.data
 
-    
-    
-    return render(request, 'addFoodTable.html',data)
+    return render(request, 'addFoodTable.html', data)
     
 
 @api_view(['GET'])
 def displayServiceDetailChecked(request):
+    """
+    Hiển thị thông tin các dịch vụ đã chọn và tất cả các dịch vụ.
+
+    Tham số:
+    - request: HttpRequest object chứa thông tin 'matieccuoi'
+
+    Trả về:
+    - render: Trả về trang HTML chứa thông tin về tiệc cưới, các dịch vụ đã chọn và tất cả các dịch vụ
+    """
     matieccuoi = request.GET.get('matieccuoi')
-    
+
     try:
+        # Lấy thông tin phiếu đặt tiệc cưới theo mã tiệc cưới
         wedding = Phieudattieccuoi.objects.get(matieccuoi=matieccuoi)
     except Phieudattieccuoi.DoesNotExist:
         return JsonResponse({'error': 'Không tìm thấy phiếu đặt tiệc'}, status=404)
-    
+
+    # Serialize dữ liệu tiệc cưới
     serializer = PartyBookingFormSerializer(wedding)
+    # Lấy tất cả các dịch vụ
     services = Dichvu.objects.all()
     service_serializer = ServiceSerializer(services, many=True)
+    # Lấy các dịch vụ đã chọn cho tiệc cưới
     chitietdichvu_query = Chitietdichvu.objects.filter(matieccuoi=matieccuoi)
     chitietdichvu_serializer = ServiceDetailsSerializer(chitietdichvu_query, many=True)
-    data={
+
+    data = {
         'wedding': serializer.data,
         'selectedservice': chitietdichvu_serializer.data,
         'allservices': service_serializer.data,
     }
 
-    
-    return render(request, 'addServiceTable.html',data)
-   
-
-
+    return render(request, 'addServiceTable.html', data)
 # Thống kê số lượng mon an được đặt theo tháng, năm
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])

@@ -1,4 +1,6 @@
+
 {% load mathfilters %} {% load humanize %}
+
 <table class="table border">
   <thead>
     <tr>
@@ -81,26 +83,12 @@
                   <a href="{% url 'cancelConfirm' wedding.matieccuoi %}" class="btn btn-danger" >Hủy</a>
                   {% else %}
                     <a href="{% url 'paymentConfirm' wedding.matieccuoi %}" class="btn btn-primary">Thanh toán</a>
+                    <!-- Hiển thị thông báo trước khi hủy  -->
                     <a href="#" class="btn btn-danger" onclick="event.preventDefault(); if (confirm('Bạn có chắc chắn muốn hủy tiệc cưới này không? Vì ngày đãi tiệc chỉ còn 7 ngày, nếu hủy sẽ mất tiền cọc và toàn bộ tổng tiền bàn ')) { window.location.href = '{% url 'cancelConfirm' wedding.matieccuoi %}'; }">Hủy</a>
 
                    
                   {% endif %}
                  
-                  <!-- <button type="button" class="btn btn-outline-secondary" id="editButton">
-                    Chỉnh sửa
-                  </button>
-
-                  <button type="button" class="btn btn-outline-secondary" id="saveButton" style="display: none">
-                    Lưu
-                  </button>
-                      <a href="{% url 'paymentConfirm' wedding.matieccuoi %}"><button type="button" class="btn btn-primary launch" 
-                        > Thanh toán
-                      </button></a>
-                      <a href="{% url 'cancelConfirm' wedding.matieccuoi %}"><button type="button" class="btn btn-danger launch" 
-                        > Hủy
-                      </button></a>
-                   -->
-
                 
                 </div>
               </div>
