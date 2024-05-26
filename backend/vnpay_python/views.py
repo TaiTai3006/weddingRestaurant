@@ -49,6 +49,7 @@ def payment(request):
     return JsonResponse({'payment_url': vnpay_payment_url})
 
 #Đây là code mẫu trên là code đã được chỉnh sửa để phù hợp với hệ thống
+
 # def payment(request):
 
 #     if request.method == 'POST':
