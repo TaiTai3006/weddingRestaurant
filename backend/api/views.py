@@ -850,7 +850,8 @@ def paymentInvoiceAPI(request):
                 'mahoadon': mahoadon,
                 'madichvu': service.get('madichvu'),
                 'soluong': service.get('soluong'),
-                'giatien': service.get('giatien'),
+                'dongiadichvu': service.get('dongiadichvu'),
+                'thanhtien': service.get('thanhtien'),
             }
 
             detail_service_payment = DetailServicePaymentSerializer(data=service_data)
