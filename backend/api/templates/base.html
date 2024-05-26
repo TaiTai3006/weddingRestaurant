@@ -16,7 +16,7 @@
   }
   #wedding_info {
     overflow: scroll;
-    height: 550px;
+    height: 650px;
     min-width: 390px;
     border-radius: 15px;
     border: 1px solid #ccc;
@@ -25,7 +25,7 @@
     display: none;
   }
   .tab-content {
-    max-height: 500px;
+    max-height: 520px;
     overflow: scroll;
   }
   .tab-content::-webkit-scrollbar {
@@ -38,7 +38,7 @@
   }
 </style>
 <div class="base-container">
-  <div class="row p-3 d-flex justify-content-between">
+  <div class="row p-1 d-flex justify-content-between">
     <form class="col-7" method="POST" action="" id="weddingForm">
       {% csrf_token %}
       <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -80,7 +80,7 @@
           aria-labelledby="food-tab"
           tabindex="0"
         >
-          <div id="notification_result"></div>
+          <div id="notification_result" class="d-flex justify-content-between"></div>
           <select
             id="foodTypeSelect"
             class="form-select form-select-sm outline-none"
@@ -129,7 +129,7 @@
                     name="soluongdichvu"
                     placeholder="Số lượng"
                     id="soluong_{{service.madichvu}}"
-                    style="display: none; max-width: 100px;"
+                    style="display: none; max-width: 100px"
                   />
                 </td>
 
@@ -161,7 +161,7 @@
         </div>
       </div>
     </form>
-    <div class="col-5 wedding-info  px-2">
+    <div class="col-5 wedding-info px-2">
       <div id="wedding_info" class="p-2">
         <div class="row">
           <div class="col mb-3" id="weddingInfo">
@@ -209,7 +209,6 @@
               id="ngaydaitiec_input"
               name="ngaydaitiec"
               placeholder="Ngày đãi tiệc"
-              
             />
           </div>
         </div>
@@ -292,31 +291,35 @@
             </tfoot>
           </table>
         </div>
-        <div
-        id="totalBill_result"
-        class="mt-1 text-end"
-        style="font-weight: bold; font-size: 15px"
-      ></div>
-      </div>
-      <div class="button-gr">
-        <button type="submit" id="payment_button"  onclick="payment()" class="btn btn-primary me-2">
-          Thanh toán
-        </button>
-        <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
-       
       </div>
     </div>
   </div>
 </div>
 
-<div class="footer d-flex align-items-center justify-content-start">
-  <span>Phương thức thanh toán:</span>
-  <select id="paymentMethod" class="px-1 text-secondary">
+<div class="footer">
+  <div
+    id="totalBill_result"
+    class="d-flex" 
+    style="font-weight: bold; font-size: 15px; height: 30px;"
+  ></div>
+  <span class="ps-2">Phương thức thanh toán:</span>
+  <select id="paymentMethod" class=" text-secondary">
     <option value="cash">Tiền mặt</option>
 
     <option value="bank">Chuyển khoản</option>
   </select>
- 
+  <div class="button-gr ps-2 mt-1">
+    <button
+      type="submit"
+      id="payment_button"
+      onclick="payment()"
+      class="btn btn-primary me-2"
+    >
+      Thanh toán
+    </button>
+    <button id="totalBill_button" class="btn btn-primary">Tính hoá đơn</button>
+  </div>
+
   <!-- Payment Details Modal -->
   <div
     class="modal fade"
@@ -493,58 +496,55 @@
       </div>
     </div>
   </div>
-
-  
 </div>
 <script>
-    const paymentMethodSelect = document.getElementById("paymentMethod");
-    const paymentDetailsModal = new bootstrap.Modal(
-      document.getElementById("paymentDetailsModal")
-    );
-    const qrCodeModal = new bootstrap.Modal(
-      document.getElementById("qrCodeModal")
-    );
+  const paymentMethodSelect = document.getElementById("paymentMethod");
+  const paymentDetailsModal = new bootstrap.Modal(
+    document.getElementById("paymentDetailsModal")
+  );
+  const qrCodeModal = new bootstrap.Modal(
+    document.getElementById("qrCodeModal")
+  );
 
-    // Add event listeners for payment confirmation buttons in modals
-    document
-      .getElementById("confirmPayment")
-      .addEventListener("click", function () {
-        // Handle cash payment confirmation
-        paymentDetailsModal.hide();
-      });
+  // Add event listeners for payment confirmation buttons in modals
+  document
+    .getElementById("confirmPayment")
+    .addEventListener("click", function () {
+      // Handle cash payment confirmation
+      paymentDetailsModal.hide();
+    });
 
-    document
-      .getElementById("confirmQRPayment")
-      .addEventListener("click", function () {
-      bookingWedding()
-      }); 
-  
-  function bookingWedding(){
+  document
+    .getElementById("confirmQRPayment")
+    .addEventListener("click", function () {
+      bookingWedding();
+    });
+
+  function bookingWedding() {
     const xhttp = new XMLHttpRequest();
-      xhttp.onload = function () {
-        const response = JSON.parse(xhttp.responseText);
-        const url = `/create/pdf/bookingPayment/${response.matieccuoi}`;
-        window.open(url, '_blank');  
-        qrCodeModal.hide();
-        localStorage.removeItem("dataWedding");
-        window.location.reload();
-      };
-      xhttp.open("POST", "bookingParty/");
-      xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.onload = function () {
+      const response = JSON.parse(xhttp.responseText);
+      const url = `/create/pdf/bookingPayment/${response.matieccuoi}`;
+      window.open(url, "_blank");
+      qrCodeModal.hide();
+      localStorage.removeItem("dataWedding");
+      window.location.reload();
+    };
+    xhttp.open("POST", "bookingParty/");
+    xhttp.setRequestHeader("Content-type", "application/json");
 
-      var csrf_token_input = document.querySelector(
+    var csrf_token_input = document.querySelector(
       'input[name="csrfmiddlewaretoken"]'
-      );
-      var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+    );
+    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
 
-      if (csrf_token) {
-        xhttp.setRequestHeader("X-CSRFToken", csrf_token);
-      }
+    if (csrf_token) {
+      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+    }
 
-      xhttp.send(JSON.stringify(dataCreateWedding));
+    xhttp.send(JSON.stringify(dataCreateWedding));
   }
-  
-  
+
   function handleQuickAmountClick(amount) {
     document.getElementById("amountReceived").value = amount;
     updateRemainingAmount();
@@ -567,35 +567,39 @@
   function payment() {
     const paymentMethodSelect = document.getElementById("paymentMethod");
     const selectedMethod = paymentMethodSelect.value;
-      if (selectedMethod === "cash") {
-        bookingWedding()
-      } else if (selectedMethod === "bank") {
-        showQRcode()
-        qrCodeModal.show();
-      }
-  
-    function showQRcode(){
+    if (selectedMethod === "cash") {
+      bookingWedding();
+    } else if (selectedMethod === "bank") {
+      showQRcode();
+      qrCodeModal.show();
+    }
+
+    function showQRcode() {
       const xhttp = new XMLHttpRequest();
       xhttp.onload = function () {
-          if (xhttp.status === 200) {
-            const response = JSON.parse(xhttp.responseText);
-            window.open(response.payment_url, '_blank'); 
-          } else {
-              console.error('An error occurred:', xhttp.statusText);
-          }
+        if (xhttp.status === 200) {
+          const response = JSON.parse(xhttp.responseText);
+          window.open(response.payment_url, "_blank");
+        } else {
+          console.error("An error occurred:", xhttp.statusText);
+        }
       };
       xhttp.open("POST", "/payment/");
-      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-      const data = "order_id=TC0067&amount=" + dataCreateWedding.tiendatcoc + "&csrfmiddlewaretoken=" + encodeURIComponent(csrfToken);
+      xhttp.setRequestHeader(
+        "Content-type",
+        "application/x-www-form-urlencoded"
+      );
+      const csrfToken = document.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      ).value;
+      const data =
+        "order_id=TC0067&amount=" +
+        dataCreateWedding.tiendatcoc +
+        "&csrfmiddlewaretoken=" +
+        encodeURIComponent(csrfToken);
       xhttp.send(data);
     }
-  
-    
-     
-}
-  
-
+  }
 </script>
 <script src="{% static 'js/script.js' %}" defer></script>
 {% endblock %}

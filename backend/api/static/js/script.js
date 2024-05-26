@@ -565,13 +565,13 @@ document
       dataCreateWedding.tongtiendattiec - dataCreateWedding.tiendatcoc;
     console.log(document.getElementById("totalBill_result"));
     document.getElementById("totalBill_result").innerHTML =
-      `<p class="mx-1 p-1 border-end">Tổng tiền bàn: ${formatCurrency(
+      `<p class=" border-end">Tổng tiền bàn: ${formatCurrency(
         dataCreateWedding.tongtienban
       )}</p>` +
-      `<p class="mx-1 p-1 border-end">Tổng tiền đặt tiệc: ${formatCurrency(
+      `<p class=" border-end">Tổng tiền đặt tiệc: ${formatCurrency(
         dataCreateWedding.tongtiendattiec
       )}</p>` +
-      `<p class="mx-1  p-1">Tiền đặt cọc (${
+      `<p class="">Tiền đặt cọc (${
         parameter.tiledatcoc
       }%): ${formatCurrency(dataCreateWedding.tiendatcoc)}</p>`;
     // `<p>Còn lại: ${formatCurrency(dataCreateWedding.conlai)}</p>`;

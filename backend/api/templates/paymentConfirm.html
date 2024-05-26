@@ -347,8 +347,6 @@
   if (csrf_token) {
     xhttp.setRequestHeader("X-CSRFToken", csrf_token);
   }
-
-  console.log("Sending data:", JSON.stringify(invoiceData));
   xhttp.send(JSON.stringify(invoiceData));
 }
 document.getElementById("confirmQRPayment").addEventListener("click", function(event) {
