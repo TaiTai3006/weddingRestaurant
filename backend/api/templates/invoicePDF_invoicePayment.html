@@ -32,6 +32,13 @@
       .table-borderless th {
         border: 0;
       }
+      .header-invoice {
+        text-align: center;
+        font-size: 15px;
+      }
+      .invoice-box .table th{
+        max-height: 50px;
+      }
     </style>
   </head>
   <body>
@@ -55,8 +62,8 @@
           </td>
         </tr>
         <tr>
-          <td colspan="4" class="text-center">
-            <h3>HOA DON THANH TOAN</h3>
+          <td colspan="4" class="header-invoice text-center text-primary">
+            <h1>HOA DON THANH TOAN</h1>
           </td>
         </tr>
         <tr>
@@ -82,10 +89,10 @@
         {% if serviceDetails %}
         <thead>
             <tr class="heading">
-                <th>Mã dịch vụ</th>
-                <th>Số lượng</th>
-                <th>Đơn giá</th>
-                <th>Thành tiền</th>
+                <th>Ma dich vu</th>
+                <th>So luong</th>
+                <th>Don gia</th>
+                <th>Thanh tien</th>
             </tr>
         </thead>
         {% endif %}
@@ -94,44 +101,44 @@
             <tr class="item">
                 <td>{{ serviceDetail.madichvu }}</td>
                 <td>{{ serviceDetail.soluong }}</td>
-                <td>{{ serviceDetail.dongiadichvu|floatformat:2|intcomma }}</td>
-                <td>{{ serviceDetail.thanhtien|floatformat:2|intcomma }}</td>
+                <td>{{ serviceDetail.dongiadichvu|floatformat|intcomma }}</td>
+                <td>{{ serviceDetail.thanhtien|floatformat|intcomma }}</td>
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Tổng tiền dịch vụ:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Tong tien dich vu:</strong>
                 </td>
-                <td>{{ invoiceDetails.tongtiendichvu|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tongtiendichvu|floatformat|intcomma }}</td>
             </tr> 
              <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Tiền phạt:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Tien phat:</strong>
                 </td>
-                <td>{{ invoiceDetails.tienphat|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tienphat|floatformat|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Tổng tiền bàn:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Tong tien ban:</strong>
                 </td>
-                <td>{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
+                <td>{{ bookingDetails.tongtienban|floatformat|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Tổng hóa đơn:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Tong hoa don:</strong>
                 </td>
-                <td>{{ invoiceDetails.tongtienhoadon|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tongtienhoadon|floatformat|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Tiền cọc:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Tien coc:</strong>
                 </td>
-                <td>-{{ bookingDetails.tiendatcoc|floatformat:2|intcomma }}</td>
+                <td>-{{ bookingDetails.tiendatcoc|floatformat|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="4" class="text-right">
-                    <strong>Còn lại:</strong>
+                <td colspan="3" class="text-right">
+                    <strong>Con lai:</strong>
                 </td>
-                <td>{{ invoiceDetails.conlai|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.conlai|floatformat|intcomma }}</td>
             </tr>
             
