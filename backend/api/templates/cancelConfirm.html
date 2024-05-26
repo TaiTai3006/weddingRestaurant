@@ -112,26 +112,26 @@
         <div class="col-3">
           <p>Số ngày hủy sớm : {{songayhuysom}}</p>
           <p>Số lượng bàn: {{wedding.soluongban}}</p>
-          <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
+          <p>Đơn giá bàn: {{wedding.dongiaban|floatformat|intcomma}}</p>
         </div>
         <div class="col-3">
-          <p>Tổng tiền bàn: {{wedding.tongtienban|intcomma}}</p>
+          <p>Tổng tiền bàn: {{wedding.tongtienban|floatformat|intcomma}}</p>
         </div>
       </div>
       <table class="totals">
         <tbody>
           <tr>
             <td>Tổng tiền hoá đơn:</td>
-            <td>{{wedding.tongtienhoadon|intcomma }}</td>
+            <td>{{wedding.tongtienhoadon|floatformat|intcomma }}</td>
           </tr>
           <tr>
             <td>Tiền cọc (50%):</td>
-            <td>{{wedding.tiendatcoc|intcomma}}</td>
+            <td>{{wedding.tiendatcoc|floatformat|intcomma}}</td>
           </tr>
           <tr>
             <td>Số tiền cần thanh toán:</td>
             <td id="totalPayment" data-total="{{wedding.conlai}}">
-              {{wedding.conlai|intcomma}}
+              {{wedding.conlai|floatformat|intcomma}}
             </td>
           </tr>
         </tbody>

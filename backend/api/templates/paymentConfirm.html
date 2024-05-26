@@ -146,10 +146,10 @@
         <div class="col-3">
           <p>Ngày đãi tiệc: {{wedding.ngaydaitiec}}</p>
           <p>Số lượng bàn: {{wedding.soluongban}}</p>
-          <p>Đơn giá bàn: {{wedding.dongiaban|intcomma}}</p>
+          <p>Đơn giá bàn: {{wedding.dongiaban|floatformat|intcomma}}</p>
         </div>
         <div class="col-3">
-          <p>Tổng tiền bàn: {{wedding.tongtienban|intcomma}}</p>
+          <p>Tổng tiền bàn: {{wedding.tongtienban|floatformat|intcomma}}</p>
         </div>
       </div>
       <table>
@@ -170,8 +170,8 @@
             <td>{{ service.madichvu }}</td>
             <td>{{ service.tendichvu }}</td>
             <td>{{ service.soluong }}</td>
-            <td>{{ service.dongiadichvu }} đ</td>
-            <td>{{ service.thanhtien|intcomma}} đ
+            <td>{{ service.dongiadichvu|floatformat|intcomma }}</td>
+            <td>{{ service.thanhtien|floatformat|intcomma}} 
             </td>
           </tr>
           {% endfor %}
@@ -181,19 +181,19 @@
         <tbody>
           <tr>
             <td>Tổng tiền dịch vụ:</td>
-            <td>{{wedding.tongtiendichvu|intcomma}}</td>
+            <td>{{wedding.tongtiendichvu|floatformat|intcomma}}</td>
           </tr>
           <tr>
             <td>Tiền phạt (%)</td>
-            <td>{{wedding.tienphat|intcomma}}</td>
+            <td>{{wedding.tienphat|floatformat|intcomma}}</td>
           </tr>
           <tr>
             <td>Tổng tiền hoá đơn:</td>
-            <td>{{wedding.tongtienhoadon|intcomma }}</td>
+            <td>{{wedding.tongtienhoadon|floatformat|intcomma }}</td>
           </tr>
           <tr>
             <td>Tiền cọc (50%):</td>
-            <td>{{wedding.tiendatcoc|intcomma}}</td>
+            <td>{{wedding.tiendatcoc|floatformat|intcomma}}</td>
           </tr>
           <tr>
             <td>Số tiền cần thanh toán:</td>
@@ -201,7 +201,7 @@
               id="totalPayment"
               data-total="{{wedding.tongtienhoadon|sub:wedding.tiendatcoc}}"
             >
-              {{wedding.tongtienhoadon|sub:wedding.tiendatcoc|intcomma}}
+              {{wedding.tongtienhoadon|sub:wedding.tiendatcoc|floatformat|intcomma}}
             </td>
           </tr>
         </tbody>
