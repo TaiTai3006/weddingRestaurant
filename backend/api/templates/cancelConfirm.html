@@ -130,10 +130,7 @@
           </tr>
           <tr>
             <td>Số tiền cần thanh toán:</td>
-            <td
-              id="totalPayment"
-              data-total="{{wedding.conlai}}"
-            >
+            <td id="totalPayment" data-total="{{wedding.conlai}}">
               {{wedding.conlai|intcomma}}
             </td>
           </tr>
@@ -198,180 +195,12 @@
       </div>
     </div>
   </div>
-  <!-- Modal thanh toán tiền mặt -->
-  <div
-    class="modal fade"
-    id="paymentDetailsModal"
-    tabindex="-1"
-    aria-labelledby="paymentDetailsModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="paymentDetailsModalLabel">
-            Nhập số tiền thanh toán
-          </h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-row">
-            <label for="totalAmount">Số tiền cọc :</label>
-            <span id="totalAmount">100000</span>
-          </div>
-          <div class="amountReceived form-row">
-            <label for="amountReceived">Số tiền đã nhận:</label>
-            <input
-              type="number"
-              id="amountReceived"
-              class="p-1 text-secondary"
-              value="0"
-              placeholder="Nhập số tiền đã nhận"
-            />
-          </div>
-          <div class="form-row">
-            <label for="remainingAmount">Tiền còn lại phải trả :</label>
-            <span id="remainingAmount">0</span>
-          </div>
-          <div class="quick-amount">
-            <div class="col">
-              <div class="btn-group equal-width">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(10000000)"
-                >
-                  10000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(20000000)"
-                >
-                  20000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(50000000)"
-                >
-                  50000000
-                </button>
-              </div>
-              <div class="btn-group equal-width">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(100000000)"
-                >
-                  100000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(200000000)"
-                >
-                  200000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(300000000)"
-                >
-                  300000000
-                </button>
-              </div>
-              <div class="btn-group equal-width">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(400000000)"
-                >
-                  400000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleQuickAmountClick(500000000)"
-                >
-                  500000000
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  onclick="handleClearAmount()"
-                  style="width: 103px"
-                >
-                  Xóa
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Đóng
-          </button>
-          <button id="confirmPayment" type="button" class="btn btn-primary">
-            Xác nhận
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+
 </div>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const paymentMethodSelect = document.getElementById("paymentMethod");
-    const qrCodeModal = new bootstrap.Modal(
-      document.getElementById("qrCodeModal")
-    );
-    const cashModal = new bootstrap.Modal(
-      document.getElementById("paymentDetailsModal")
-    );
 
-    // Hàm bắt sự kiện chọn phương thức thanh toán
-    function handlePaymentMethodChange() {
-      const selectedMethod = paymentMethodSelect.value;
-      const totalAmountElement = document
-        .getElementById("totalPayment")
-        .getAttribute("data-total");
-
-      const totalAmount = totalAmountElement;
-
-      console.log(totalAmount);
-
-      if (selectedMethod === "cash") {
-        cashModal.show();
-      } else if (selectedMethod === "bank") {
-        qrCodeModal.show();
-        showQRcode();
-      }
-    }
-
-    // Đóng modal
-    paymentMethodSelect.addEventListener("change", handlePaymentMethodChange);
-    document
-      .getElementById("confirmPayment")
-      .addEventListener("click", function () {
-        cashModal.hide();
-      });
-    document
-      .getElementById("confirmQRPayment")
-      .addEventListener("click", function () {
-        qrCodeModal.hide();
-      });
-  });
-  // Hiển thị QR code 
+  
+  // Hiển thị QR code
   function showQRcode() {
     console.log("showQRcode");
     const totalAmountElement = document
@@ -400,45 +229,84 @@
       encodeURIComponent(csrfToken);
     xhttp.send(data);
   }
+  function addInvoice() {
+    const form = document.getElementById("cancelForm");
+    console.log(form.ngaythanhtoan.value)
 
+    const invoiceData = {
+      ngaythanhtoan: form.ngaythanhtoan.value,
+      tongtiendichvu: form.tongtiendichvu.value,
+      tienphat: form.tienphat.value,
+      tongtienhoadon: form.tongtienhoadon.value,
+      conlai: form.conlai.value,
+      matieccuoi: form.matieccuoi.value,
+      username: form.username.value,
+    };
+
+    const services = {};
+
+    const xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        alert("Hủy tiệc cưới thành công");
+        const responseData = JSON.parse(this.responseText);
+        const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
+        window.open(url, "_blank");
+        window.location.href = "/";
+      } else {
+        console.error(
+          "Yêu cầu không thành công. Mã lỗi:",
+          this.status,
+          this.responseText
+        );
+      }
+    };
+
+    xhttp.onerror = function () {
+      console.error("Yêu cầu không thành công.");
+    };
+
+    xhttp.open("POST", "/paymentInvoice/");
+    xhttp.setRequestHeader("Content-type", "application/json");
+
+    var csrf_token_input = document.querySelector(
+      'input[name="csrfmiddlewaretoken"]'
+    );
+    var csrf_token = csrf_token_input ? csrf_token_input.value : null;
+
+    if (csrf_token) {
+      xhttp.setRequestHeader("X-CSRFToken", csrf_token);
+    }
+
+    console.log("Sending data:", JSON.stringify(invoiceData));
+    xhttp.send(JSON.stringify(invoiceData));
+  }
+  document
+      .getElementById("confirmQRPayment")
+      .addEventListener("click", function () {
+        addInvoice();
+      });
   document
     .getElementById("cancelForm")
     .addEventListener("submit", function (event) {
       event.preventDefault();
       const form = event.target;
       const paymentMethod = form.querySelector("#paymentMethod").value;
+      const qrCodeModal = new bootstrap.Modal(
+      document.getElementById("qrCodeModal")
+    );
       if (!paymentMethod) {
         alert("Vui lòng chọn phương thức thanh toán trước khi tiếp tục!");
-        return; 
+        return;
       }
-      // Thông tin hóa đơn trước khi gửi cho server
-      const invoiceData = {
-        ngaythanhtoan: form.ngaythanhtoan.value,
-        tongtiendichvu: form.tongtiendichvu.value,
-        tienphat: form.tienphat.value,
-        tongtienhoadon: form.tongtienhoadon.value,
-        conlai: form.conlai.value,
-        matieccuoi: form.matieccuoi.value,
-        username: form.username.value,
-        
-      };
-
-      const services = {};
-
-      axios
-        .post("/paymentInvoice/", invoiceData)
-        .then((response) => {
-          alert("Hủy tiệc cưới thành công!");
-          const responseData = response.data;
-          console.log(responseData);
-          // In hóa đơn 
-          const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
-          window.open(url, "_blank");
-          window.location.href = '/';
-        })
-        .catch((error) => {
-          console.error("Có lỗi xảy ra!", error);
-        });
+      if (paymentMethod === "cash") {
+        addInvoice();
+      } else if (paymentMethod === "bank") {
+        qrCodeModal.show();
+        showQRcode();
+      }
+      
     });
 </script>
 
