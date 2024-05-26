@@ -2,6 +2,8 @@ import hashlib
 import hmac
 import urllib.parse
 
+#Code mẫu được cung cấp bởi tài liệu hướng dẫn liên kết thanh toán của VNPAY
+#Link code: https://sandbox.vnpayment.vn/apis/downloads/
 class vnpay:
     requestData = {}
     responseData = {}

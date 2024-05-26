@@ -42,24 +42,24 @@
           </div>
           <div class=" col-xl-4 offset-xl-1 border rounded py-5 px-3">
             <h2>Welcome to UIT Wedding Restaurant</h2>
-            <form action="/login/" method="post">
+            <form action="{% url 'login' %}" method="post">
                 {% csrf_token %}
                 <label class="form-label" for="username">Username:</label><br>
                 <input type="text" id="username" name="username" class="form-control form-control-lg"><br>
                 <label class="form-label" for="password">Password:</label><br>
                 <input type="password" id="password" name="password" class="form-control form-control-lg"><br><br>
-
-               
+                <input type="submit" class="btn btn-primary btn-lg" value="Đăng nhập">
+              </form>
                 <div class="button-gr d-flex align-items-center justify-content-between mt-0">
-                    <input type="submit" class="btn btn-primary btn-lg" value="Đăng nhập">
-                    <a href="/admin">
+                    
+                    <a href="/admin/">
                         <button class="btn btn-primary btn-lg">
                             Quản lý
                         </button>
                     </a>
                 </div>
                 <p class="text-danger mt-3 "> {{error}}</p>
-            </form>
+           
             
             
           </div>

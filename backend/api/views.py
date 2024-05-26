@@ -55,6 +55,7 @@ def login(request):
 
         if not bcrypt.checkpw(password_input, user.password.encode('utf-8')) :
             return render(request, 'login.html', {"error": "Tài khoản hoặc mật khẩu không chính xác. Vui lòng thử lại!"})
+        
         auth_login(request, user)
         return redirect('/', {"username": user.username})
     
@@ -65,6 +66,8 @@ def logout(request):
     """
     Xử lý yêu cầu đăng xuất của người dùng.
 
+    url: "/logout/"
+
     Hàm này đăng xuất người dùng hiện tại khỏi hệ thống và chuyển hướng họ đến trang chính.
 
     Tham số:
@@ -74,7 +77,7 @@ def logout(request):
         HttpResponseRedirect: Chuyển hướng người dùng đến trang chính sau khi đăng xuất.
     """
     auth_logout(request)
-    return redirect("/")
+    return redirect("/login/")
 
 def documentPdfView(request, type, id):
     """
@@ -114,7 +117,7 @@ def documentPdfView(request, type, id):
 
 # Trang dashboard
 
-# @login_required(login_url='/login/')
+@login_required(login_url='/login/')
 def getindex(request):
     """
     Trang dashboard hiển thị thông tin thống kê về sự kiện cưới và biểu đồ tương ứng.
@@ -247,6 +250,7 @@ def countWeddingEventsPerDay(date):
     print(results)
     return results
 
+@login_required(login_url='/login/')
 def revenueReport(request):
     """
     Thống kê doanh thu của nhà hàng theo từng ngày, từng tháng từ năm
@@ -649,9 +653,20 @@ def updateWeddingInfo(request, wedding_id):
     # return render(request, 'searchResult.html')
 
 
-
+@login_required(login_url='/login/')
 def create(request):
+    """
+    Xử lý lấy danh sách các sảnh, loại sảnh, món ăn, loại món ăn, dịch vụ và ca, 
+    sau đó trả về template trang đặt tiệc cưới.
     
+    url: '/create/' method="GET"
+
+    Tham số:
+    - request: Đối tượng HttpRequest chứa thông tin yêu cầu HTTP.
+
+    Trả về:
+    - HttpResponse: Phản hồi HTTP chứa nội dung trang web đã render với dữ liệu đã được serialize.
+    """
     lobbies = Sanh.objects.all()
     lobby_types = Loaisanh.objects.all()
     foods = Monan.objects.all()
@@ -680,7 +695,19 @@ def create(request):
     return render(request, 'base.html',serialized_data)
 
 def getFoodTable(request, type): 
+    """
+    Xử lý lấy danh sách các món ăn dựa trên loại món ăn và trả về trang web.
+    
+    url: '/getFoodTable/<str:type>/' method="GET"
 
+    Tham số:
+    - request: Đối tượng HttpRequest chứa thông tin yêu cầu HTTP.
+    - type (str): loại món ăn hoặc 'all' để lấy tất cả các món ăn.
+
+    Trả về:
+    - HttpResponse: Phản hồi HTTP chứa nội dung trang web đã render với danh sách các món ăn.
+
+    """
     if type == 'all':
         foods = Monan.objects.all()
         serializer = FoodSerializer(foods, many=True)
@@ -751,7 +778,7 @@ def apiView(request, model_name=None):
     serializer = serializer_class(query, many=True)
     return Response(serializer.data)
     
-
+@login_required(login_url='/login/')
 @api_view(['GET'])
 
 def searchPartyBookingFormAPI(request):
