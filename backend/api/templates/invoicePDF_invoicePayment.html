@@ -94,44 +94,44 @@
             <tr class="item">
                 <td>{{ serviceDetail.madichvu }}</td>
                 <td>{{ serviceDetail.soluong }}</td>
-                <td>{{ serviceDetail.dongiadichvu|floatformat:2|intcomma }}</td>
-                <td>{{ serviceDetail.thanhtien|floatformat:2|intcomma }}</td>
+                <td>{{ serviceDetail.dongiadichvu|floatformat|intcomma }}</td>
+                <td>{{ serviceDetail.thanhtien|floatformat|intcomma }}</td>
             </tr>
             {% endfor %}
             <tr>
                 <td colspan="4" class="text-right">
                     <strong>Tổng tiền dịch vụ:</strong>
                 </td>
-                <td>{{ invoiceDetails.tongtiendichvu|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tongtiendichvu|floatformat|intcomma }}</td>
             </tr> 
              <tr>
                 <td colspan="4" class="text-right">
                     <strong>Tiền phạt:</strong>
                 </td>
-                <td>{{ invoiceDetails.tienphat|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tienphat|floatformat|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="4" class="text-right">
                     <strong>Tổng tiền bàn:</strong>
                 </td>
-                <td>{{ bookingDetails.tongtienban|floatformat:2|intcomma }}</td>
+                <td>{{ bookingDetails.tongtienban|floatformat|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="4" class="text-right">
                     <strong>Tổng hóa đơn:</strong>
                 </td>
-                <td>{{ invoiceDetails.tongtienhoadon|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.tongtienhoadon|floatformat|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="4" class="text-right">
                     <strong>Tiền cọc:</strong>
                 </td>
-                <td>-{{ bookingDetails.tiendatcoc|floatformat:2|intcomma }}</td>
+                <td>-{{ bookingDetails.tiendatcoc|floatformat|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="4" class="text-right">
                     <strong>Còn lại:</strong>
                 </td>
-                <td>{{ invoiceDetails.conlai|floatformat:2|intcomma }}</td>
+                <td>{{ invoiceDetails.conlai|floatformat|intcomma }}</td>
             </tr>
             
