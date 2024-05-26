@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Loaisanh, Sanh, Chucvu, Taikhoan, Ca, Phieudattieccuoi, Dichvu, Chitietdichvu, Loaimonan, Monan, Chitietmonan, Baocaodoanhthu, Chitietbaocao, Congviec, Nhanvien, Phancong, Hoadon, ChitietDvThanhtoan, Thamso
 import bcrypt
+from django.contrib.auth.models import User
 
 #Thêm chức năng mã hoá mật khẩu trước khi lưu trữ vào TaiKhoan
 class MyModelAdmin(admin.ModelAdmin):
@@ -11,6 +12,7 @@ class MyModelAdmin(admin.ModelAdmin):
         # Thực hiện các xử lý đặc biệt trước khi tạo đối tượng
         if not change:
             obj.password = bcrypt.hashpw(bytes, salt).decode('utf-8')
+            User.objects.create(username=request.POST['username'], password=obj.password)
         
         # Gọi phương thức lưu mặc định
         super().save_model(request, obj, form, change)
