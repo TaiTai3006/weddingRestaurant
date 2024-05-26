@@ -530,22 +530,22 @@ def cancelConfirm(request, wedding_id):
     serializer = PartyBookingFormSerializer(wedding)
     serialized_wedding_data = serializer.data
     serialized_wedding_data['ngayhuy'] = ngayhuy.strftime('%Y-%m-%d')
-    serialized_wedding_data['tongtien'] = wedding.tiendatcoc
+    serialized_wedding_data['tongtiendichvu'] = 0
     ngaydaitiec = wedding.ngaydaitiec
     # Tính số ngày hủy sớm
     songayhuysom = (ngaydaitiec- ngayhuy.date()).days
    
     if songayhuysom < 7:
         #  Tổng tiền hoá đơn = tổng tiền bàn, tiền còn lại = tiền bàn - tiền cọc.
-        serialized_wedding_data['tongtien'] = wedding.tongtiendattiec
-        serialized_wedding_data['conlai'] = wedding.tongtiendattiec - wedding.tiendatcoc
+        serialized_wedding_data['tongtienhoadon']= wedding.tongtienban
+        serialized_wedding_data['conlai'] = wedding.tongtienban - wedding.tiendatcoc
     else:
         #  Tổng tiền hoá đơn = tiền cọc, tiền còn lại = 0.
-        serialized_wedding_data['tongtien'] = wedding.tiendatcoc
+        serialized_wedding_data['tongtienhoadon']= wedding.tiendatcoc
         serialized_wedding_data['conlai'] = 0
     
 
-    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data,'songayhuysom':songayhuysom})
+    return render(request, 'cancelConfirm.html', {'wedding':  serialized_wedding_data,'songayhuysom':abs(songayhuysom)})
 
 
 # Lưu trữ thông tin thanh toán hoá đơn của khách hàng vào bảng Hoá đơn trong database
@@ -573,48 +573,54 @@ def paymentInvoiceAPI(request):
         - HttpResponse:: Status code.
     """
     with transaction.atomic():
-       
         mahoadon = getNextID(Hoadon, 'mahoadon')
         request.data['mahoadon'] = mahoadon
 
-        invoice = InvoiceSerializer(data=request.data)
-        print(invoice)
+        invoice_data = {
+            'mahoadon': mahoadon,
+            'ngaythanhtoan': request.data.get('ngaythanhtoan'),
+            'tongtiendichvu': request.data.get('tongtiendichvu'),
+            'tienphat': request.data.get('tienphat'),
+            'tongtienhoadon': request.data.get('tongtienhoadon'),
+            'conlai': request.data.get('conlai'),
+            'matieccuoi': request.data.get('matieccuoi'),
+            'username': request.data.get('username'),
+        }
+
+        invoice = InvoiceSerializer(data=invoice_data)
         service_list = request.data.get('danhsachdichvu', [])
+        
         if not invoice.is_valid():
             print("Invoice validation errors:", invoice.errors)  
             return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
+        
+        validated_invoice_data = invoice.validated_data
+        ngaythanhtoan = validated_invoice_data['ngaythanhtoan']
+        tongtienhoadon = validated_invoice_data['tongtienhoadon']
+        
+        # Lưu trữ hoá đơn
+        invoice.save()
+
+        for service in service_list:
+            service_data = {
+                'mahoadon': mahoadon,
+                'madichvu': service.get('madichvu'),
+                'soluong': service.get('soluong'),
+                'giatien': service.get('giatien'),
+            }
+
+            detail_service_payment = DetailServicePaymentSerializer(data=service_data)
+
+            if not detail_service_payment.is_valid():
+                Hoadon.objects.filter(mahoadon=mahoadon).delete()
+                return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
             
-            if not invoice.is_valid():
-                return Response(invoice.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-            validated_invoice_data = invoice.validated_data
-            ngaythanhtoan = validated_invoice_data['ngaythanhtoan']
-            tongtienhoadon = validated_invoice_data['tongtienhoadon']
-            ngaythanhtoan_str = str(ngaythanhtoan)
+            detail_service_payment.save()
 
-            print(type(tongtienhoadon))
-            print(ngaythanhtoan_str, tongtienhoadon)
-            # Lưu trữ hoá đơn
-            invoice.save()
-
-            for service in service_list:
-                service['mahoadon'] = mahoadon
-                detail_service_payment = DetailServicePaymentSerializer(data=service)
-
-                if not detail_service_payment.is_valid():
-                    
-                    Hoadon.objects.filter(mahoadon=mahoadon).delete()
-                    return Response(detail_service_payment.errors, status=status.HTTP_400_BAD_REQUEST)
-
-                
-                detail_service_payment.save()
-            # Gọi hàm thống kê doanh thu với ngày thanh toán và tổng tiền hóa đơn của hóa đơn vừa tạo 
-            createRevenueReport(ngaythanhtoan_str, tongtienhoadon)
-            
-            return Response({"message": "Hoá đơn được tạo thành công","mahoadon": mahoadon  }, status=status.HTTP_201_CREATED)
-
-
+        # Gọi hàm thống kê doanh thu với ngày thanh toán và tổng tiền hóa đơn của hóa đơn vừa tạo 
+        createRevenueReport(str(ngaythanhtoan), tongtienhoadon)
+        
+        return Response({"message": "Hoá đơn được tạo thành công", "mahoadon": mahoadon}, status=status.HTTP_201_CREATED)
 
 def updateWeddingInfo(request, wedding_id):
     """

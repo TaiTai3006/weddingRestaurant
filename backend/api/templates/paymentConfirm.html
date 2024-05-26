@@ -128,6 +128,11 @@
       name="danhsachdichvu[{{ forloop.counter }}][dongiadichvu]"
       value="{{ service.dongiadichvu }}"
     />
+    <input
+    type="hidden"
+    name="danhsachdichvu[{{ forloop.counter }}][thanhtien]"
+    value="{{ service.thanhtien }}"
+  />
     {% endfor %}
 
     <div class="payment-container p-2">
@@ -166,7 +171,7 @@
             <td>{{ service.tendichvu }}</td>
             <td>{{ service.soluong }}</td>
             <td>{{ service.dongiadichvu }} đ</td>
-            <td>{{ service.dongiadichvu|floatformat|mul:service.soluong|intcomma}} đ
+            <td>{{ service.thanhtien|intcomma}} đ
             </td>
           </tr>
           {% endfor %}
@@ -265,6 +270,7 @@
 
   function showQRcode() {
     console.log("showQRcode");
+   
     const totalAmountElement = document
       .getElementById("totalPayment")
       .getAttribute("data-total");
@@ -291,6 +297,7 @@
       encodeURIComponent(csrfToken);
     xhttp.send(data);
   }
+  
   function addInvoice() {
   const form = document.getElementById("paymentForm");
 
@@ -317,6 +324,7 @@
       services[index][field] = input.value;
     }
   });
+  console.log("dich vu",services)
 
   invoiceData.danhsachdichvu = Object.values(services);
 
@@ -347,6 +355,8 @@
   if (csrf_token) {
     xhttp.setRequestHeader("X-CSRFToken", csrf_token);
   }
+  console.log("Sending data:", JSON.stringify(invoiceData));
+
   xhttp.send(JSON.stringify(invoiceData));
 }
 document.getElementById("confirmQRPayment").addEventListener("click", function(event) {
