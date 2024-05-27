@@ -397,6 +397,9 @@ def createRevenueReport(date_string, tongtienhoadon):
             "tile": 0
         }
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
+     
+        if not reportDetailserializer.is_valid():
+            print(reportDetailserializer.errors)
         if reportDetailserializer.is_valid():
             reportDetailserializer.save()
 
@@ -894,7 +897,9 @@ def searchPartyBookingFormAPI(request):
         item['thongtinca'] = ShiftSerializer(query4, many = True).data[0]
         # Kiểm tra điều kiện nếu còn 7 ngày đến ngày đãi tiệc không cho phép chỉnh sửa thông tin tiệc cưới 
         item['within_7_days'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() <= today + timedelta(days=7)
-        
+        item['payment_day'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() <= today 
+        item['cancel_day'] = datetime.strptime(item['ngaydaitiec'], '%Y-%m-%d').date() > today 
+
     serialized_data = {
     
         'weddings': serializer.data,
