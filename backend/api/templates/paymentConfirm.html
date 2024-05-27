@@ -336,7 +336,7 @@
       const responseData = JSON.parse(this.responseText);
       const url = `/create/pdf/invoicePayment/${responseData.mahoadon}`;
       window.open(url, '_blank');
-      window.location.href = '/';
+      window.location.href = '/search/';
     } else {
       console.error("Yêu cầu không thành công. Mã lỗi:", this.status, this.responseText);
     }

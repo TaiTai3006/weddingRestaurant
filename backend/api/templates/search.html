@@ -171,6 +171,7 @@
     xhttp.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         alert("Thêm thông tin dịch vụ thành công");
+        window.location.reload();
       } else {
         console.error(
           "Yêu cầu không thành công. Mã lỗi:",
