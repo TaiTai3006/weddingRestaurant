@@ -1017,8 +1017,9 @@ def paymentConfirm(request, wedding_id):
     
     serialized_wedding_data['tienphat'] = round(tienphat, 2)
     # Tính tổng tiền hóa đơn 
-    tongtienhoadon = tienphat + Decimal(wedding.tongtiendattiec) + Decimal(wedding.tongtiendichvu)
+    tongtienhoadon = tienphat + Decimal(wedding.tongtienban) + Decimal(wedding.tongtiendichvu)
     serialized_wedding_data['tongtienhoadon'] = round(tongtienhoadon, 2)
+    print("tong hoa don",tienphat, Decimal(wedding.tongtienban),Decimal(wedding.tongtiendichvu),tongtienhoadon)
     # Lấy danh sách chi tiết dịch vụ đã chọn
     ds_dv = Chitietdichvu.objects.filter(matieccuoi=wedding_id)
     services_serializer = ServiceDetailsSerializer(ds_dv, many=True).data
