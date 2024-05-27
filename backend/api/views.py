@@ -1144,7 +1144,7 @@ def paymentInvoiceAPI(request):
         return Response({"message": "Hoá đơn được tạo thành công", "mahoadon": mahoadon}, status=status.HTTP_201_CREATED)
 
 
-
+#-------------------------------------------------------------------Các hàm hỗ trợ------------------------------------------------------------------
 
 # Tạo mã khoá chính tự động cho các bảng bằng cách lấy phần tử cuối cùng trong bảng cộng thêm 1
 def getNextID(model, id_field):
