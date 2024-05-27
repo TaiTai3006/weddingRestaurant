@@ -369,6 +369,7 @@ def createRevenueReport(date_string, tongtienhoadon):
     """
     date = date_string.split('-')
     year, month = date[0], date[1]
+    print("ngayThanh toan",date_string)
 
     try:
         bao_cao_doanh_thu = Baocaodoanhthu.objects.get(nam=year, thang=month)
@@ -387,20 +388,24 @@ def createRevenueReport(date_string, tongtienhoadon):
 
     try:
         chi_tiet_bao_cao = Chitietbaocao.objects.get(ngay=date_string)
+        print(chi_tiet_bao_cao, 'gfgfgfgfgfgfg')
         chi_tiet_bao_cao.updateBaoCao(tongtienhoadon)
     except Chitietbaocao.DoesNotExist:
+        
         data = {
             "mabaocao": bao_cao_doanh_thu.mabaocao,
             "ngay": date_string,
             "soluongtiec": 1,
-            "doanhthu": tongtienhoadon,
+            "doanhthu": float(tongtienhoadon),
             "tile": 0
         }
+        print(data, 'jasgdhsghdg')
         reportDetailserializer = RevenueReportDetailSerializer(data=data)
      
         if not reportDetailserializer.is_valid():
             print(reportDetailserializer.errors)
         if reportDetailserializer.is_valid():
+            print(reportDetailserializer.is_valid())
             reportDetailserializer.save()
 
     chi_tiet_bao_cao_all = Chitietbaocao.objects.filter(mabaocao=bao_cao_doanh_thu.mabaocao)

@@ -136,7 +136,7 @@ class Baocaodoanhthu(models.Model):
     
 
 class Chitietbaocao(models.Model):
-    mabaocao = models.OneToOneField(Baocaodoanhthu, models.DO_NOTHING, db_column='maBaoCao', primary_key=True)  # Field name made lowercase. The composite primary key (maBaoCao, ngay) found, that is not supported. The first column is selected.
+    mabaocao = models.ForeignKey(Baocaodoanhthu, models.DO_NOTHING, db_column='maBaoCao')  # Field name made lowercase.
     ngay = models.DateField()
     soluongtiec = models.IntegerField(db_column='soLuongTiec', blank=True, null=True)  # Field name made lowercase.
     doanhthu = models.DecimalField(db_column='doanhThu', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
@@ -145,7 +145,6 @@ class Chitietbaocao(models.Model):
     class Meta:
         managed = False
         db_table = 'ChiTietBaoCao'
-        unique_together = (('mabaocao', 'ngay'),)
 
     def updateBaoCao(self, tongtienhoadon):
         self.soluongtiec = self.soluongtiec + 1
