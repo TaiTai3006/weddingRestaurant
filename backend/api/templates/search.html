@@ -379,22 +379,26 @@
     xhttp.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         document.getElementById("searchResult").innerHTML = this.responseText;
-        console.log(document.getElementById("searchResult"));
-        console.log(document.getElementById("modal-add-food"));
-        document
-          .getElementById("modal-add-food")
-          .addEventListener("click", function () {
+        addFoodButtons = document.querySelectorAll("#modal-add-food")
+        addFoodButtons.forEach((addFoodButton)=>{
+          addFoodButton.addEventListener("click", function () {
             var wedding_id = this.getAttribute("data-wedding-id");
+            console.log(wedding_id);
             readFoodDetailChecked(wedding_id);
           });
-        document
-          .getElementById("modal-add-service")
-          .addEventListener("click", function () {
-            
+        })
+        addServiceButtons = document.querySelectorAll("#modal-add-service")
+        
+        addServiceButtons.forEach((addServiceButton)=>{
+          console.log(addServiceButton)
+          addServiceButton.addEventListener("click", function () {
             var wedding_id = this.getAttribute("data-wedding-id");
             console.log(wedding_id);
             readServiceDetailChecked(wedding_id);
           });
+        })
+        
+        
         // Các button xóa và lưu. Khi thông tin tiệc cưới mới hiện, các trường dữ liệu không thể chỉnh sửa do có thuộc tinh "disable", khi ấn "Chỉnh sửa" mới chỉnh sửa nội dung được
         const editButtons = document.querySelectorAll("#editButton");
         const saveButtons = document.querySelectorAll("#saveButton");
