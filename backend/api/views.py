@@ -686,6 +686,7 @@ def addServiceDetail(request):
                 'matieccuoi': matieccuoi_id,
                 'madichvu': service_id,
                 'soluong': 1,
+
             }
 
             try:
@@ -695,6 +696,7 @@ def addServiceDetail(request):
 
             service['dongiadichvu'] = dichvu_obj.dongia
             service['soluong'] = 1
+            service['thanhtien'] = dichvu_obj.dongia *  1
 
             serviceDetail = ServiceDetailsSerializer(data=service)
 

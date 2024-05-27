@@ -15,7 +15,7 @@
       <th>Nhân viên</th>
     </tr>
   </thead>
-  <tbody id="accordion">
+  <tbody id="accordion" >
     {% for wedding in weddings %}
     <tr data-toggle="collapse" data-target="#collapse{{ wedding.matieccuoi }}" aria-expanded="true"
       aria-controls="collapse{{ wedding.matieccuoi }}" class="accordion-toggle">
@@ -32,8 +32,8 @@
     <tr>
       <td colspan="9" class="hiddenRow">
         <div id="collapse{{ wedding.matieccuoi }}" class="collapse p-3 accordion-content"
-          aria-labelledby="heading{{ wedding.matieccuoi }}" data-parent="#accordion">
-          <form class="wedding_info" method="POST" action="{% url 'update_wedding_info' wedding.matieccuoi %}">
+          aria-labelledby="heading{{ wedding.matieccuoi }}" data-parent="#accordion" style="height: 400px;">
+          <form class="wedding_info" method="POST" action="{% url 'update_wedding_info' wedding.matieccuoi %}" >
             {% csrf_token %}
             <div class="row">
               <div class="col mb-3">
@@ -94,9 +94,9 @@
               </div>
             </div>
           </form>
-          <div>
+          <div >
             <strong>Món ăn:</strong>
-            <table class="table">
+            <table class="table" >
               <thead>
                 <tr>
                   <th>STT</th>
