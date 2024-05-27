@@ -1008,9 +1008,10 @@ def paymentConfirm(request, wedding_id):
     # Lấy thông tin tỉ lệ phạt từ ThamSo 
     thamso = get_object_or_404(Thamso)
     tilephat = thamso.tilephat
+    print("print",tilephat,songaytre,wedding.tongtiendattiec)
     # Kiểm tra nếu bị trễ, tính tiền phạt theo quy định, nếu không tiền phạt = 0
     if songaytre > 0:
-        tienphat = tilephat * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
+        tienphat = tilephat/100 * Decimal(songaytre) * Decimal(wedding.tongtiendattiec)
     else:
         tienphat = Decimal(0)
     
