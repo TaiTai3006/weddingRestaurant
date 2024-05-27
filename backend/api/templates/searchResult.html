@@ -137,10 +137,12 @@
                 {% endfor %}
               </tbody>
             </table>
+            {% if not wedding.within_7_days %}
             <button type="button" id="modal-add-food" class="btn btn-primary" data-bs-toggle="modal"
               data-bs-target="#myModal" data-wedding-id="{{ wedding.matieccuoi }}">
               Chỉnh sửa món ăn
             </button>
+            {% endif %}
           </div>
           <div>
             <strong>Dịch vụ:</strong>

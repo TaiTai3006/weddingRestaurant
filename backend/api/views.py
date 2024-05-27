@@ -874,7 +874,7 @@ def searchPartyBookingFormAPI(request):
     if conditions:
         query += " AND " + " AND ".join(conditions)
 
-    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec ASC"
+    query += " ORDER BY PhieuDatTiecCuoi.ngayDaiTiec DESC"
     # Tìm kiêm tiệc cưới với câu truy vấn 
     query_f = Phieudattieccuoi.objects.raw(query) 
     serializer = PartyBookingFormSerializer(query_f, many = True)    
