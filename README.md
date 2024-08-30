@@ -12,7 +12,7 @@
 
 ## Build Notes
 
-# How to Run the Django Project
+### How to Run the Django Project
 
 ```bash
 # 1. Clone the repository:
